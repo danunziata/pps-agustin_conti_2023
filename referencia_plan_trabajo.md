@@ -1,5 +1,7 @@
 # PPS MLOPS
 
+ver información necesaria para la pps https://www.ing.unrc.edu.ar/vinculacion-pprofesionales.php
+
 ## Redactar: 
 - Introducción
 - Objetivos
