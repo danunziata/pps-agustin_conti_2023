@@ -1,0 +1,5 @@
+site_name: PPS - Agustin Aguilera Conti
+nav:
+  - PPS: index.md
+  - About: about.md
+theme: readthedocs
