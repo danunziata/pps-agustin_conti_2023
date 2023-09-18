@@ -2,6 +2,10 @@
 
 ## Plan de Trabajo
 
+Son 310 horas en total, de a 6 por dia, por 5 días hábiles por semana. Nos quedan aprox. 52 dias desde el día 13/09.
+Quedan entonces, contando desde la semana 38 inclusive, un aprox. de 10 semanas, terminando en la semana 48 (Para el 30/11 aprox.)
+
+
 * **Actividad Nº1 (A1):** Búsqueda y revisión bibliográfica. Contextualización. Duración: 7 días.
 
 * **Actividad Nº2 (A2):** ... . Duración: 7 días
