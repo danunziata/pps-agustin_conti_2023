@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "pps-agustin-conti-2023"
+version = "0.1.0"
+description = "Poetry Virtual Environment"
+authors = ["aagustinconti <mail@aagustinconti.com.ar>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+mkdocs = "1.5.2"
+
+[tool.poetry.group.dev.dependencies]
+mkdocs = "1.5.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
