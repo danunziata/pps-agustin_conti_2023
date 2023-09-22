@@ -8,15 +8,15 @@ Quedan entonces, contando desde la semana 38 inclusive, un aprox. de 10 semanas,
 
 * **Actividad Nº1 (A1):** Búsqueda y revisión bibliográfica. Contextualización. Duración: 7 días.
 
-* **Actividad Nº2 (A2):** ... . Duración: 7 días
+* **Actividad Nº2 (A2):**  Investigación y evaluación de la herramienta. Duración: 7 días
 
-* **Actividad Nº3 (A3):** ... . Duración: 7 días
+* **Actividad Nº3 (A3):** Diseño e implementación de la infraestructura basada en Kubeflow . Duración: 7 días
 
-* **Actividad Nº4 (A4):** ... . Duración: 8 días.
+* **Actividad Nº4 (A4):** Desarrollo de pipelines de flujo de trabajo. Duración: 8 días.
 
-* **Actividad Nº5 (A5):** ... . Duración: 7 días.
+* **Actividad Nº5 (A5):** Integración de modelos de Machine Learning en los pipelines . Duración: 7 días.
 
-* **Actividad Nº6 (A6):** ... . Duración: 6 días
+* **Actividad Nº6 (A6):** Pruebas y ajustes de los pipelines. Duración: 6 días
 
 * **Actividad Nº7 (A7):** Redacción de documentación e informe. Duración: 10 días
 
