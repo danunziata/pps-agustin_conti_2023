@@ -185,7 +185,144 @@ Los siguientes son los conceptos clave y el principio de funcionamiento de Kubef
 
 En resumen, Kubeflow es una plataforma de código abierto que simplifica y optimiza la gestión de flujos de trabajo de aprendizaje automático en entornos de Kubernetes. Facilita la implementación, la escalabilidad, la automatización y la gestión de modelos de ML en entornos basados en contenedores, lo que mejora la eficiencia y la reproducibilidad en proyectos de aprendizaje automático.
 
-
-
 ### Aprovisionar con Ansible - Instalación de Kubeflow
 
+1. Instalamos Ansible en Ubuntu:
+
+```
+$ sudo apt update
+$ sudo apt install software-properties-common
+$ sudo apt-add-repository ppa:ansible/ansible
+$ sudo apt update
+$ sudo apt install ansible
+```
+
+1. Nos dirigimos a la carpeta de Ansible en nuestra máquina host: 
+
+```
+$ cd /etc/ansible
+```
+
+2. Veremos listados los siguientes archivos y directorios:
+
+```
+ansible.cfg  hosts        roles/
+```
+
+El archivo `hosts` es el **inventario** donde tendremos listados todos nuestros equipos que queremos controlar.
+
+3. Configuramos el inventario para el ejemplo, agregando las siguientes lineas:
+
+```
+## Example for PPS
+
+[linux]
+192.168.100.1
+192.168.100.2
+192.168.100.3
+
+[linux:vars]
+ansible_user=root
+ansible_password=password 
+```
+
+Lo anterior es equivalente a crear un **grupo** de equipos llamado "linux", ahora podemos corroborar la conexión con los mismos con un modulo de ansible llamado `ping`:
+```
+ansible linux -m ping
+```
+
+Si todo está correcto deberá devolvernos un ping exitoso a cada una de las IP's que configuramos previamente.
+
+Para ver qué tipo de SO y qué versión tenemos instalada nos vamos a valer del siguiente comando:
+
+```
+ansible linux -a "cat /etc/os-release"
+```
+
+Básicamente lo que hacemos es enviar ese comando a cada una de las máquinas del grupo linux, lo que nos devolverá la lectura del archivo os-release, el cual contiene la versión del sistema.
+
+Ahora veremos lo que es un **playbook**, con el cual, haremos lo mismo que hacemos con la consola de comandos pero expresado en un archivo de instrucciones. Podremos simplificar la estructura de la siguiente manera:
+
+> PLAYBOOK > PLAYS > TASKS
+
+El playbook es un archivo en formato `.yml` o `.yaml` . La estructura de este archivo deberá ser la siguiente:
+
+```
+---
+    - name: I want to install nano # Name of the play
+    - hosts: linux # Name of the machine or a group of machines
+    - tasks:
+        - name: Install nano # Name of the task
+          apt: # Name of the module
+            name: nano # Library to install
+            state: latest # Version of that library
+```
+
+Ahora, podremos crear dicho archivo en la máquina que tiene Ansible y por ende envía las órdenes, asignarle el nombre que más nos guste (" `playbook.yml` ") y asegurarnos de que el formato y tipo de archivo sea el indicado anteriormente.
+
+Para ejecutar ese archivo de instrucciones, usamos el siguiente comando de Ansible:
+
+```
+ansible-playbook playbook.yml
+```
+
+Importante que a la hora de ejecutar dichos comandos, Ansible **no hará cambios** si el estado deseado ya se ha logrado previamente. Por ejemplo, en este caso que queremos instalar nano suponiendo de que no estaba instalado, cuando lo ejecutemos por primera vez detectaremos que hay cambios, pero si lo ejecutamos por segunda vez veremos que habrá cero cambios ya que el estado deseado de tener instalado nano ya se ha cumplido.
+
+Si el **estado deseado de la tarea fuera "absent"** en lugar de "latest", cuando lo corramos de nuevo, buscará que dicha librería no esté, nuevamente habrá un cambio y será la eliminación de dicha librería.
+
+
+
+# Notas
+
+Puedo deployar Kubeflow en un NODO de Kubernetes con Ansible. Suponiendo que Creo 3 nodos de Kubernetes, el master y los dos nodos. Puedo usar alguno para instalarle Kubeflow.
+
+Necesitaría en mi entorno de laboratorio:
+
+1. Instalar un Cluster de Kubernetes de al menos 1 nodo.
+   
+   1. Definir quienes serían PC's intervinientes.
+   2. Hacer el playbook con Ansible que haga eso.
+    
+2. Instalar Kubeflow sobre ese nodo.
+   1. Hacer un playbook con Ansible que haga eso.
+
+
+Para instalar Kubeflow tenemos dos vías, usando los **manifests** "en crudo" o usar **distribuciones paquetizadas** que vienen ya hechas para diferentes plataformas como AWS o Asure.
+
+En nuestro caso vamos a usar los **manifests**, los cuales encontramos en el siguiente link `https://github.com/kubeflow/manifests#installation`.
+
+El objetivo de los manifest es darnos una manera fácil de instalar Kubeflow, pudiendo armar nuestra versión custom a partir de versiones ya probadas y funcionales. Tendremos **dos maneras** de hacer la instalación:
+
+1. Single-command: Para el caso de que querramos instalar todos los componentes.
+2. Multi-command: Para el caso de que querramos instalar componente a componente.
+
+Tendremos previo a la instalación **3 pre-requsitos**: 
+
+1. Kubernetes (up to 1.26) with a default StorageClass
+
+2. kustomize 5.0.3 (Kubeflow no es compatible con versiones anteriores de Kustomize)
+
+3. kubectl
+
+Para instalar con el **single-command**:
+```
+while ! kustomize build example | kubectl apply -f -; do echo "Retrying to apply resources"; sleep 10; done
+```
+
+Luego necesitamos conectar nuestro Cluster de Kubeflow, despues de asegurarnos que nuestros pods estan listos:
+
+```
+kubectl get pods -n cert-manager
+kubectl get pods -n istio-system
+kubectl get pods -n auth
+kubectl get pods -n knative-eventing
+kubectl get pods -n knative-serving
+kubectl get pods -n kubeflow
+kubectl get pods -n kubeflow-user-example-com
+```
+
+Por último tenemos que hacer un port-forwarding para poder acceder a la interfaz web:
+
+```
+kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
+```
