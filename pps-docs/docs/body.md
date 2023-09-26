@@ -38,9 +38,7 @@
 
 Para obtener el resultado deseado, los usuarios no tienen que recordar manualmente qué modelo de datos utiliza qué conjunto de datos y qué acciones se llevaron a cabo; de todo esto se encarga DVC. Consiste en un conjunto de herramientas y procesos que rastrean las versiones cambiantes de los datos y las colecciones de datos anteriores. Los repositorios de DVC contienen los archivos que están bajo el efecto del sistema de control de versiones. Se mantiene un estado clasificado para cada cambio que se confirma en cualquier archivo de datos.
 
-
 [![Airflow vs. Kubeflow vs. MLFlow](./source/airflow-mlflow-kubeflow.webp)](https://aicurious.io/blog/2022-03-26-airflow-mlflow-or-kubeflow-for-mlops)
-
 
 Luego de analizar las capacidades de cada uno de los sistemas vistos anteriormente, podemos decir que si nuestro sistema necesita tratar con múltiples tipos de flujo de trabajo, no sólo aprendizaje automático, Airflow puede ayudarnos mejor. Es un marco de orquestación de flujos de trabajo maduro, con soporte para muchos operadores, además del aprendizaje automático.
 
@@ -52,23 +50,20 @@ Como DVC se dedica a una porción muy específica y similar a MLFlow, queda en l
 
 En nuestro caso de aplicación, como nuestro cluster ya tiene Kubernetes y consideramos que es más completo y abarca todo el ciclo de trabajo completo, **la elección ideal sería Kubeflow**, por lo que ahondaremos más en el mismo para poder realizar su implementación.
 
-
-
-
 >(*) *Job operator:* Es un recurso personalizado de Kubernetes que permite correr tareas de entrenamiento de TensorFlow en dicha plataforma.
 >
 >(**) *DAGs:* Directed Acyclic Graph, es una forma de modelar las redes neuronales en forma de nodos interconectados por flechas.
-
 
 ### Descripción del entorno de trabajo
 
 #### Recursos físicos
 
 Conjunto de 3 PC's con los siguientes recursos cada una:
--   CPU's: Ryzen 9 XXXX
--   Memoria RAM: 32GB
--   Almacenamiento: X GB
--   GPU's: NO, por el momento.
+* CPU's: Ryzen 9 XXXX
+* Memoria RAM: 32GB
+* Almacenamiento: X GB
+* GPU's: NO, por el momento.
+
 #### Virtualización - Proxmox
 
 Proxmox Virtual Environment, comúnmente conocido como Proxmox, es una plataforma de virtualización de código abierto que permite la administración y la implementación de máquinas virtuales (VM) y contenedores en un entorno integrado. Proxmox se utiliza para crear y gestionar entornos virtuales en servidores físicos y es especialmente útil en entornos de centro de datos y en la administración de servidores.
@@ -185,9 +180,19 @@ Los siguientes son los conceptos clave y el principio de funcionamiento de Kubef
 
 En resumen, Kubeflow es una plataforma de código abierto que simplifica y optimiza la gestión de flujos de trabajo de aprendizaje automático en entornos de Kubernetes. Facilita la implementación, la escalabilidad, la automatización y la gestión de modelos de ML en entornos basados en contenedores, lo que mejora la eficiencia y la reproducibilidad en proyectos de aprendizaje automático.
 
-### Aprovisionar con Ansible - Instalación de Kubeflow
+### Creación del entorno de laboratorio
 
-1. Instalamos Ansible en Ubuntu:
+#### Armado de la infraestructura de prueba - VirtualBox + Ubuntu Server
+
+1. Armo una Virtual Machine en Virtualbox con Ubuntu Server 22.04
+2. Configuro la red en modo bridge para asignarle una IP dentro de mi red local
+3. Admito modo promiscuo
+4. Deshabilito el port forwarding en la máquina host para evitar paquetes duplicados.
+5. Me aseguro de tener instalado open-ssh
+
+#### Aprovisionar con Ansible - Instalación y conexión del host con el servidor
+
+1. Instalamos Ansible en Ubuntu de la máquina host:
 
 ```
 $ sudo apt update
@@ -197,7 +202,7 @@ $ sudo apt update
 $ sudo apt install ansible
 ```
 
-1. Nos dirigimos a la carpeta de Ansible en nuestra máquina host: 
+1. Nos dirigimos a la carpeta de Ansible en nuestra máquina host:
 
 ```
 $ cd /etc/ansible
@@ -209,120 +214,278 @@ $ cd /etc/ansible
 ansible.cfg  hosts        roles/
 ```
 
+Nos aseguraremos en este caso de crear una copia de hosts y hacerlo en formato yaml:
+
+```
+$ sudo cp ./hosts ./hosts-old
+$ sudo cp ./hosts ./hosts.yaml
+$ sudo rm ./hosts
+$ ls
+ansible.cfg  hosts-old  hosts.yaml  roles
+```
+
 El archivo `hosts` es el **inventario** donde tendremos listados todos nuestros equipos que queremos controlar.
 
-3. Configuramos el inventario para el ejemplo, agregando las siguientes lineas:
+3. Configuramos el inventario `hosts.yaml` para el ejemplo, agregando las siguientes lineas:
 
-```
-## Example for PPS
-
-[linux]
-192.168.100.1
-192.168.100.2
-192.168.100.3
-
-[linux:vars]
-ansible_user=root
-ansible_password=password 
+```yaml
+---
+# Example for PPS
+myvirtualmachine:
+  hosts:
+    nodo1:
+      ansible_host: 192.168.102.15
+      #ansible_ssh_user: labredes
+      #ansible_ssh_private_key_file: /home/aagustin/.ssh/id_rsa_ansible
 ```
 
-Lo anterior es equivalente a crear un **grupo** de equipos llamado "linux", ahora podemos corroborar la conexión con los mismos con un modulo de ansible llamado `ping`:
-```
-ansible linux -m ping
-```
-
-Si todo está correcto deberá devolvernos un ping exitoso a cada una de las IP's que configuramos previamente.
-
-Para ver qué tipo de SO y qué versión tenemos instalada nos vamos a valer del siguiente comando:
+Lo anterior es equivalente a crear un **grupo** de equipos (en nuestro caso es uno solo) llamado "myvirtualmachine" y dentro de ese grupo definimos un host llamado **nodo1**. Además agregamos un usuario de ssh y una ruta para la llave privada, comentados, que nos servirán luego, por último indicamos ansible que use el usurio `root` cada vez que se conecte a los hosts. Después de agregarlo, listaremos los host para ver si se añadieron correctamente:
 
 ```
-ansible linux -a "cat /etc/os-release"
+$ ansible -i hosts.yaml  all --list-hosts
 ```
 
-Básicamente lo que hacemos es enviar ese comando a cada una de las máquinas del grupo linux, lo que nos devolverá la lectura del archivo os-release, el cual contiene la versión del sistema.
+Donde el `-i` nos sirve para indicar que queremos usar un archivo en particular de inventario, que en nuestro caso es `hosts.yaml` (importante que estemos posicionados en el directorio de ansible `/etc/ansible` o que indiquemos la ruta completa del archivo de inventario). Este comando nos devolverá el siguiente mensaje:
+
+```
+hosts (1):
+    nodo1
+```
+
+Ahora deberemos configurar SSH para que Ansible pueda conectarse a los nodos que manejamos, en nuestro caso, a nuestra máquina virtual. Para configurar SSH y permitir conexiones SSH a sistemas remotos, debemos seguir estos pasos para agregar nuestra clave pública SSH al archivo `authorized_keys` en cada sistema remoto:
+
+* **Generar un par de claves SSH (si aún no lo hemos hecho)**:
+Si no tenemos un par de claves SSH (una pública y una privada), ppodemos generarlas usando el comando `ssh-keygen` en la terminal del host. Si deseamos utilizar la configuración predeterminada y sin contraseña, simplemente presionamos Enter cuando se nos solicite una contraseña. Aquí tienes un ejemplo:
+
+```sh
+$ ssh-keygen
+
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/aagustin/.ssh/id_rsa): id_rsa_ansible
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in id_rsa_ansible
+Your public key has been saved in id_rsa_ansible.pub
+...
+```
+
+Esto generará un par de claves SSH en tu directorio de inicio (por defecto) en los archivos `id_rsa_asible` (clave privada) y `id_rsa_ansible.pub` (clave pública).
+
+* **Copiar nuestra clave pública al sistema remoto**:
+Ahora, debes copiar nuestra clave pública (`id_rsa.pub` por defecto) al sistema remoto. Podemos hacerlo manualmente o utilizando el comando `ssh-copy-id`. Por ejemplo usando `ssh-copy-id`:
+
+```sh
+ssh-copy-id usuario@nombre_del_sistema_remoto
+```
+
+Esto copiará nuestra clave pública al sistema remoto y la agregará al archivo `~/.ssh/authorized_keys` en ese sistema. Debemos asegurarnos de reemplazar `usuario` con nuestro nombre de usuario y `nombre_del_sistema_remoto` con la dirección IP o el nombre de host del sistema remoto.
+
+```sh
+$ ssh-copy-id labredes@192.168.102.15
+The authenticity of host '192.168.102.15 (192.168.102.15)' can't be established.
+ED25519 key fingerprint is SHA256:xxxxxxxxxxxxxxxxxxxxx.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+
+Number of key(s) added: 1
+
+Now try logging into the machine, with:   "ssh 'labredes@192.168.102.15'"
+and check to make sure that only the key(s) you wanted were added.
+```
+
+* **Iniciar sesión en el sistema remoto con SSH**:
+Ahora, podemos iniciar sesión en el sistema remoto usando SSH y se utilizará nuestra clave pública para autenticarnos:
+
+```sh
+ssh usuario@nombre_del_sistema_remoto
+```
+
+Si hemos configurado todo correctamente, no debería ser solicitado para ingresar una contraseña. En su lugar, se utilizará tu clave privada local para la autenticación.
+
+```sh
+$ ssh labredes@192.168.102.15
+Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-84-generic x86_64)
+
+* Documentation:  https://help.ubuntu.com
+* Management:     https://landscape.canonical.com
+* Support:        https://ubuntu.com/advantage
+
+System information as of Mon Sep 25 10:32:20 PM UTC 2023
+
+System load:  0.0107421875      Processes:               131
+Usage of /:   30.3% of 9.75GB   Users logged in:         1
+Memory usage: 3%                IPv4 address for enp0s3: 192.168.102.15
+Swap usage:   0%
+
+
+Expanded Security Maintenance for Applications is not enabled.
+
+0 updates can be applied immediately.
+
+Enable ESM Apps to receive additional future security updates.
+See https://ubuntu.com/esm or run: sudo pro status
+
+
+Last login: Mon Sep 25 22:28:14 2023
+
+labredes@labredes $  
+```
+
+* **Repetir el proceso para otros sistemas remotos**:
+Debes repetir estos pasos para cada sistema remoto al que deseemos acceder con SSH. Copia tu clave pública al archivo `authorized_keys` en cada uno de esos sistemas.
+
+Ahora podemos corroborar la conexión con los mismos con un modulo de ansible llamado `ping`, para ello necesitamos unos pasos previos así evitamos el error con el mensaje "Permission denied (publickey,password)" que sugiere que Ansible intentó usar autenticación mediante clave pública SSH, pero no pudo autenticarse con éxito.
+
+**Especificar la clave SSH y el usuario SSH en nuestro inventario Ansible**:
+Especificando la clave SSH correcta para cada host en el inventario, para ello descomentamos y completamos correctamente elos datos que habíamos dejado para después a la hora de crear nuestro inventario:
+
+```yaml
+---
+# Example for PPS
+myvirtualmachine:
+  hosts:
+    nodo1:
+      ansible_host: 192.168.102.15
+      ansible_ssh_user: labredes
+      ansible_ssh_private_key_file: /home/aagustin/.ssh/id_rsa_ansible
+  vars:
+      ansible_user: root
+```
+
+Es momento entonces de aplicar el comando de `ping` de la siguiente manera:
+
+```sh
+ansible -i hosts.yaml all -m ping
+```
+
+Donde el `-m` indica que vamos a usar un módulo de Ansible.
+
+Si todo está correcto deberá devolvernos un ping exitoso a cada una de las IP's que configuramos previamente como el siguiente:
+
+```sh
+nodo1 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+```
+
+Podremos empezar a ejecutar comandos con Ansible, por ejemplo, para ver qué tipo de SO y qué versión tenemos instalada nos vamos a valer del siguiente comando:
+
+```sh
+ansible -i hosts.yaml nodo1 -a "cat /etc/os-release"
+```
+
+Donde el `-a` indica que vamos a pasar argumentos al módulo.
+
+Básicamente lo que hacemos es enviar ese comando al nodo1, lo que nos devolverá la lectura del archivo os-release, el cual contiene la versión del sistema.
+
+```sh
+nodo1 | CHANGED | rc=0 >>
+PRETTY_NAME="Ubuntu 22.04.3 LTS"
+NAME="Ubuntu"
+VERSION_ID="22.04"
+VERSION="22.04.3 LTS (Jammy Jellyfish)"
+VERSION_CODENAME=jammy
+ID=ubuntu
+ID_LIKE=debian
+HOME_URL="https://www.ubuntu.com/"
+SUPPORT_URL="https://help.ubuntu.com/"
+BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
+PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
+UBUNTU_CODENAME=jammy
+```
+
+#### Aprovisionar con Ansible - Creación de un playbook
 
 Ahora veremos lo que es un **playbook**, con el cual, haremos lo mismo que hacemos con la consola de comandos pero expresado en un archivo de instrucciones. Podremos simplificar la estructura de la siguiente manera:
 
 > PLAYBOOK > PLAYS > TASKS
 
-El playbook es un archivo en formato `.yml` o `.yaml` . La estructura de este archivo deberá ser la siguiente:
+El playbook es un archivo en formato `.yml` o `.yaml` . El cual, en principio crearemos en la carpeta de `/etc/ansible/` para hacer más corta la ruta a la hora de escribir en consola, pero podría estar en cualquier lado y la usaríamos llamando a la ruta completa.
 
+```sh
+aagustin@hp-agustin:/etc/ansible$ ls
+ansible.cfg  hosts-old  hosts.yaml  playbook.yaml  roles
 ```
+
+Antes de poder ejecutar cualquier tarea nos debemos asegurar de tener los **permisos correspondientes**, para ello  vamos a configurar sudo sin contraseña para el usuario Ansible para permitir que el usuario Ansible (el usuario con el que nos conectaamos) ejecute comandos sin requerir una contraseña. Esto se hace editando el archivo de configuración sudo `(/etc/sudoers)` en el host remoto y agregando una entrada que permita comandos específicos sin contraseña.
+
+Agregar una entrada en `/etc/sudoers` para permitir que el usuario Ansible ejecute comandos como root sin contraseña:
+
+* Accedemos por SSH a la máquina de destino:
+
+```sh
+ssh labredes@192.168.102.15
+```
+
+* Abrimos el archivo sudoers para edición utilizando un editor de texto en el host remoto (como visudo que garantiza que no se cometan errores de sintaxis) para abrir el archivo sudoers con privilegios de superusuario:
+
+```sh
+sudo visudo
+```
+
+* Agregamos la entrada para el usuario de Ansible en el archivo sudoers para permitir al usuario de Ansible ejecutar comandos sin requerir una contraseña. La entrada debe tener el siguiente formato:
+
+```sh
+# Ansible root privileges
+aagustin ALL=(ALL:ALL) NOPASSWD: ALL
+```
+
+* Guardamos y cerramos.
+
+Esto permite que el usuario Ansible ejecute cualquier comando como root sin requerir una contraseña. Deberemos tener en cuenta que esta opción **tiene implicaciones de seguridad** y debe usarse con precaución.
+
+Continuando con el playbook, la estructura de este archivo para el ejemplo de la instalación de la biblioteca `nano` deberá ser la siguiente:
+
+```yaml
 ---
-    - name: I want to install nano # Name of the play
-    - hosts: linux # Name of the machine or a group of machines
-    - tasks:
-        - name: Install nano # Name of the task
-          apt: # Name of the module
-            name: nano # Library to install
-            state: latest # Version of that library
+- name: I want to install nano # Name of the play
+hosts: nodo1 #  Name of the machine or a group of machines
+become: yes # Adding root privileges
+become_method: sudo # Uses sudo to get all privileges
+become_user: root # Once you use sudo, you become root user
+tasks:
+- name: Install nano # Name of the task
+apt: # Name of the module
+name: nano # Library to install
+state: latest # ersion of that library
 ```
 
-Ahora, podremos crear dicho archivo en la máquina que tiene Ansible y por ende envía las órdenes, asignarle el nombre que más nos guste (" `playbook.yml` ") y asegurarnos de que el formato y tipo de archivo sea el indicado anteriormente.
+Para ejecutar ese archivo de instrucciones (`playbook.yml`), usamos el siguiente comando de Ansible:
 
-Para ejecutar ese archivo de instrucciones, usamos el siguiente comando de Ansible:
+```sh
+ansible-playbook -i hosts.yaml playbook.yaml
+```
 
+Lo cual nos devolverá lo siguiente:
+
+```sh
+$ ansible-playbook -i hosts.yaml playbook.yaml
+
+PLAY [I want to install nano] ******************************************************************************************************************************************
+
+TASK [Gathering Facts] *************************************************************************************************************************************************
+ok: [nodo1]
+
+TASK [Install nano] ****************************************************************************************************************************************************
+ok: [nodo1]
+
+PLAY RECAP *************************************************************************************************************************************************************
+nodo1                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
 ```
-ansible-playbook playbook.yml
-```
+
+Veremos que en nuestro caso, no hubo instalación de nano porque ya existia entonces, se realizaron con éxito las tareas pero **no hubo cambio alguno.**
 
 Importante que a la hora de ejecutar dichos comandos, Ansible **no hará cambios** si el estado deseado ya se ha logrado previamente. Por ejemplo, en este caso que queremos instalar nano suponiendo de que no estaba instalado, cuando lo ejecutemos por primera vez detectaremos que hay cambios, pero si lo ejecutamos por segunda vez veremos que habrá cero cambios ya que el estado deseado de tener instalado nano ya se ha cumplido.
 
-Si el **estado deseado de la tarea fuera "absent"** en lugar de "latest", cuando lo corramos de nuevo, buscará que dicha librería no esté, nuevamente habrá un cambio y será la eliminación de dicha librería.
+Si el **estado deseado de la tarea fuera "absent"** en lugar de "latest", cuando lo corramos de nuevo, buscará que dicha librería *no esté*, nuevamente habrá un cambio y será la eliminación de dicha librería.
 
-
+#### Aprovisionamiento con Ansible - Minukube y Kubeflow
+https://v0-2.kubeflow.org/docs/started/getting-started-minikube/
 
 # Notas
-
-Puedo deployar Kubeflow en un NODO de Kubernetes con Ansible. Suponiendo que Creo 3 nodos de Kubernetes, el master y los dos nodos. Puedo usar alguno para instalarle Kubeflow.
-
-Necesitaría en mi entorno de laboratorio:
-
-1. Instalar un Cluster de Kubernetes de al menos 1 nodo.
-   
-   1. Definir quienes serían PC's intervinientes.
-   2. Hacer el playbook con Ansible que haga eso.
-    
-2. Instalar Kubeflow sobre ese nodo.
-   1. Hacer un playbook con Ansible que haga eso.
-
-
-Para instalar Kubeflow tenemos dos vías, usando los **manifests** "en crudo" o usar **distribuciones paquetizadas** que vienen ya hechas para diferentes plataformas como AWS o Asure.
-
-En nuestro caso vamos a usar los **manifests**, los cuales encontramos en el siguiente link `https://github.com/kubeflow/manifests#installation`.
-
-El objetivo de los manifest es darnos una manera fácil de instalar Kubeflow, pudiendo armar nuestra versión custom a partir de versiones ya probadas y funcionales. Tendremos **dos maneras** de hacer la instalación:
-
-1. Single-command: Para el caso de que querramos instalar todos los componentes.
-2. Multi-command: Para el caso de que querramos instalar componente a componente.
-
-Tendremos previo a la instalación **3 pre-requsitos**: 
-
-1. Kubernetes (up to 1.26) with a default StorageClass
-
-2. kustomize 5.0.3 (Kubeflow no es compatible con versiones anteriores de Kustomize)
-
-3. kubectl
-
-Para instalar con el **single-command**:
-```
-while ! kustomize build example | kubectl apply -f -; do echo "Retrying to apply resources"; sleep 10; done
-```
-
-Luego necesitamos conectar nuestro Cluster de Kubeflow, despues de asegurarnos que nuestros pods estan listos:
-
-```
-kubectl get pods -n cert-manager
-kubectl get pods -n istio-system
-kubectl get pods -n auth
-kubectl get pods -n knative-eventing
-kubectl get pods -n knative-serving
-kubectl get pods -n kubeflow
-kubectl get pods -n kubeflow-user-example-com
-```
-
-Por último tenemos que hacer un port-forwarding para poder acceder a la interfaz web:
-
-```
-kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
-```
