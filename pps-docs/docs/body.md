@@ -433,7 +433,7 @@ sudo visudo
 
 ```sh
 # Ansible root privileges
-aagustin ALL=(ALL:ALL) NOPASSWD: ALL
+labredes ALL=(ALL:ALL) NOPASSWD: ALL
 ```
 
 * Guardamos y cerramos.
