@@ -150,7 +150,7 @@ Dejamos un ejemplo del clonado e instalación de dependencias del proyecto
 
 Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
-Para mas ejemplos e información, por favor diríjase a la [Documentación](https://example.com)_
+Para mas ejemplos e información, por favor diríjase a la [Documentación](https://example.com).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -200,6 +200,8 @@ No olvides dar una estrella al proyecto. Gracias de nuevo.
 4. Haga push a la Branch (`git push origin feature/AmazingFeature`)
 5. Abra un Pull Request
 
+Para coolaborar dentro del equipo utilizaremos **GitHub Workflow**, con el cual, cada miembro que trabaje en alguna funcionalidad nueva deberá crear una rama para dicha funcionalidad, trabajar sobre ella y luego hacer un Pull Request. Los pasos son los mismos que los de arriba, solo que el paso 1 es un `git pull ...`
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
@@ -207,7 +209,7 @@ No olvides dar una estrella al proyecto. Gracias de nuevo.
 <!-- LICENSE -->
 ## Licencia
 
-Distributed under the MIT License. See `LICENSE.txt` for more information.
+Todavía debemos elegir la licencia que vamos a utilizar. En principio sería cualquiera de uso libre.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
