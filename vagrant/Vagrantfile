@@ -1,0 +1,85 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+    
+    # Image configuration (for all vm's)
+    config.vm.box = "ubuntu/trusty64"
+    config.vm.box_version = "20190514.0.0"
+
+    # SSH (for all vm's)
+    #config.ssh.insert_key = false
+    #config.ssh.private_key_path = "/home/aagustin/.ssh/vagrant_test"
+
+    #config.vm.provision "shell", inline: <<-SHELL
+    #  echo "$(cat /home/aagustin/.ssh/vagrant_test.pub)" >> /home/vagrant/.ssh/authorized_keys
+    #SHELL
+    
+    # Declaring master node and defining it like a primary machine
+    config.vm.define "master", primary: true do |master|
+
+      # Resources (provider)
+      master.vm.provider "virtualbox" do |vb|
+            vb.gui = false
+            vb.name = "trusty64-master"
+            vb.memory = "2048"
+            vb.cpus = "2"
+      end
+      
+      # Network configuration
+      master.vm.network "private_network", ip: "192.168.55.2"
+      master.vm.network "forwarded_port", guest: 80, host: 31002
+      
+      # SSH
+      master.ssh.host = "127.0.0.2"
+      master.vm.network "forwarded_port", guest: 22, host:2222, id: "ssh", auto_correct: true
+      #master.ssh.private_key_path = "/home/aagustin/Documents/personal/vagrant-project/.vagrant/machines/master/virtualbox/private_key"
+      
+      # Provisioning message
+      master.vm.provision "shell", inline: "echo Hello master"
+    end
+
+    # Declaring secondary nodes (iteratively)
+    (1..2).each do |i|
+      config.vm.define "node-#{i}" do |node|
+        
+        # Resources (provider)
+        node.vm.provider "virtualbox" do |vb|
+          vb.gui = false
+          vb.name = "trusty-node-#{i}"
+          vb.memory = "2048"
+          vb.cpus = "2"
+        end
+
+        # Network configuration
+        node.vm.network "private_network", ip: "192.168.55.#{2+i}"
+        node.vm.network "forwarded_port", guest: 80, host: 31002+i
+
+	# SSH
+	node.ssh.host = "127.0.0.#{2+i}"
+        node.vm.network "forwarded_port", guest: 22, host:2222+i, id: "ssh", auto_correct: true
+        #node.ssh.private_key_path = "/home/aagustin/Documents/personal/vagrant-project/.vagrant/machines/node-#{i}/virtualbox/private_key" 
+        
+        # Provisioning message
+        node.vm.provision "shell", inline: "echo Hello node-#{i}"
+      end      
+    end
+
+    # Provisioning ansible (for all vm's)
+    config.vm.provision "ansible" do |ansible|
+      ansible.compatibility_mode = "2.0"
+   
+      ansible.extra_vars = { ansible_ssh_user: 'vagrant' }
+      ansible.become = true
+      ansible.verbose = 'vvv'
+      
+      ansible.inventory_path = "ansible/inventory.yaml"
+      ansible.playbook = "ansible/playbook.yaml"
+    end
+
+
+end
