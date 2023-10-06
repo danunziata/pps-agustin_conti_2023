@@ -8,9 +8,12 @@
 Vagrant.configure("2") do |config|
     
     # Image configuration (for all vm's)
-    config.vm.box = "ubuntu/trusty64"
-    config.vm.box_version = "20190514.0.0"
-
+    config.vm.box = "bento/ubuntu-22.04"
+    config.vm.box_version = "202309.08.0"
+    
+    # Network configuration (for all vm's)
+    #config.vm.network "private_network", auto_config: false
+    
     # SSH (for all vm's)
     #config.ssh.insert_key = false
     #config.ssh.private_key_path = "/home/aagustin/.ssh/vagrant_test"
@@ -31,12 +34,13 @@ Vagrant.configure("2") do |config|
       end
       
       # Network configuration
-      master.vm.network "private_network", ip: "192.168.55.2"
-      master.vm.network "forwarded_port", guest: 80, host: 31002
+      master.vm.network "public_network", ip: "192.168.102.102", netmask: "255.255.255.0"
+      master.vm.network "private_network",ip:"192.168.55.2", netmask:"255.255.255.0"
+      master.vm.network "forwarded_port", guest: 80, host: 31002, adapter:2
       
       # SSH
-      master.ssh.host = "127.0.0.2"
-      master.vm.network "forwarded_port", guest: 22, host:2222, id: "ssh", auto_correct: true
+      master.ssh.host = "192.168.102.102"
+      master.vm.network "forwarded_port", guest: 22, host:2222, id: "ssh", auto_correct: true, adapter:2
       #master.ssh.private_key_path = "/home/aagustin/Documents/personal/vagrant-project/.vagrant/machines/master/virtualbox/private_key"
       
       # Provisioning message
@@ -56,13 +60,14 @@ Vagrant.configure("2") do |config|
         end
 
         # Network configuration
-        node.vm.network "private_network", ip: "192.168.55.#{2+i}"
-        node.vm.network "forwarded_port", guest: 80, host: 31002+i
+        node.vm.network "public_network", ip: "192.168.102.10#{2+i}", netmask: "255.255.255.0"
+        node.vm.network "private_network", ip:"192.168.55.#{2+i}", netmask:"255.255.255.0"
+        node.vm.network "forwarded_port", guest: 80, host: 31002+i, adapter:2
 
-	# SSH
-	node.ssh.host = "127.0.0.#{2+i}"
-        node.vm.network "forwarded_port", guest: 22, host:2222+i, id: "ssh", auto_correct: true
-        #node.ssh.private_key_path = "/home/aagustin/Documents/personal/vagrant-project/.vagrant/machines/node-#{i}/virtualbox/private_key" 
+	      # SSH
+	      node.ssh.host = "192.168.102.10#{2+i}"
+        node.vm.network "forwarded_port", guest: 22, host:2222+i, id: "ssh", auto_correct: true, adapter:2
+        #node.ssh.private_key_path = "/home/aagustin/Documents/personal/vagrant-project/.vagrant/machines/node-#{i}/virtualbox/private_key"         
         
         # Provisioning message
         node.vm.provision "shell", inline: "echo Hello node-#{i}"
