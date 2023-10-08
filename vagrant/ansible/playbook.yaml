@@ -1,6 +1,0 @@
----
-- hosts: ci
-  become: yes
-  gather_facts: no
-  roles:
-     - common_os_setup
