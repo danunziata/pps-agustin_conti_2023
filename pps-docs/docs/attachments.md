@@ -286,3 +286,232 @@ La aplicación de objetivos SMART en Scrum contribuye a una mayor claridad, enfo
 #### A modo de síntesis
 
 Las metodologías ágiles, encabezadas por el Manifiesto Ágil, han transformado la forma en que se aborda el desarrollo de software al promover valores como la flexibilidad, la colaboración y la entrega continua de valor al cliente. SCRUM, una de las metodologías ágiles más populares, opera bajo los principios del Manifiesto Ágil y estructura el desarrollo en sprints, con roles claramente definidos y un enfoque en la transparencia y adaptabilidad. La cultura DevOps, por otro lado, se alinea con los principios ágiles al fomentar la colaboración estrecha entre los equipos de desarrollo y operaciones, buscando la automatización y la entrega continua. En este contexto, los objetivos SMART se integran como una metodología clave para establecer metas claras, medibles y alcanzables, proporcionando un marco estructurado que puede aplicarse tanto a la gestión del backlog en SCRUM como a los objetivos específicos de cada sprint. La combinación de metodologías ágiles, SCRUM, la cultura DevOps y objetivos SMART crea un entorno de desarrollo flexible, colaborativo y orientado a resultados, permitiendo a los equipos adaptarse rápidamente a los cambios, mejorar continuamente y cumplir con los objetivos estratégicos de la organización.
+
+### ¿Qué es Vagrant?
+
+Vagrant es una herramienta que podés usar para crear y gestionar entornos de desarrollo virtualizados de manera fácil y reproducible. Su uso típico es facilitar la creación de máquinas virtuales con configuraciones específicas para el desarrollo de proyectos.
+
+Para comenzar un proyecto de Vagrant en el directorio /vagrant, el usuario puede seguir estos pasos:
+
+1. **Instalación de Vagrant:**
+Antes que nada, necesitás instalar Vagrant en tu máquina. Esto se puede hacer descargando el instalador desde el sitio oficial y siguiendo las instrucciones.
+2. **Creación de un archivo Vagrantfile:**
+En el directorio donde querés iniciar el proyecto, creá un archivo llamado `Vagrantfile`. Este archivo contendrá la configuración de la máquina virtual, como el sistema operativo, la cantidad de memoria RAM, etc.
+3. **Configuración del Vagrantfile:**
+Dentro del Vagrantfile, especificá la configuración deseada. Por ejemplo, podés elegir un sistema operativo base, asignar recursos como CPU y RAM, y configurar la red.
+4. **Inicialización de la máquina virtual:**
+Ejecutá el comando `vagrant up` en el directorio donde se encuentra el Vagrantfile. Este comando creará y provisionará la máquina virtual según la configuración especificada.
+5. **Acceso a la máquina virtual:**
+Utilizá el comando `vagrant ssh` para acceder a la máquina virtual recién creada. Esto abrirá una conexión SSH a la máquina virtual.
+
+Algunas ventajas clave de utilizar Vagrant para levantar múltiples entornos de desarrollo son:
+
+- **Reproducibilidad:** Con Vagrant, se puede garantizar que todos los miembros del equipo tengan exactamente el mismo entorno de desarrollo, evitando problemas de compatibilidad.
+- **Portabilidad:** Los entornos Vagrant son independientes de la máquina host, lo que significa que podés compartir el mismo entorno de desarrollo en diferentes sistemas operativos.
+- **Aislamiento:** Cada proyecto puede tener su propio entorno virtualizado, evitando conflictos entre dependencias y facilitando la gestión de versiones de software.
+- **Eficiencia en el uso de recursos:** Vagrant permite ejecutar varias máquinas virtuales de manera eficiente, lo que es útil para simular entornos complejos, como redes privadas virtuales (VPNs) o arquitecturas de microservicios.
+
+### Ejemplo de una Vagrantfile
+
+Crearemos un entorno de 3 máquinas, una master y 2 nodos a los cuales les aplicaremos configuraciones generales y particulares a cad auno. Importante aclarar que usaremos una imagen distinta a la vista antes, en este caso será `ubuntu/trusty64`.
+
+**¡Importante!** Para poder configurar cierta red privada deberemos crear o modificar el archivo `/etc/vbox/networks.conf` añadiendo la red de la siguiente manera:
+
+```ruby
+sudo su
+echo "* 0.0.0.0/0" > networks.conf
+```
+
+**Primero vamos a crear las claves públicas y privadas para las conexiones SSH:**
+
+Creamos nuestra propia clave pública y privada con `ssh-keygen`, procuramos no poner passphrase para que no se la solicite a las VMs a la hora de iniciarlas.
+
+```bash
+# ~/.ssh/
+> ssh-keygen -t rsa -b 4096
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/aagustin/.ssh/id_rsa): vagrant_key
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in vagrant_key
+Your public key has been saved in vagrant_key.pub
+The key fingerprint is:
+SHA256:K4v2o7EKOLfjCMLk7zVD4v234234c06peueU aagustin@hp-agustin
+The key's randomart image is:
++---[RSA 4096]----+
+|                 |
+|                 |
+|                 |
+|                 |
+| . . . .S     .  |
+|= . 3 o ..   o.. |
+|*o.+.*.... +.++. |
+|o=o.B4==  . *++  |
+|..=*+*=++ .+o. E |
++----[SHA256]-----+
+```
+
+**Ahora si, escribimos el archivo Vagrantfile:**
+
+```ruby
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+
+Vagrant.configure("2") do |config|
+    
+  # Image configuration (for all vm's)
+  config.vm.box = "bento/ubuntu-22.04"
+  config.vm.box_version = "202309.08.0"
+  
+  # SSH (for all vm's)
+  config.ssh.insert_key = false
+  config.ssh.forward_agent = true  
+  config.ssh.private_key_path = ["/home/aagustin/.vagrant.d/insecure_private_key","/home/aagustin/.ssh/vagrant_key"]     
+  config.vm.provision "file", source: "/home/aagustin/.ssh/vagrant_key.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+
+  # Declaring master node and defining it like a primary machine
+  config.vm.define "master", primary: true do |master|
+    
+    # Resources (provider)
+    master.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.name = "trusty64-master"
+      vb.memory = "2048"
+      vb.cpus = "2"
+    end
+
+    # Configure synced folder
+    #config.vm.synced_folder "~/my-loc/vagrant/synced/folders/master/", "/home/vagrant/"
+
+    # Network configuration
+    master.vm.network "public_network",
+      bridge:"wlo1",
+      ip: "192.168.102.102",
+      netmask: "255.255.255.0"
+    
+    master.vm.network "private_network",
+      ip: "192.168.55.2",
+      netmask: "255.255.255.0",
+      auto_config: false
+    
+    master.vm.network "forwarded_port",
+      guest: 80,
+      host: 31002
+      
+    # SSH
+    master.ssh.host = "127.0.0.2"
+    master.vm.network "forwarded_port",
+      guest: 22,
+      host: 2222,
+      host_ip:"0.0.0.0",
+      id: "ssh",
+      auto_correct: true
+    
+    # Provisioning message
+    master.vm.provision "shell",
+      inline: "echo Hello master"
+  end
+
+  # Declaring secondary nodes (iteratively)
+  (1..2).each do |i|
+    config.vm.define "node-#{i}" do |node|
+      
+      # Resources (provider)
+      node.vm.provider "virtualbox" do |vb|
+        vb.gui = false
+        vb.name = "trusty64-node-#{i}"
+        vb.memory = "2048"
+        vb.cpus = "2"
+      end
+
+      # Configure synced folder
+      #config.vm.synced_folder "~/my-loc/vagrant/synced/folders/node-#{i}/", "/home/vagrant/"
+
+      # Network configuration
+      node.vm.network "public_network",
+        bridge:"wlo1",
+        ip: "192.168.102.10#{2+i}",
+        netmask: "255.255.255.0"
+      
+      node.vm.network "private_network",
+        ip: "192.168.55.#{2+i}",
+        netmask: "255.255.255.0",
+        auto_config: false
+      
+      node.vm.network "forwarded_port",
+        guest: 80,
+        host: 31002+i
+
+      # SSH
+      node.ssh.host = "127.0.0.#{2+i}"
+      node.vm.network "forwarded_port",
+        guest: 22,
+        host: 2222+i,
+        host_ip:"0.0.0.0",
+        id: "ssh",
+        auto_correct: true
+           
+      # Provisioning message
+      node.vm.provision "shell", inline: "echo Hello node-#{i}"
+    end      
+  
+  end
+
+end
+```
+
+Notar que en la línea `config.ssh.private_key_path = ["/home/aagustin/.vagrant.d/insecure_private_key","/home/aagustin/.ssh/vagrant_key"]` ponemos dos opciones, lo que logramos con esto es que use primero la por default y luego de lograda la conexión ya configura la clave pública, entonces podemos acceder con la clave propia la próxima vez. Además es importante que esté desactivada la generación por defecto de nuevas claves así se usa la genérica, por eso tenemo la línea `config.ssh.insert_key = false`.
+
+**Levantamos nuestra configuración:**
+
+Podemos hacer `vagrant up` y por ultimo veremos el estado de estas con:
+
+```bash
+$ vagrant status
+Current machine states:
+
+master                    running (virtualbox)
+node-1                    running (virtualbox)
+node-2                    running (virtualbox)
+
+This environment represents multiple VMs. The VMs are all listed
+above with their current state. For more information about a specific
+VM, run `vagrant status NAME`.
+```
+
+**Nos conectamos con las VPCs:**
+
+Podemos acceder con SSH mediante:
+
+```bash
+ssh -p [puerto-vpc] vagrant@[ip-vpc] -i [ubicacion-priv-key]
+```
+
+Una vez hecha la conexión SSH, podemos ver la configuración de la red que le hemos establecido a dicha máquina virtual:
+
+```bash
+vagrant@vagrant:~$ ip -brief -c a
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth0             UP             10.0.2.15/24 metric 100 fe80::a00:27ff:fe3b:cf90/64 
+eth1             UP             192.168.102.102/24 fe80::a00:27ff:fe3b:4c8d/64 
+eth2             UP             192.168.55.2/24 fe80::a00:27ff:fef5:3997/64
+```
+
+**Levantamos un servicio de prueba:**
+
+Podemos checkear el correcto funcionamiento de la IP pública y el port forwarding levantando un servicio con python en el puerto 80 de nuestra vPc:
+
+```bash
+sudo python3 -m http.server 80
+```
+
+Y luego, podemos acceder desde el navegador de la máquina host o cualquier navegador de cualquier dispositivo que esté conectado a la misma red local:
+
+![Untitled](source/vagrant-service-1.png)
+
+![Untitled](source/vagrant-service-2.png)
