@@ -1,5 +1,8 @@
 # OTHERS
 
+/vagrant/.vagrant/
+
+
 # PRIVATE FILES
 *.json
 *.csv
