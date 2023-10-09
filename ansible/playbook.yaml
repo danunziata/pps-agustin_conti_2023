@@ -1,11 +1,11 @@
 ---
-- name: I want to install nano # Name of the play
-  hosts: nodo1 #  Name of the machine or a group of machines
+- name: I want to install vim # Name of the play
+  hosts: mycluster #  Name of the machine or a group of machines
   become: yes # Adding root privileges
   become_method: sudo # Uses sudo to get all privileges
-  become_user: root # Once you use sudo, you become root user
+  become_user: vagrant # Once you use sudo, you become root user
   tasks:
-    - name: Install nano # Name of the task
+    - name: Install vim # Name of the task
       apt: # Name of the module
-        name: nano # Library to install
+        name: vim # Library to install
         state: latest # ersion of that library
