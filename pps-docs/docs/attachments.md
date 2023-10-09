@@ -520,11 +520,10 @@ Y luego, podemos acceder desde el navegador de la máquina host o cualquier nave
 
 #### Armado de la infraestructura de prueba - VirtualBox + Ubuntu Server
 
-1. Armo una Virtual Machine en Virtualbox con Ubuntu Server 22.04
-2. Configuro la red en modo bridge para asignarle una IP dentro de mi red local
-3. Admito modo promiscuo
-4. Deshabilito el port forwarding en la máquina host para evitar paquetes duplicados.
-5. Me aseguro de tener instalado open-ssh
+Teniendo ya los tres nodos levantados con Vagrant, podremos probar aprovisionar software a los mismos utilizando Ansible. Antes deberé asegurarme de tener lo siguiente:
+
+1. Deshabilito el port forwarding en la máquina host para evitar paquetes duplicados.
+2. Me aseguro de tener instalado open-ssh
 
 #### Aprovisionar con Ansible - Instalación y conexión del host con el servidor
 
@@ -550,32 +549,39 @@ $ cd /etc/ansible
 ansible.cfg  hosts        roles/
 ```
 
-Nos aseguraremos en este caso de crear una copia de hosts y hacerlo en formato yaml:
+Nos nos haremos una copia de hosts en formato .yaml en nuestra carpeta de trabajo:
 
 ```
-$ sudo cp ./hosts ./hosts-old
-$ sudo cp ./hosts ./hosts.yaml
-$ sudo rm ./hosts
-$ ls
-ansible.cfg  hosts-old  hosts.yaml  roles
+$ sudo cp ./hosts ~/workdir/hosts.yaml
 ```
 
-El archivo `hosts` es el **inventario** donde tendremos listados todos nuestros equipos que queremos controlar.
+El archivo `hosts.yaml` es el **inventario** donde tendremos listados todos nuestros equipos que queremos controlar.
 
 3. Configuramos el inventario `hosts.yaml` para el ejemplo, agregando las siguientes lineas:
 
 ```yaml
----
 # Example for PPS
-myvirtualmachine:
+mycluster:
   hosts:
+    master:
+      ansible_host: 127.0.0.2
+      ansible_port: 2222
+      ansible_ssh_user: vagrant
+      ansible_ssh_private_key_file: /home/aagustin/.ssh/vagrant_key
     nodo1:
-      ansible_host: 192.168.102.15
-      #ansible_ssh_user: labredes
-      #ansible_ssh_private_key_file: /home/aagustin/.ssh/id_rsa_ansible
+      ansible_host: 127.0.0.3
+      ansible_port: 2223
+      ansible_ssh_user: vagrant
+      ansible_ssh_private_key_file: /home/aagustin/.ssh/vagrant_key
+    nodo2:
+      ansible_host: 127.0.0.4
+      ansible_port: 2224
+      ansible_ssh_user: vagrant
+      ansible_ssh_private_key_file: /home/aagustin/.ssh/vagrant_key
+
 ```
 
-Lo anterior es equivalente a crear un **grupo** de equipos (en nuestro caso es uno solo) llamado "myvirtualmachine" y dentro de ese grupo definimos un host llamado **nodo1**. Además agregamos un usuario de ssh y una ruta para la llave privada, comentados, que nos servirán luego, por último indicamos ansible que use el usurio `root` cada vez que se conecte a los hosts. Después de agregarlo, listaremos los host para ver si se añadieron correctamente:
+Lo anterior es equivalente a crear un **grupo** de equipos (en nuestro caso es uno solo) llamado "mycluster" y dentro de ese grupo definimos los hosts llamados **master, nodo1 y nodo2**. Además agregamos un usuario de ssh y una ruta para la llave privada, comentados, que nos servirán luego:
 
 ```
 $ ansible -i hosts.yaml  all --list-hosts
@@ -584,11 +590,14 @@ $ ansible -i hosts.yaml  all --list-hosts
 Donde el `-i` nos sirve para indicar que queremos usar un archivo en particular de inventario, que en nuestro caso es `hosts.yaml` (importante que estemos posicionados en el directorio de ansible `/etc/ansible` o que indiquemos la ruta completa del archivo de inventario). Este comando nos devolverá el siguiente mensaje:
 
 ```
-hosts (1):
+$ ansible -i hosts.yaml all --list-hosts
+  hosts (3):
+    master
     nodo1
+    nodo2
 ```
 
-Ahora deberemos configurar SSH para que Ansible pueda conectarse a los nodos que manejamos, en nuestro caso, a nuestra máquina virtual. Para configurar SSH y permitir conexiones SSH a sistemas remotos, debemos seguir estos pasos para agregar nuestra clave pública SSH al archivo `authorized_keys` en cada sistema remoto:
+Ahora deberemos configurar SSH para que Ansible pueda conectarse a los nodos que manejamos, en nuestro caso, a nuestra máquina virtual. Para configurar SSH y permitir conexiones SSH a sistemas remotos, debemos seguir estos pasos para agregar nuestra clave pública SSH al archivo `authorized_keys` en cada sistema remoto. En nuestro caso, ya lo hemos hecho con Vagrant:
 
 * **Generar un par de claves SSH (si aún no lo hemos hecho)**:
 Si no tenemos un par de claves SSH (una pública y una privada), ppodemos generarlas usando el comando `ssh-keygen` en la terminal del host. Si deseamos utilizar la configuración predeterminada y sin contraseña, simplemente presionamos Enter cuando se nos solicite una contraseña. Aquí tienes un ejemplo:
@@ -617,8 +626,8 @@ ssh-copy-id usuario@nombre_del_sistema_remoto
 Esto copiará nuestra clave pública al sistema remoto y la agregará al archivo `~/.ssh/authorized_keys` en ese sistema. Debemos asegurarnos de reemplazar `usuario` con nuestro nombre de usuario y `nombre_del_sistema_remoto` con la dirección IP o el nombre de host del sistema remoto.
 
 ```sh
-$ ssh-copy-id labredes@192.168.102.15
-The authenticity of host '192.168.102.15 (192.168.102.15)' can't be established.
+$ ssh-copy-id vagrant@127.0.0.2
+The authenticity of host '127.0.0.2 (127.0.0.2)' can't be established.
 ED25519 key fingerprint is SHA256:xxxxxxxxxxxxxxxxxxxxx.
 This key is not known by any other names
 Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
@@ -627,7 +636,7 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
 
 Number of key(s) added: 1
 
-Now try logging into the machine, with:   "ssh 'labredes@192.168.102.15'"
+Now try logging into the machine, with:   "ssh 'vagrant@127.0.0.2'"
 and check to make sure that only the key(s) you wanted were added.
 ```
 
@@ -641,32 +650,24 @@ ssh usuario@nombre_del_sistema_remoto
 Si hemos configurado todo correctamente, no debería ser solicitado para ingresar una contraseña. En su lugar, se utilizará tu clave privada local para la autenticación.
 
 ```sh
-$ ssh labredes@192.168.102.15
-Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-84-generic x86_64)
+ Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-83-generic x86_64)
 
-* Documentation:  https://help.ubuntu.com
-* Management:     https://landscape.canonical.com
-* Support:        https://ubuntu.com/advantage
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
 
-System information as of Mon Sep 25 10:32:20 PM UTC 2023
+  System information as of Mon Oct  9 02:46:20 PM UTC 2023
 
-System load:  0.0107421875      Processes:               131
-Usage of /:   30.3% of 9.75GB   Users logged in:         1
-Memory usage: 3%                IPv4 address for enp0s3: 192.168.102.15
-Swap usage:   0%
-
-
-Expanded Security Maintenance for Applications is not enabled.
-
-0 updates can be applied immediately.
-
-Enable ESM Apps to receive additional future security updates.
-See https://ubuntu.com/esm or run: sudo pro status
+  System load:  0.0                Processes:             140
+  Usage of /:   12.4% of 30.34GB   Users logged in:       0
+  Memory usage: 11%                IPv4 address for eth0: 10.0.2.15
+  Swap usage:   0%                 IPv4 address for eth1: 192.168.5.240
 
 
-Last login: Mon Sep 25 22:28:14 2023
+This system is built by the Bento project by Chef Software
+More information can be found at https://github.com/chef/bento
+Last login: Mon Oct  9 14:32:17 2023 from 10.0.2.2
 
-labredes@labredes $  
 ```
 
 * **Repetir el proceso para otros sistemas remotos**:
@@ -674,21 +675,8 @@ Debes repetir estos pasos para cada sistema remoto al que deseemos acceder con S
 
 Ahora podemos corroborar la conexión con los mismos con un modulo de ansible llamado `ping`, para ello necesitamos unos pasos previos así evitamos el error con el mensaje "Permission denied (publickey,password)" que sugiere que Ansible intentó usar autenticación mediante clave pública SSH, pero no pudo autenticarse con éxito.
 
-**Especificar la clave SSH y el usuario SSH en nuestro inventario Ansible**:
-Especificando la clave SSH correcta para cada host en el inventario, para ello descomentamos y completamos correctamente elos datos que habíamos dejado para después a la hora de crear nuestro inventario:
+**Comando PING**:
 
-```yaml
----
-# Example for PPS
-myvirtualmachine:
-  hosts:
-    nodo1:
-      ansible_host: 192.168.102.15
-      ansible_ssh_user: labredes
-      ansible_ssh_private_key_file: /home/aagustin/.ssh/id_rsa_ansible
-  vars:
-      ansible_user: root
-```
 
 Es momento entonces de aplicar el comando de `ping` de la siguiente manera:
 
@@ -701,6 +689,7 @@ Donde el `-m` indica que vamos a usar un módulo de Ansible.
 Si todo está correcto deberá devolvernos un ping exitoso a cada una de las IP's que configuramos previamente como el siguiente:
 
 ```sh
+> ansible -i hosts.yaml all -m ping
 nodo1 | SUCCESS => {
     "ansible_facts": {
         "discovered_interpreter_python": "/usr/bin/python3"
@@ -708,8 +697,21 @@ nodo1 | SUCCESS => {
     "changed": false,
     "ping": "pong"
 }
+nodo2 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+master | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
 ```
-
 Podremos empezar a ejecutar comandos con Ansible, por ejemplo, para ver qué tipo de SO y qué versión tenemos instalada nos vamos a valer del siguiente comando:
 
 ```sh
@@ -742,12 +744,14 @@ Ahora veremos lo que es un **playbook**, con el cual, haremos lo mismo que hacem
 
 > PLAYBOOK > PLAYS > TASKS
 
-El playbook es un archivo en formato `.yml` o `.yaml` . El cual, en principio crearemos en la carpeta de `/etc/ansible/` para hacer más corta la ruta a la hora de escribir en consola, pero podría estar en cualquier lado y la usaríamos llamando a la ruta completa.
+El playbook es un archivo en formato `.yml` o `.yaml` . El cual, en principio crearemos en la carpeta de de trabajo `~/workdir/ansible/` para hacer más corta la ruta a la hora de escribir en consola, pero podría estar en cualquier lado y la usaríamos llamando a la ruta completa.
 
 ```sh
-aagustin@hp-agustin:/etc/ansible$ ls
-ansible.cfg  hosts-old  hosts.yaml  playbook.yaml  roles
+> ls
+hosts.yaml  playbook.yaml
 ```
+
+ **Permisos de usuario root en caso de ser necesario (no es el nuestro):**
 
 Antes de poder ejecutar cualquier tarea nos debemos asegurar de tener los **permisos correspondientes**, para ello  vamos a configurar sudo sin contraseña para el usuario Ansible para permitir que el usuario Ansible (el usuario con el que nos conectaamos) ejecute comandos sin requerir una contraseña. Esto se hace editando el archivo de configuración sudo `(/etc/sudoers)` en el host remoto y agregando una entrada que permita comandos específicos sin contraseña.
 
@@ -756,7 +760,7 @@ Agregar una entrada en `/etc/sudoers` para permitir que el usuario Ansible ejecu
 * Accedemos por SSH a la máquina de destino:
 
 ```sh
-ssh labredes@192.168.102.15
+ssh vagrant@127.0.0.2
 ```
 
 * Abrimos el archivo sudoers para edición utilizando un editor de texto en el host remoto (como visudo que garantiza que no se cometan errores de sintaxis) para abrir el archivo sudoers con privilegios de superusuario:
@@ -769,26 +773,28 @@ sudo visudo
 
 ```sh
 # Ansible root privileges
-labredes ALL=(ALL:ALL) NOPASSWD: ALL
+vagrant ALL=(ALL:ALL) NOPASSWD: ALL
 ```
 
 * Guardamos y cerramos.
 
 Esto permite que el usuario Ansible ejecute cualquier comando como root sin requerir una contraseña. Deberemos tener en cuenta que esta opción **tiene implicaciones de seguridad** y debe usarse con precaución.
 
+**Playbook**
+
 Continuando con el playbook, la estructura de este archivo para el ejemplo de la instalación de la biblioteca `nano` deberá ser la siguiente:
 
 ```yaml
 ---
-- name: I want to install nano # Name of the play
-hosts: nodo1 #  Name of the machine or a group of machines
+- name: I want to install vim # Name of the play
+hosts: mycluster #  Name of the machine or a group of machines
 become: yes # Adding root privileges
 become_method: sudo # Uses sudo to get all privileges
-become_user: root # Once you use sudo, you become root user
+become_user: vagrant # Once you use sudo, you become root user
 tasks:
-- name: Install nano # Name of the task
+- name: Install vagrant # Name of the task
 apt: # Name of the module
-name: nano # Library to install
+name: vim # Library to install
 state: latest # ersion of that library
 ```
 
@@ -801,18 +807,24 @@ ansible-playbook -i hosts.yaml playbook.yaml
 Lo cual nos devolverá lo siguiente:
 
 ```sh
-$ ansible-playbook -i hosts.yaml playbook.yaml
+> ansible-playbook -i hosts.yaml playbook.yaml
 
-PLAY [I want to install nano] ******************************************************************************************************************************************
+PLAY [I want to install vim] ****************************************************************************
 
-TASK [Gathering Facts] *************************************************************************************************************************************************
+TASK [Gathering Facts] **********************************************************************************
+ok: [master]
+ok: [nodo2]
 ok: [nodo1]
 
-TASK [Install nano] ****************************************************************************************************************************************************
+TASK [Install vim] **************************************************************************************
+ok: [master]
+ok: [nodo2]
 ok: [nodo1]
 
-PLAY RECAP *************************************************************************************************************************************************************
-nodo1                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0  
+PLAY RECAP **********************************************************************************************
+master                     : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+nodo1                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+nodo2                      : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
 ```
 
 Veremos que en nuestro caso, no hubo instalación de nano porque ya existia entonces, se realizaron con éxito las tareas pero **no hubo cambio alguno.**
