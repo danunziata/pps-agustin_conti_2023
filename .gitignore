@@ -1,6 +1,7 @@
 # OTHERS
 
 /vagrant/.vagrant/
+/kubernetes/k0s/.vagrant
 
 
 # PRIVATE FILES
