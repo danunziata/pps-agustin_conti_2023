@@ -1,0 +1,26 @@
+---
+all:
+  children:
+    initial_controller:
+      hosts:
+        k0s-1:
+    controller:
+      hosts:
+        k0s-2:
+    worker:
+      hosts:
+        k0s-3:
+  hosts:
+    k0s-1:
+      ansible_ssh_host: 127.0.0.2
+      ansible_ssh_port: 2222
+    k0s-2:
+      ansible_ssh_host: 127.0.0.3
+      ansible_ssh_port: 2223
+    k0s-3:
+      ansible_ssh_host: 127.0.0.4
+      ansible_ssh_port: 2224
+  vars:
+    ansible_user: vagrant
+    ansible_private_key: /home/aagustin/.ssh/vagrant_key
+
