@@ -832,3 +832,298 @@ Veremos que en nuestro caso, no hubo instalación de nano porque ya existia ento
 Importante que a la hora de ejecutar dichos comandos, Ansible **no hará cambios** si el estado deseado ya se ha logrado previamente. Por ejemplo, en este caso que queremos instalar nano suponiendo de que no estaba instalado, cuando lo ejecutemos por primera vez detectaremos que hay cambios, pero si lo ejecutamos por segunda vez veremos que habrá cero cambios ya que el estado deseado de tener instalado nano ya se ha cumplido.
 
 Si el **estado deseado de la tarea fuera "absent"** en lugar de "latest", cuando lo corramos de nuevo, buscará que dicha librería *no esté*, nuevamente habrá un cambio y será la eliminación de dicha librería.
+
+### Aprovisionamiento de Kubernetes
+
+#### Comparación de diferentes tecnologías
+
+Deberemos explorar diferentes alternativas a la hora de ver qué nos conviene implementar, para ello se presentan las siguientes:
+
+**Kubernetes (k8s):** Kubernetes es la orquestación de contenedores más robusta y ampliamente adoptada. Es ideal para despliegues a gran escala, gestionando clústeres de contenedores con una arquitectura maestra-nodo. Ofrece una amplia gama de características y es altamente personalizable, pero su complejidad puede ser abrumadora para proyectos más pequeños.
+
+**K3s:** K3s es una versión liviana de Kubernetes diseñada para entornos con recursos limitados, como entornos de desarrollo local o dispositivos IoT. K3s simplifica la implementación y gestión de Kubernetes al reducir el número de componentes y requisitos del sistema. Esto lo hace más accesible para desarrolladores individuales y equipos que buscan una solución más ágil.
+
+**K0s:** K0s es otra alternativa ligera a Kubernetes, pero se destaca por ser un clúster autocontenido y sin dependencias externas. Esto simplifica aún más la implementación y permite ejecutar clústeres de Kubernetes sin conexión a Internet. K0s es adecuado para escenarios donde la conectividad externa puede ser limitada o poco confiable.
+
+**Minikube:** Minikube es una herramienta que facilita la ejecución de un clúster de Kubernetes de un solo nodo en entornos locales, como máquinas de desarrollo. Aunque es menos adecuado para producciones a gran escala, es una opción práctica para probar y desarrollar aplicaciones en un entorno controlado. Minikube permite a los desarrolladores experimentar con Kubernetes sin la necesidad de configuraciones complejas.
+
+Por el momento centraremos nuestra atención en **k8s y k0s**, que a modo general podremos comparar rendimientos entre uno más completo y uno más simple, además podremos comparar la facilidad de instalación de los mismos.
+
+#### k0s: Versión alternativa y ligera de K8s
+
+**K0s (pronunciado "k-zeros")** es una plataforma Kubernetes ligera y autosuficiente diseñada para ser fácilmente desplegada en diferentes entornos, incluso aquellos con restricciones de conectividad. A diferencia de las implementaciones de Kubernetes convencionales, k0s es un clúster autónomo y no requiere de componentes externos para su funcionamiento. A continuación, se detallan sus componentes y funcionalidades clave:
+
+1. **API Server (Servidor de API):** El API Server de k0s es responsable de gestionar las operaciones y comunicación en el clúster. Proporciona una interfaz para interactuar con los recursos de Kubernetes.
+
+2. **Controller Manager (Administrador de Controladores):** Este componente controla los controladores del sistema, que son procesos que regulan el estado del clúster y realizan acciones en respuesta a los cambios.
+
+3. **Scheduler (Programador):** El Scheduler se encarga de distribuir los pods en los nodos disponibles en función de las capacidades y restricciones de estos.
+
+4. **etcd:** K0s utiliza una versión embebida de etcd como almacenamiento de datos distribuido para mantener la coherencia del estado del clúster.
+
+5. **Kubelet y Kube-proxy:** Estos componentes son esenciales en cualquier implementación de Kubernetes. Kubelet es responsable de ejecutar contenedores en los nodos, mientras que Kube-proxy facilita la comunicación de red entre los diferentes servicios.
+
+6. **CoreDNS:** Proporciona servicios de resolución de nombres en el clúster, permitiendo la comunicación entre los servicios por nombre en lugar de direcciones IP.
+
+7. **Kubelet y Kube-proxy:** Estos componentes son esenciales en cualquier implementación de Kubernetes. Kubelet es responsable de ejecutar contenedores en los nodos, mientras que Kube-proxy facilita la comunicación de red entre los diferentes servicios.
+
+K0s es especialmente adecuado para entornos donde la conectividad a Internet es limitada o inestable, ya que puede operar de manera completamente autónoma. Su diseño ligero y su capacidad para funcionar como un clúster autónomo lo hacen apropiado para despliegues en dispositivos de borde (edge computing), entornos de desarrollo local y escenarios donde la simplicidad y la independencia de infraestructura externa son prioritarias. La facilidad de implementación y la capacidad de operar en entornos variados hacen que k0s sea una opción atractiva para casos de uso diversos.
+
+
+**Aprovisionamiento de k0s con Ansible sobre VMs de Vagrant**
+
+Creamos la carpeta k0s, donde aplicaremos primero el siguiente comando:
+
+```
+vagrant init
+```
+
+Dentro de la misma carpeta deberemos tener la siguiente estructura de archivos:
+```
+k0s/
+|_ Vagrantfle
+|_ ansible/
+    |_ playbook.yaml
+    |_ inventory/
+    |    |_ inventory.yaml
+    |_ roles/
+        |_ .../
+        |_ .../
+            |_ .../
+
+```
+Ahora veremos que poner dentro de cada archivo.
+
+En la `Vagrantfile` deberemos tener lo siguiente:
+
+```
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+
+Vagrant.configure("2") do |config|
+    
+  # Image configuration (for all vm's)
+  config.vm.box = "bento/ubuntu-22.04"
+  config.vm.box_version = "202309.08.0"
+  
+  # SSH (for all vm's)
+  config.ssh.insert_key = false
+  config.ssh.forward_agent = true  
+  config.ssh.private_key_path = ["/home/aagustin/.vagrant.d/insecure_private_key","/home/aagustin/.ssh/vagrant_key"]     
+  config.vm.provision "file", source: "/home/aagustin/.ssh/vagrant_key.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+
+  # How many VMs to create
+  VMS = 3
+
+  # We need at least:
+  # -initial_controller = must contain a single node that creates the worker and server tokens needed by the other nodes.
+  # -controller = can contain nodes that, together with the host from initial_controller form a highly available isolated control plane.
+  # -worker = must contain at least one node so that we can deploy Kubernetes objects.
+  
+
+  # Declaring nodes (iteratively)
+  (1..VMS).each do |i|
+    config.vm.define "k0s-#{i}" do |node|
+      
+      # Resources (provider)
+      node.vm.provider "virtualbox" do |vb|
+        vb.gui = false
+        vb.name = "trusty64-k0s-#{i}"
+        vb.memory = "1024"
+        vb.cpus = "2"
+      end
+
+      # Configure synced folder
+      #config.vm.synced_folder "~/my-loc/vagrant/synced/folders/k0s-#{i}/", "/home/vagrant/"
+
+      # Network configuration
+      node.vm.network "public_network",
+        bridge:"wlo1",
+        ip: "192.168.102.20#{1+i}",
+        netmask: "255.255.255.0"
+      
+      node.vm.network "private_network",
+        ip: "192.168.55.#{1+i}",
+        netmask: "255.255.255.0",
+        virtualbox__intnet: true
+        #auto_config: false
+      
+      node.vm.network "forwarded_port",
+        guest: 80,
+        host: 31001+i
+
+      # SSH
+      node.ssh.host = "127.0.0.#{1+i}"
+      node.ssh.forward_agent = true
+      node.vm.network "forwarded_port",
+        guest: 22,
+        host: 2221+i,
+        host_ip:"0.0.0.0",
+        id: "ssh",
+        auto_correct: true
+           
+      # Provisioning message
+      node.vm.provision "shell", inline: "echo Hello node-#{i}"
+    end      
+  
+  end
+
+end
+```
+
+Ejecutaremos el comando `vagrant up` para tener las máquinas virtuales. En este caso ya supusismos que tenemos las claves privadas y públicas creadas por lo que no deberíamos tener problema. Vemos que el `status` es el siguiente:
+
+```sh
+> vagrant status
+Current machine states:
+
+k0s-1                     running (virtualbox)
+k0s-2                     running (virtualbox)
+k0s-3                     running (virtualbox)
+
+This environment represents multiple VMs. The VMs are all listed
+above with their current state. For more information about a specific
+VM, run `vagrant status NAME`.
+```
+
+Ahora podemos crear el inventario de Ansible `inventory.yaml`:
+
+```yaml
+---
+all:
+  children:
+    initial_controller:
+      hosts:
+        k0s-1:
+    controller:
+      hosts:
+        k0s-2:
+    worker:
+      hosts:
+        k0s-3:
+  hosts:
+    k0s-1:
+      ansible_ssh_host: 127.0.0.2
+      ansible_ssh_port: 2222
+    k0s-2:
+      ansible_ssh_host: 127.0.0.3
+      ansible_ssh_port: 2223
+    k0s-3:
+      ansible_ssh_host: 127.0.0.4
+      ansible_ssh_port: 2224
+  vars:
+    ansible_user: vagrant
+    ansible_private_key: /home/aagustin/.ssh/vagrant_key
+
+```
+Con el inventario creado, podemos controlar que tenemos los hosts bien configurados y hacer un ping para ver si tenemos conectividad:
+
+* Listamos todos los hosts:
+
+```sh
+> ansible -i ansible/inventory/inventory2.yaml --list-hosts all
+  hosts (3):
+    k0s-1
+    k0s-2
+    k0s-3
+```
+
+* Ejecutamos el comando PING:
+
+```sh
+> ansible -i ansible/inventory/inventory.yaml -m ping all      
+k0s-1 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+k0s-3 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+k0s-2 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
+
+```
+
+Ahora nos disponemos a crear el `playbook.yaml`, con el siguiente contenido:
+
+```yaml  
+---
+
+- hosts: initial_controller:controller:worker
+  name: Download k0s on all nodes
+  become: yes
+  roles:
+    - role: download
+      tags: download
+    - role: prereq
+      tags: prereq
+
+- hosts: initial_controller
+  gather_facts: yes
+  become: yes
+  name: Configure initial k0s control plane node
+  roles:
+    - role: k0s/initial_controller
+      tags: init
+
+- hosts: controller
+  gather_facts: yes
+  become: yes
+  serial: 1
+  name: Configure k0s control plane nodes
+  roles:
+    - role: k0s/controller
+      tags: server
+
+- hosts: worker
+  become: yes
+  name: Configure k0s worker nodes
+  roles:
+    - role: k0s/worker
+      tags: worker
+```
+
+Este se encargará de llamar a las diferentes plays que ejecutan ciertas tareas en los diferentes hosts. Por eso es necesario tener el contenido de la carpeta `roles/` y sus respectivos plays.
+
+Una vez tenemos esto, podemos ejecutar el aprovisionamiento con Asible a los nodos creados:
+
+```sh
+ansible-playbook ansible/playbook.yaml -i ansible/inventory/inventory.yaml
+```
+
+### K8s: Kubernetes convencional
+
+**Kubernetes (k8s)** es una plataforma de código abierto diseñada para automatizar, escalar y operar aplicaciones en contenedores. Su arquitectura se basa en un modelo maestro-nodo que coordina la gestión de contenedores en un clúster. Aquí se describen sus principales componentes y funcionalidades:
+
+1. **API Server (Servidor de API):** Actúa como la interfaz principal para la gestión y control del clúster, permitiendo la interacción con los objetos de Kubernetes, como pods, servicios y volúmenes.
+
+2. **etcd:** Es un almacén de datos distribuido que mantiene la configuración del clúster y el estado del mismo, garantizando la coherencia entre los nodos maestros.
+
+3. **Control Plane (Plano de Control):** Incluye componentes como el API Server, etcd, el Controller Manager y el Scheduler, trabajando en conjunto para tomar decisiones sobre el estado del clúster y coordinar las acciones necesarias.
+
+4. **Kubelet:** Este agente se ejecuta en cada nodo del clúster y es responsable de asegurar que los contenedores estén en ejecución. Interactúa con el API Server para recibir y ejecutar las instrucciones.
+
+5. **Kube-proxy:** Facilita la comunicación de red entre los pods y gestiona las reglas de red, como el enrutamiento y el balanceo de carga.
+
+6. **Pods:** La unidad más pequeña en Kubernetes, que puede contener uno o más contenedores. Los pods comparten un espacio de red y almacenamiento, lo que facilita la comunicación entre ellos.
+
+7. **Services (Servicios):** Proporcionan una abstracción para la comunicación entre los diferentes pods, permitiendo la escalabilidad y la resiliencia de las aplicaciones.
+
+Kubernetes es altamente versátil y puede desplegarse en una variedad de entornos, desde infraestructuras locales hasta nubes públicas. Es especialmente eficaz en entornos de producción donde la orquestación y escalabilidad de contenedores son fundamentales. Kubernetes también es utilizado comúnmente en entornos de desarrollo y pruebas para garantizar la coherencia entre los diferentes ciclos de vida de las aplicaciones. Su capacidad para gestionar cargas de trabajo en diversos entornos y su gran comunidad de usuarios lo hacen adecuado para una amplia gama de casos de uso.
