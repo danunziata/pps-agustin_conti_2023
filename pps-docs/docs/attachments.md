@@ -162,4 +162,3 @@ La mayor diferencia con GitHub Flow es el ambiente de las ramas que tenemos en G
 
 Por simplicidad y por la plataforma en la que estamos trabajando el workflow más conveniente será **GitHub Workflow**.
 
-## ¿Cómo acomodamos todo para usar GitHub Flow y Semantic Releases?
