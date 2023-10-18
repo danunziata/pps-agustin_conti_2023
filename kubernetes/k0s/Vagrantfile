@@ -1,5 +1,54 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
+# Script to update and install curl
+$script = <<SCRIPT
+sudo apt-get update
+sudo apt-get install -y curl
+echo "IP Addresses:" >>/etc/issue
+for iface in $(ip -br link | awk '!/lo/ { print $1}'); do
+  echo "$iface - \\4{$iface}" >>/etc/issue
+done
+SCRIPT
+
+# Naming
+BASE_NAME = "k0s"
+
+# Image
+BASE_IMAGE = "ubuntu/bionic64"
+BASE_IMAGE_VERSION = "20230607.0.0" 
+
+# How many VMs to create. We need at least:
+# -initial_controller = must contain a single node that creates the worker and server tokens needed by the other nodes.
+# -controller = can contain nodes that, together with the host from initial_controller form a highly available isolated control plane.
+# -worker = must contain at least one node so that we can deploy Kubernetes objects.
+
+NUM_INITIAL_CONTROLLERS = 1
+NUM_CONTROLLERS = 1
+NUM_WORKERS = 1
+ 
+VMS = NUM_INITIAL_CONTROLLERS + NUM_CONTROLLERS + NUM_WORKERS
+
+# Resources configuration
+VB_CPUS = 2
+VB_MEMORY = 1024
+
+# Private keys routes
+PUB_KEY_PATH = "/home/aagustin/.ssh/vagrant_key.pub"
+PRIV_KEY_PATH ="/home/aagustin/.ssh/vagrant_key"
+   
+# IP configuration  
+BASE_PRIV_IP = "192.168.55"
+BASE_PUB_IP = "192.168.5"
+START_IP = 50
+
+PRIV_NET_MASK = "255.255.255.0"
+PUB_NET_MASK = "255.255.255.0"
+
+# Forwarded ports
+START_HTTP_PORT = 31000
+START_SSH_PORT = 2200
+#START_KUBE_PORT = 6443
+
+# Bridged interface
+BRIDGED_IFACE = "wlo1"
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -9,34 +58,45 @@
 Vagrant.configure("2") do |config|
     
   # Image configuration (for all vm's)
-  config.vm.box = "bento/ubuntu-22.04"
-  config.vm.box_version = "202309.08.0"
+  config.vm.box = BASE_IMAGE
+  config.vm.box_version = BASE_IMAGE_VERSION
+
+  # Execute script
+  config.vm.provision "shell", inline: $script
   
   # SSH (for all vm's)
   config.ssh.insert_key = false
   config.ssh.forward_agent = true  
-  config.ssh.private_key_path = ["/home/aagustin/.vagrant.d/insecure_private_key","/home/aagustin/.ssh/vagrant_key"]     
-  config.vm.provision "file", source: "/home/aagustin/.ssh/vagrant_key.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+  
+  config.ssh.private_key_path = ["/home/aagustin/.vagrant.d/insecure_private_key",PRIV_KEY_PATH]     
+  
+  config.vm.provision "file",
+    source: PUB_KEY_PATH,
+    destination: "/home/vagrant/.ssh/authorized_keys"
 
-  # How many VMs to create 
-  VMS = 3
-  
-# We need at least:
-  # -initial_controller = must contain a single node that creates the worker and server tokens needed by the other nodes.
-  # -controller = can contain nodes that, together with the host from initial_controller form a highly available isolated control plane.
-  # -worker = must contain at least one node so that we can deploy Kubernetes objects.
-  
+  # Disable VB guest additions
+  config.vbguest.auto_update = false
+
+  # Delete route
+  config.vm.provision "shell", inline: <<-SHELL    
+    sudo ip route del 0/0
+    sudo ip route add 0.0.0.0/0 via "#{BASE_PUB_IP}.1"
+    echo "nameserver 8.8.8.8" > /etc/resolv.conf
+  SHELL
 
   # Declaring nodes (iteratively)
   (1..VMS).each do |i|
-    config.vm.define "k0s-#{i}" do |node|
-      
+    config.vm.define "#{BASE_NAME}-#{i}" do |node|
+     
+      # Define hostname
+      node.vm.hostname =  "#{BASE_NAME}-#{i}"
+ 
       # Resources (provider)
       node.vm.provider "virtualbox" do |vb|
         vb.gui = false
-        vb.name = "trusty64-k0s-#{i}"
-        vb.memory = "1024"
-        vb.cpus = "2"
+        vb.name = "#{BASE_NAME}-#{i}"
+        vb.memory = "#{VB_MEMORY}"
+        vb.cpus = "#{VB_CPUS}"
       end
 
       # Configure synced folder
@@ -44,32 +104,32 @@ Vagrant.configure("2") do |config|
 
       # Network configuration
       node.vm.network "public_network",
-        bridge:"wlo1",
-        ip: "192.168.102.20#{1+i}",
-        netmask: "255.255.255.0"
+        bridge: BRIDGED_IFACE,
+        ip: "#{BASE_PUB_IP}.#{START_IP + i}",
+        netmask: PUB_NET_MASK
       
       node.vm.network "private_network",
-        ip: "192.168.55.#{1+i}",
-        netmask: "255.255.255.0",
-        virtualbox__intnet: true
-        #auto_config: false
+        ip: "#{BASE_PRIV_IP}.#{START_IP + i}",
+        netmask: PRIV_NET_MASK,
+        #virtualbox__intnet: true
+        name: "vboxnet1"
       
-      node.vm.network "forwarded_port",
-        guest: 80,
-        host: 31001+i
+        #node.vm.network "forwarded_port",
+        #guest: 80,
+        #host: START_HTTP_PORT+i
 
       # SSH
-      node.ssh.host = "127.0.0.#{1+i}"
-      node.ssh.forward_agent = true
-      node.vm.network "forwarded_port",
-        guest: 22,
-        host: 2221+i,
-        host_ip:"0.0.0.0",
-        id: "ssh",
-        auto_correct: true
+      #node.ssh.host = "127.0.0.#{1+i}"
+      #node.ssh.forward_agent = true
+      #node.vm.network "forwarded_port",
+        #guest: 22,
+        #host: START_SSH_PORT+i,
+        #host_ip:"0.0.0.0",
+        #id: "ssh",
+        #auto_correct: true
            
       # Provisioning message
-      node.vm.provision "shell", inline: "echo Hello node-#{i}"
+      node.vm.provision "shell", inline: "echo Hello #{BASE_NAME}-#{i}"
     end      
   
   end
