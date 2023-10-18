@@ -1060,6 +1060,8 @@ k0s-2 | SUCCESS => {
 }
 
 ```
+*Recordar que si es la primera vez que le damos up y no indicamos ningun fingerprint deberemos aceptar que queremos ingresar sin fingerprint poniendo `yes` en la terminal cuando nos pregunte.*
+
 
 Ahora nos disponemos a crear el `playbook.yaml`, con el siguiente contenido:
 
@@ -1106,6 +1108,17 @@ Una vez tenemos esto, podemos ejecutar el aprovisionamiento con Asible a los nod
 
 ```sh
 ansible-playbook ansible/playbook.yaml -i ansible/inventory/inventory.yaml
+```
+
+
+### Extras
+
+**Instalar pluggin de vagrant vbguest para poder deshabilitar la autoconfiguración de vbguest**
+https://www.devopsroles.com/vagrant-unknown-configuration-section-vbguest/
+
+```sh
+vagrant plugin uninstall vagrant-vbguest
+vagrant plugin install vagrant-vbguest
 ```
 
 ### K8s: Kubernetes convencional
