@@ -1,0 +1,24 @@
+---
+all:
+  vars:
+    ansible_user: vagrant
+    ansible_private_key: /home/aagustin/.ssh/vagrant_key
+
+    foo:
+      base_host_ip: "192.168.55"
+      start_host_ip: 50
+
+  children:
+    initial_controller:
+      hosts:
+        k0s-1:
+          ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 1 }}"
+    controller:
+      hosts:
+        k0s-2:
+          ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 2 }}"
+    worker:
+      hosts:
+        k0s-3:
+          ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 3 }}"
+

@@ -1,6 +1,9 @@
 # OTHERS
 
 /vagrant/.vagrant/
+/kubernetes/k0s/.vagrant
+/kubernetes/k0s/ansible/distros
+/kubernetes/k0s/ansible/inventory/artifacts
 
 
 # PRIVATE FILES
