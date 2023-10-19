@@ -1,0 +1,114 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+
+Vagrant.configure("2") do |config|
+    
+  # Image configuration (for all vm's)
+  config.vm.box = "bento/ubuntu-22.04"
+  config.vm.box_version = "202309.08.0"
+  
+  # SSH (for all vm's)
+  config.ssh.insert_key = false
+  config.ssh.forward_agent = true  
+  config.ssh.private_key_path = ["/home/aagustin/.vagrant.d/insecure_private_key","/home/aagustin/.ssh/vagrant_key"]     
+  config.vm.provision "file", source: "/home/aagustin/.ssh/vagrant_key.pub", destination: "/home/vagrant/.ssh/authorized_keys"
+
+  # Declaring master node and defining it like a primary machine
+  config.vm.define "master", primary: true do |master|
+    
+    # Resources (provider)
+    master.vm.provider "virtualbox" do |vb|
+      vb.gui = false
+      vb.name = "trusty64-master"
+      vb.memory = "2048"
+      vb.cpus = "2"
+    end
+
+    # Configure synced folder
+    #config.vm.synced_folder "~/my-loc/vagrant/synced/folders/master/", "/home/vagrant/"
+
+    # Network configuration
+    master.vm.network "public_network",
+      bridge:"wlo1",
+      ip: "192.168.5.240",
+      netmask: "255.255.255.0"
+    
+    master.vm.network "private_network",
+      ip: "192.168.55.2",
+      netmask: "255.255.255.0",
+      virtualbox__intnet: true,
+      auto_config: false
+    
+    master.vm.network "forwarded_port",
+      guest: 80,
+      host: 31002
+      
+    # SSH
+    master.ssh.host = "127.0.0.2"
+    master.ssh.forward_agent = true
+    master.vm.network "forwarded_port",
+      guest: 22,
+      host: 2222,
+      host_ip:"0.0.0.0",
+      id: "ssh",
+      auto_correct: true
+    
+    # Provisioning message
+    master.vm.provision "shell",
+      inline: "echo Hello master"
+  end
+
+  # Declaring secondary nodes (iteratively)
+  (1..2).each do |i|
+    config.vm.define "node-#{i}" do |node|
+      
+      # Resources (provider)
+      node.vm.provider "virtualbox" do |vb|
+        vb.gui = false
+        vb.name = "trusty64-node-#{i}"
+        vb.memory = "2048"
+        vb.cpus = "2"
+      end
+
+      # Configure synced folder
+      #config.vm.synced_folder "~/my-loc/vagrant/synced/folders/node-#{i}/", "/home/vagrant/"
+
+      # Network configuration
+      node.vm.network "public_network",
+        bridge:"wlo1",
+        ip: "192.168.5.24#{i}",
+        netmask: "255.255.255.0"
+      
+      node.vm.network "private_network",
+        ip: "192.168.55.#{2+i}",
+        netmask: "255.255.255.0",
+        virtualbox__intnet: true,
+        auto_config: false
+      
+      node.vm.network "forwarded_port",
+        guest: 80,
+        host: 31002+i
+
+      # SSH
+      node.ssh.host = "127.0.0.#{2+i}"
+      node.ssh.forward_agent = true
+      node.vm.network "forwarded_port",
+        guest: 22,
+        host: 2222+i,
+        host_ip:"0.0.0.0",
+        id: "ssh",
+        auto_correct: true
+           
+      # Provisioning message
+      node.vm.provision "shell", inline: "echo Hello node-#{i}"
+    end      
+  
+  end
+
+end
+
