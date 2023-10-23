@@ -1,7 +1,7 @@
 ---
 all:
   vars:
-    ansible_user: vagrant
+    ansible_user: root
     ansible_private_key: /home/aagustin/.ssh/vagrant_key
 
     foo:
