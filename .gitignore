@@ -5,6 +5,8 @@
 /kubernetes/k0s/ansible/distros
 /kubernetes/k0s/ansible/inventory/artifacts
 
+/kubernetes/k8s/.vagrant
+
 
 # PRIVATE FILES
 *.json
