@@ -1,0 +1,22 @@
+---
+all:
+  vars:
+    ansible_user: vagrant
+    ansible_private_key: /home/aagustin/.ssh/vagrant_key
+
+    foo:
+      base_host_ip: "192.168.55"
+      start_host_ip: 50
+
+  children:
+    kube_server:
+      hosts:
+        k8s-1:
+          ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 1 }}"
+    kube_agents:
+      hosts:
+        - k8s-2:
+            ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 2 }}"
+        - k8s-3:
+            ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 3 }}"
+

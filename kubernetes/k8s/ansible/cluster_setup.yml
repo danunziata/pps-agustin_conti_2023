@@ -1,0 +1,6 @@
+---
+# Cluster setup
+- hosts: webservers
+  roles:
+    - common
+    - webtier
