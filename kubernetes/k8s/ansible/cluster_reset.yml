@@ -1,0 +1,11 @@
+---
+
+ 
+- hosts: all
+  name: "Reset kubernetes configuration"
+  become: yes
+  roles:
+    - role: reset
+      tags: reset
+
+

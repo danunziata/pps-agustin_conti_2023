@@ -1,0 +1,79 @@
+---
+- name: Remove Kubernetes binaries
+  apt:
+    name: kubelet, kubeadm, kubectl
+    state: absent
+    allow_change_held_packages: yes
+
+- name: Uninstall Docker and its dependencies
+  apt:
+    name: docker-ce, docker-ce-cli, containerd.io
+    state: absent
+
+- name: Remove Docker repository
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu jammy stable
+    state: absent
+
+- name: Remove Docker signing key
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: absent
+
+- name: Remove Kubernetes repository
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+    state: absent
+
+- name: Remove Kubernetes signing key
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: absent
+
+- name: Remove swap configuration
+  lineinfile:
+    path: /etc/fstab
+    regexp: '^.*\sswap\s.*$'
+    state: absent
+
+- name: Enable swap
+  command: swapon -a
+  when: ansible_swaptotal_mb >= 0
+
+- name: Unset Docker to use systemd cgroups driver
+  file:
+    path: /etc/docker/daemon.json
+    state: absent
+
+- name: Delete .kube directory
+  file:
+    path: "{{ home_dir }}/.kube"
+    state: absent
+
+- name: Delete /etc/docker
+  file:
+    path: "/etc/docker"
+    state: absent
+
+- name: Delete /etc/kubernetes
+  file:
+    path: "/etc/kubernetes"
+    state: absent
+
+- name: Delete calico.yaml
+  file:
+    path: "{{ home_dir }}/calico.yaml"
+    state: absent
+
+- name: Delete dashboard.yaml
+  file:
+    path: "{{ home_dir }}/dashboard.yaml"
+    state: absent
+
+- name: Reboot to apply changes
+  reboot:
+    reboot_timeout: 180
+
+#- name: Remove local commands file
+#  local_action: file path=join_command.out  state=absent # defaults to your local cwd/join_command.out
+

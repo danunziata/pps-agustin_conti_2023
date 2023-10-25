@@ -330,7 +330,7 @@ k8s-3   Ready    <none>                 4m45s   v1.23.6   10.0.2.15     <none>  
 
 ### Tener en cuenta: dudas
 
-Vemos que cuando listamos los nodos tenemos configuradas mal las IPs internas, figuran las `10.0.2.15` que son las correspondientes a la interfaz por defecto `eth0`, la que requerimos que sea es la de la `eth2`, es decir las de la red privada `192.168.55.0/24`.
+Vemos que cuando listamos los nodos tenemos configuradas mal las IPs internas, figuran las `10.0.2.15` que son las correspondientes a la interfaz por defecto `eth0`, la que requerimos que sea es la de la `eth2`, es decir las de la red privada `192.168.55.0/24`. Tendré que buscar qué parámetro modificar a la hora de inicializar el cluster o modificarlo después de inicializado.
 
 ## Páginas que estuve consultando
 
