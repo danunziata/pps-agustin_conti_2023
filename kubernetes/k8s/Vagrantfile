@@ -18,7 +18,7 @@ VMS = NUM_INITIAL_CONTROLLERS + NUM_CONTROLLERS + NUM_WORKERS
 
 # Resources configuration
 VB_CPUS = 2
-VB_MEMORY = 1024
+VB_MEMORY = 2048 
 
 # Private keys routes
 PUB_KEY_PATH = "/home/aagustin/.ssh/vagrant_key.pub"
@@ -79,7 +79,7 @@ Vagrant.configure("2") do |config|
         netmask: PUB_NET_MASK
       
       node.vm.network "private_network",
-        name: "vboxnet1",
+        #name: "vboxnet1",
         ip: "#{BASE_PRIV_IP}.#{START_IP + i}",
         netmask: PRIV_NET_MASK
   
