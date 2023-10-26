@@ -870,256 +870,14 @@ Por el momento centraremos nuestra atención en **k8s y k0s**, que a modo genera
 K0s es especialmente adecuado para entornos donde la conectividad a Internet es limitada o inestable, ya que puede operar de manera completamente autónoma. Su diseño ligero y su capacidad para funcionar como un clúster autónomo lo hacen apropiado para despliegues en dispositivos de borde (edge computing), entornos de desarrollo local y escenarios donde la simplicidad y la independencia de infraestructura externa son prioritarias. La facilidad de implementación y la capacidad de operar en entornos variados hacen que k0s sea una opción atractiva para casos de uso diversos.
 
 
-**Aprovisionamiento de k0s con Ansible sobre VMs de Vagrant**
+**Aprovisionamiento de k0s mediante k0sctl**
 
-Creamos la carpeta k0s, donde aplicaremos primero el siguiente comando:
-
-```
-vagrant init
-```
-
-Dentro de la misma carpeta deberemos tener la siguiente estructura de archivos:
-```
-k0s/
-|_ Vagrantfle
-|_ ansible/
-    |_ playbook.yaml
-    |_ inventory/
-    |    |_ inventory.yaml
-    |_ roles/
-        |_ .../
-        |_ .../
-            |_ .../
-
-```
-Ahora veremos que poner dentro de cada archivo.
-
-En la `Vagrantfile` deberemos tener lo siguiente:
-
-```
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
-
-# All Vagrant configuration is done below. The "2" in Vagrant.configure
-# configures the configuration version (we support older styles for
-# backwards compatibility). Please don't change it unless you know what
-# you're doing.
-
-Vagrant.configure("2") do |config|
-    
-  # Image configuration (for all vm's)
-  config.vm.box = "bento/ubuntu-22.04"
-  config.vm.box_version = "202309.08.0"
-  
-  # SSH (for all vm's)
-  config.ssh.insert_key = false
-  config.ssh.forward_agent = true  
-  config.ssh.private_key_path = ["/home/aagustin/.vagrant.d/insecure_private_key","/home/aagustin/.ssh/vagrant_key"]     
-  config.vm.provision "file", source: "/home/aagustin/.ssh/vagrant_key.pub", destination: "/home/vagrant/.ssh/authorized_keys"
-
-  # How many VMs to create
-  VMS = 3
-
-  # We need at least:
-  # -initial_controller = must contain a single node that creates the worker and server tokens needed by the other nodes.
-  # -controller = can contain nodes that, together with the host from initial_controller form a highly available isolated control plane.
-  # -worker = must contain at least one node so that we can deploy Kubernetes objects.
-  
-
-  # Declaring nodes (iteratively)
-  (1..VMS).each do |i|
-    config.vm.define "k0s-#{i}" do |node|
-      
-      # Resources (provider)
-      node.vm.provider "virtualbox" do |vb|
-        vb.gui = false
-        vb.name = "trusty64-k0s-#{i}"
-        vb.memory = "1024"
-        vb.cpus = "2"
-      end
-
-      # Configure synced folder
-      #config.vm.synced_folder "~/my-loc/vagrant/synced/folders/k0s-#{i}/", "/home/vagrant/"
-
-      # Network configuration
-      node.vm.network "public_network",
-        bridge:"wlo1",
-        ip: "192.168.102.20#{1+i}",
-        netmask: "255.255.255.0"
-      
-      node.vm.network "private_network",
-        ip: "192.168.55.#{1+i}",
-        netmask: "255.255.255.0",
-        virtualbox__intnet: true
-        #auto_config: false
-      
-      node.vm.network "forwarded_port",
-        guest: 80,
-        host: 31001+i
-
-      # SSH
-      node.ssh.host = "127.0.0.#{1+i}"
-      node.ssh.forward_agent = true
-      node.vm.network "forwarded_port",
-        guest: 22,
-        host: 2221+i,
-        host_ip:"0.0.0.0",
-        id: "ssh",
-        auto_correct: true
-           
-      # Provisioning message
-      node.vm.provision "shell", inline: "echo Hello node-#{i}"
-    end      
-  
-  end
-
-end
-```
-
-Ejecutaremos el comando `vagrant up` para tener las máquinas virtuales. En este caso ya supusismos que tenemos las claves privadas y públicas creadas por lo que no deberíamos tener problema. Vemos que el `status` es el siguiente:
-
-```sh
-> vagrant status
-Current machine states:
-
-k0s-1                     running (virtualbox)
-k0s-2                     running (virtualbox)
-k0s-3                     running (virtualbox)
-
-This environment represents multiple VMs. The VMs are all listed
-above with their current state. For more information about a specific
-VM, run `vagrant status NAME`.
-```
-
-Ahora podemos crear el inventario de Ansible `inventory.yaml`:
-
-```yaml
----
-all:
-  children:
-    initial_controller:
-      hosts:
-        k0s-1:
-    controller:
-      hosts:
-        k0s-2:
-    worker:
-      hosts:
-        k0s-3:
-  hosts:
-    k0s-1:
-      ansible_ssh_host: 127.0.0.2
-      ansible_ssh_port: 2222
-    k0s-2:
-      ansible_ssh_host: 127.0.0.3
-      ansible_ssh_port: 2223
-    k0s-3:
-      ansible_ssh_host: 127.0.0.4
-      ansible_ssh_port: 2224
-  vars:
-    ansible_user: vagrant
-    ansible_private_key: /home/aagustin/.ssh/vagrant_key
-
-```
-Con el inventario creado, podemos controlar que tenemos los hosts bien configurados y hacer un ping para ver si tenemos conectividad:
-
-* Listamos todos los hosts:
-
-```sh
-> ansible -i ansible/inventory/inventory2.yaml --list-hosts all
-  hosts (3):
-    k0s-1
-    k0s-2
-    k0s-3
-```
-
-* Ejecutamos el comando PING:
-
-```sh
-> ansible -i ansible/inventory/inventory.yaml -m ping all      
-k0s-1 | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3"
-    },
-    "changed": false,
-    "ping": "pong"
-}
-k0s-3 | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3"
-    },
-    "changed": false,
-    "ping": "pong"
-}
-k0s-2 | SUCCESS => {
-    "ansible_facts": {
-        "discovered_interpreter_python": "/usr/bin/python3"
-    },
-    "changed": false,
-    "ping": "pong"
-}
-
-```
-*Recordar que si es la primera vez que le damos up y no indicamos ningun fingerprint deberemos aceptar que queremos ingresar sin fingerprint poniendo `yes` en la terminal cuando nos pregunte.*
-
-
-Ahora nos disponemos a crear el `playbook.yaml`, con el siguiente contenido:
-
-```yaml  
----
-
-- hosts: initial_controller:controller:worker
-  name: Download k0s on all nodes
-  become: yes
-  roles:
-    - role: download
-      tags: download
-    - role: prereq
-      tags: prereq
-
-- hosts: initial_controller
-  gather_facts: yes
-  become: yes
-  name: Configure initial k0s control plane node
-  roles:
-    - role: k0s/initial_controller
-      tags: init
-
-- hosts: controller
-  gather_facts: yes
-  become: yes
-  serial: 1
-  name: Configure k0s control plane nodes
-  roles:
-    - role: k0s/controller
-      tags: server
-
-- hosts: worker
-  become: yes
-  name: Configure k0s worker nodes
-  roles:
-    - role: k0s/worker
-      tags: worker
-```
-
-Este se encargará de llamar a las diferentes plays que ejecutan ciertas tareas en los diferentes hosts. Por eso es necesario tener el contenido de la carpeta `roles/` y sus respectivos plays.
-
-Una vez tenemos esto, podemos ejecutar el aprovisionamiento con Asible a los nodos creados:
-
-```sh
-ansible-playbook ansible/playbook.yaml -i ansible/inventory/inventory.yaml
-```
-
-
-### Extras
-
-**Instalar pluggin de vagrant vbguest para poder deshabilitar la autoconfiguración de vbguest**
-https://www.devopsroles.com/vagrant-unknown-configuration-section-vbguest/
-
-```sh
-vagrant plugin uninstall vagrant-vbguest
-vagrant plugin install vagrant-vbguest
-```
+1. Explicar el funcionamiento general
+2. Explicar la distribución de los archivos
+3. Explicar configuración específica de Vagrant
+4. Explicar configuración específica de los archivos de Ansible
+5. Explicar cómo se ejecuta
+6. Mostrar resultado
 
 ### K8s: Kubernetes convencional
 
@@ -1140,3 +898,16 @@ vagrant plugin install vagrant-vbguest
 7. **Services (Servicios):** Proporcionan una abstracción para la comunicación entre los diferentes pods, permitiendo la escalabilidad y la resiliencia de las aplicaciones.
 
 Kubernetes es altamente versátil y puede desplegarse en una variedad de entornos, desde infraestructuras locales hasta nubes públicas. Es especialmente eficaz en entornos de producción donde la orquestación y escalabilidad de contenedores son fundamentales. Kubernetes también es utilizado comúnmente en entornos de desarrollo y pruebas para garantizar la coherencia entre los diferentes ciclos de vida de las aplicaciones. Su capacidad para gestionar cargas de trabajo en diversos entornos y su gran comunidad de usuarios lo hacen adecuado para una amplia gama de casos de uso.
+
+
+
+
+### Extras
+
+**Instalar pluggin de vagrant vbguest para poder deshabilitar la autoconfiguración de vbguest**
+https://www.devopsroles.com/vagrant-unknown-configuration-section-vbguest/
+
+```sh
+vagrant plugin uninstall vagrant-vbguest
+vagrant plugin install vagrant-vbguest
+```
