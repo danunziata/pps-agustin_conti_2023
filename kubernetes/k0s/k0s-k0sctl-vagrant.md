@@ -122,7 +122,7 @@ Donde los parámetros importantes son:
 
 ### Crear cluster
 
-En la carpeta donde creamos el archivo k0sctl.yaml
+En la carpeta donde creamos el archivo `k0sctl.yaml`:
 
 ```sh
 k0sctl apply --config k0sctl.yaml
@@ -162,29 +162,29 @@ Se instala en el anfitrion desde donde se va a aprovisionar el cluster que corre
 
 ## Kubeconfig
 
-Una vez creado los clusters con k0sctl e instalado kubectl, procedemos a crear el archivo kubeconfig para poder usar kubernetes con los clusters, primero vamos a generar este archivo con el siguiente comando.
+- Una vez creado los clusters con k0sctl e instalado kubectl, procedemos a crear el archivo kubeconfig para poder usar kubernetes con los clusters, primero vamos a generar este archivo con el siguiente comando:
 
-```sh
-k0sctl kubeconfig --config k0sctl.yaml > kubeconfig.config
-```
+   ```sh
+   k0sctl kubeconfig --config k0sctl.yaml > kubeconfig.config
+   ```
 
-Una ves generado el archivo, procedemos a realizar una prueba para obtener información de los clustres de la siguiente forma.
+- Una vez generado el archivo, procedemos a realizar una prueba para obtener información de los clustres de la siguiente forma:
 
-```sh
-kubectl get node --kubeconfig kubeconfig.config
-```
+   ```sh
+   kubectl get node --kubeconfig kubeconfig.config
+   ```
 
-Ahora, para no tener que informar siempre el archivo kubeconfig.config, procedemos a guardarlo en una variable KUBECONFIG
+- Ahora, para no tener que informar siempre el archivo kubeconfig.config, procedemos a guardarlo en una variable `KUBECONFIG`:
 
-```sh
-export KUBECONFIG=/home/dani/Documents/pps-agustin_conti_2023/kubernetes/k0s/kubeconfig.config
-```
+   ```sh
+   export KUBECONFIG=/home/dani/Documents/pps-agustin_conti_2023/kubernetes/k0s/kubeconfig.config
+   ```
 
-Con esto solo ejecutamos lo siguiente:
+- Con esto solo ejecutamos lo siguiente:
 
-```sh
-kubectl get node
-```
+   ```sh
+   kubectl get node
+   ```
 
 ## Opcional IDE para administrar clusters kubernetes
 
