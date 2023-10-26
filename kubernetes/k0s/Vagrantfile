@@ -21,12 +21,13 @@ VB_CPUS = 2
 VB_MEMORY = 1024
 
 # Private keys routes
-PUB_KEY_PATH = "/home/dani/.ssh/k0s_key.pub"
-PRIV_KEY_PATH ="/home/dani/.ssh/k0s_key"
+USER_DIR_PATH = "/home/aagustin"
+PUB_KEY_PATH = "/home/aagustin/.ssh/k0s_key.pub"
+PRIV_KEY_PATH ="/home/aagustin/.ssh/k0s_key"
    
 # IP configuration  
 BASE_PRIV_IP = "192.168.55"
-BASE_PUB_IP = "192.168.5"
+BASE_PUB_IP = "192.168.102"
 START_IP = 50
 
 GATEWAY_IP = "#{BASE_PUB_IP}.1"
@@ -36,7 +37,7 @@ PRIV_NET_MASK = "255.255.255.0"
 PUB_NET_MASK = "255.255.255.0"
 
 # Bridged interface
-BRIDGED_IFACE = "enp2s0"
+BRIDGED_IFACE = "wlo1"
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -51,7 +52,7 @@ Vagrant.configure("2") do |config|
 
   # SSH (for all vm's)
   config.ssh.insert_key = false 
-  config.ssh.private_key_path = ["/home/dani/.vagrant.d/insecure_private_key",PRIV_KEY_PATH] 
+  config.ssh.private_key_path = ["#{USER_DIR_PATH}/.vagrant.d/insecure_private_key",PRIV_KEY_PATH] 
     
   config.vm.provision "file",
     source: PUB_KEY_PATH,
