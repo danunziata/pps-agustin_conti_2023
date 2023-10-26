@@ -8,21 +8,21 @@ spec:
       address: 192.168.55.51 
       user: root
       port: 22
-      keyPath: /home/dani/.ssh/k0s_key
+      keyPath: /home/aagustin/.ssh/k0s_key
     role: controller
     privateInterface: eth2
   - ssh:
       address: 192.168.55.52
       user: root
       port: 22
-      keyPath: /home/dani/.ssh/k0s_key
+      keyPath: /home/aagustin/.ssh/k0s_key
     role: worker
     privateInterface: eth2
   - ssh:
       address: 192.168.55.53 
       user: root
       port: 22
-      keyPath: /home/dani/.ssh/k0s_key
+      keyPath: /home/aagustin/.ssh/k0s_key
     role: worker
     privateInterface: eth2
  
