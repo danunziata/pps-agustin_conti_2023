@@ -10,14 +10,14 @@ BASE_IMAGE_VERSION =  "202309.08.0"
 # -controller = can contain nodes that, together with the host from initial_controller form a highly available isolated control plane.
 # -worker = must contain at least one node so that we can deploy Kubernetes objects.
 
-NUM_INITIAL_CONTROLLERS = 1
+NUM_INITIAL_CONTROLLERS = 0
 NUM_CONTROLLERS = 1
 NUM_WORKERS = 1
  
 VMS = NUM_INITIAL_CONTROLLERS + NUM_CONTROLLERS + NUM_WORKERS
 
 # Resources configuration
-VB_CPUS = 2
+VB_CPUS = 4 
 VB_MEMORY = 2048 
 
 # Private keys routes
