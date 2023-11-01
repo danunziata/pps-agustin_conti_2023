@@ -1,3 +1,5 @@
+context: agus
+
 base: &base_alias
   base_name: "k8s"
   base_image: "bento/ubuntu-22.04"
