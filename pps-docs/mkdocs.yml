@@ -1,9 +1,0 @@
-site_name: PPS - Agustin Aguilera Conti
-nav:
-  - Introducción: index.md
-  - Actividades: workplan.md
-  - Desarrollo: body.md
-  - Conclusión: conclusion.md
-  - Bibliografía: bibliography.md
-  - Anexo: attachments.md
-theme: readthedocs
