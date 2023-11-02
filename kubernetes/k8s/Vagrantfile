@@ -3,14 +3,11 @@
 
 
 # Load configuration variables
-
 require 'yaml'
+config_file = YAML.load_file('config_vms.yaml')
 
-current_dir = File.dirname(File.expand_path(__FILE__))
-config_file = YAML.load_file(File.join(current_dir, 'config_vms.yaml'))
-
-context = config_file['context']
-params = config_file[context] if context && config_file.key?(context)
+# Obtain specific user params according to the context
+params = config_file['vagrant_config']['users'][config_file['vagrant_config']['env']]
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -53,7 +50,6 @@ Vagrant.configure("2") do |config|
         netmask: params['pub_net_mask']
       
       node.vm.network "private_network",
-        #name: "vboxnet1",
         ip: "#{params['base_priv_ip']}.#{params['start_ip'] + i}",
         netmask: params['priv_net_mask']
   
@@ -62,7 +58,7 @@ Vagrant.configure("2") do |config|
       
       node.vm.provision "shell", inline: "sudo apt update"
       
-      node.vm.provision "shell", path: "scripts/add_routes.sh", args: [params['gateway_ip'],params['nameserver_ip']]
+      node.vm.provision "shell", path: "scripts/add_routes.sh", args: [params['gateway_ip'], params['nameserver_ip']]
       node.vm.provision "shell", path: "scripts/install_curl.sh"
       node.vm.provision "shell", path: "scripts/list_interfaces.sh"
       
