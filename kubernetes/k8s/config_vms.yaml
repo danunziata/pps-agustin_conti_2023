@@ -9,7 +9,7 @@ vagrant_config:
         base_image_version: "202309.08.0"
         vb_memory: 2048
         vb_cpus: 2
-        vms: 2
+        vms: 3 
         base_priv_ip: "192.168.55"
         nameserver_ip: "8.8.8.8"
         pub_net_mask: "255.255.255.0"
