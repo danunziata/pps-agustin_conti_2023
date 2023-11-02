@@ -1129,7 +1129,7 @@ Kubernetes es altamente versátil y puede desplegarse en una variedad de entorno
 
 1. Cargar nuestra propia configuración de Vagrant en `config_vms.yaml`
 
-   * Detalles a tener en cuenta:
+   - Detalles a tener en cuenta:
      - Dependiendo de la cantidad de máquinas virtuales que requieras para tu laboratorio **deberás cambiar** la variable `vms` al número correspondiente.
      - Observar que la variable de `vb_memory` es igual a `2048` , sino habrá problemas con la ejecución de cualquier configuración de Kubernetes debido a que el requerimiento **minimo de memoria son 2GB.**
      - Recordar que **debes cambiar** las variables `pub_key_path` y `priv_key_path` con los valores correspondientes a la ruta hacia tus claves pública y privada respectivamente.
@@ -1404,3 +1404,42 @@ Kubernetes es altamente versátil y puede desplegarse en una variedad de entorno
 **¡Listo!** Tenemos nuestro pequeño cluster de Kubernetes levantado en nuestro entorno de laboratorio.
 
 ## Extras
+
+### Test Mermaid
+
+```mermaid
+graph TD
+
+subgraph Public Subnet
+  pub["Red Pública<br>IP de red 192.168.102.0/24<br>interface bridge wlo1"]
+end
+
+subgraph Control Plane - Master
+  c1(("k8s-1<br>IP de host pub: 192.168.102.51<br>IP privada: 192.168.55.51"))
+end
+
+subgraph Workers
+  w1(("k8s-3<br>IP de host pub: 192.168.102.52<br>IP privada: 192.168.55.52"))
+end
+
+subgraph Workers
+  w2(("k8s-3<br>IP de host pub: 192.168.102.53<br>IP privada: 192.168.55.53"))
+end
+
+subgraph Private Subnet
+  priv["Red Privada<br>IP de red 192.168.55.0/24"]
+end
+
+subgraph Internet
+  internet((Internet))
+end
+
+internet --- pub
+pub --- c1
+pub --- w1
+pub --- w2
+
+c1 --- priv
+w1 --- priv
+w2 --- priv
+```
