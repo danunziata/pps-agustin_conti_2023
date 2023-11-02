@@ -1110,17 +1110,6 @@ Una vez tenemos esto, podemos ejecutar el aprovisionamiento con Asible a los nod
 ansible-playbook ansible/playbook.yaml -i ansible/inventory/inventory.yaml
 ```
 
-
-### Extras
-
-**Instalar pluggin de vagrant vbguest para poder deshabilitar la autoconfiguración de vbguest**
-https://www.devopsroles.com/vagrant-unknown-configuration-section-vbguest/
-
-```sh
-vagrant plugin uninstall vagrant-vbguest
-vagrant plugin install vagrant-vbguest
-```
-
 ### K8s: Kubernetes convencional
 
 **Kubernetes (k8s)** es una plataforma de código abierto diseñada para automatizar, escalar y operar aplicaciones en contenedores. Su arquitectura se basa en un modelo maestro-nodo que coordina la gestión de contenedores en un clúster. Aquí se describen sus principales componentes y funcionalidades:
@@ -1140,3 +1129,24 @@ vagrant plugin install vagrant-vbguest
 7. **Services (Servicios):** Proporcionan una abstracción para la comunicación entre los diferentes pods, permitiendo la escalabilidad y la resiliencia de las aplicaciones.
 
 Kubernetes es altamente versátil y puede desplegarse en una variedad de entornos, desde infraestructuras locales hasta nubes públicas. Es especialmente eficaz en entornos de producción donde la orquestación y escalabilidad de contenedores son fundamentales. Kubernetes también es utilizado comúnmente en entornos de desarrollo y pruebas para garantizar la coherencia entre los diferentes ciclos de vida de las aplicaciones. Su capacidad para gestionar cargas de trabajo en diversos entornos y su gran comunidad de usuarios lo hacen adecuado para una amplia gama de casos de uso.
+
+
+**Aprovisionamiento de k8s con Ansible sobre VMs de Vagrant**
+
+1. Explicar el funcionamiento general
+2. Explicar la distribución de los archivos
+3. Explicar configuración específica de Vagrant
+4. Explicar configuración específica de los archivos de Ansible
+5. Explicar cómo se ejecuta
+6. Mostrar resultado
+
+
+### Extras
+
+**Instalar pluggin de vagrant vbguest para poder deshabilitar la autoconfiguración de vbguest**
+https://www.devopsroles.com/vagrant-unknown-configuration-section-vbguest/
+
+```sh
+vagrant plugin uninstall vagrant-vbguest
+vagrant plugin install vagrant-vbguest
+```

@@ -1,0 +1,71 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+# Load configuration variables
+require 'yaml'
+config_file = YAML.load_file('config_vms.yaml')
+
+# Obtain specific user params according to the context
+params = config_file['vagrant_config']['users'][config_file['vagrant_config']['env']]
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+
+Vagrant.configure("2") do |config|
+    
+  # Image configuration (for all vm's)
+  config.vm.box = params['base_image']
+  config.vm.box_version = params['base_image_version']
+
+  # SSH (for all vm's)
+  config.ssh.insert_key = false 
+  config.ssh.private_key_path = [params['user_dir_path'] +"/.vagrant.d/insecure_private_key",params['priv_key_path']] 
+    
+  config.vm.provision "file",
+    source: params['pub_key_path'],
+    destination: "/home/vagrant/.ssh/authorized_keys"
+  
+  # Declaring nodes (iteratively)
+  (1..params['vms']).each do |i|
+    config.vm.define params['base_name'] + "-#{i}" do |node|
+     
+      # Define hostname
+      node.vm.hostname =  params['base_name']+"-#{i}.example.com"
+ 
+      # Resources (provider)
+      node.vm.provider "virtualbox" do |vb|
+        vb.gui = false
+        vb.name = params['base_name']+"-#{i}"
+        vb.memory = params['vb_memory']
+        vb.cpus = params['vb_cpus']
+      end
+
+      # Network configuration
+      node.vm.network "public_network",
+        bridge: params['bridged_iface'],
+        ip: "#{params['base_pub_ip']}.#{params['start_ip'] + i}",
+        netmask: params['pub_net_mask']
+      
+      node.vm.network "private_network",
+        ip: "#{params['base_priv_ip']}.#{params['start_ip'] + i}",
+        netmask: params['priv_net_mask']
+  
+      # Script provisioning
+      node.vm.provision "shell", inline: "echo Starting configuration of "+ params['base_name'] + "-#{i}"
+      
+      node.vm.provision "shell", inline: "sudo apt update"
+      
+      node.vm.provision "shell", path: "scripts/add_routes.sh", args: [params['gateway_ip'], params['nameserver_ip']]
+      node.vm.provision "shell", path: "scripts/install_curl.sh"
+      node.vm.provision "shell", path: "scripts/list_interfaces.sh"
+      
+      node.vm.provision "shell", path: "scripts/config_ssh_root.sh"
+      
+      node.vm.provision "shell", inline: "sudo apt update"
+      node.vm.provision "shell", inline: "echo All scripts have been executed. Hello "+ params['base_name'] + "-#{i}."
+    end        
+  end
+end

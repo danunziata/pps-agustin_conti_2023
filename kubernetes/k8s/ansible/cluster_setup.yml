@@ -1,0 +1,37 @@
+---
+
+# Available roles:
+# 1) install_kubernetes_dependencies 
+# 2) init_cluster  
+# 3) get_join_command
+# 4) join_workers
+ 
+- hosts: all
+  name: "Initial configuration"
+  become: yes
+  roles:
+    - role: install_kubernetes_dependencies
+      tags: install_kubernetes_dependencies
+
+- hosts: kube_server
+  name: "Server configuration"
+  become: yes
+  roles:
+    - role: init_cluster
+      tags: init_cluster
+
+- hosts: kube_server
+  name: "Get join command"
+  become: no 
+  roles:
+    - role: get_join_command
+      tags: get_join_command
+
+- hosts: kube_agents
+  name: "Join workers"
+  become: yes
+  roles:
+    - role: join_workers
+      tags: join_workers
+
+

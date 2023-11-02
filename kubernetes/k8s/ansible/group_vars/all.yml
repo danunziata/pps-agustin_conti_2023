@@ -1,0 +1,24 @@
+foo:
+  base_host_ip: "192.168.55"
+  start_host_ip: 50
+
+# SSH configuration
+ansible_user: vagrant
+ansible_private_key: /home/aagustin/.ssh/vagrant_key
+
+# specifying a CIDR for our cluster to use.
+# # can be basically any private range except for ranges already in use.
+# # apparently it isn't too hard to run out of IPs in a /24, so we're using a /22
+pod_cidr: "10.244.0.0/16"
+
+
+# this defines what the join command filename will be
+join_command_location: "join_command.out"
+
+# setting the home directory for retreiving, saving, and executing files
+home_dir: "/home/vagrant"
+
+remote_user: "vagrant"
+
+
+

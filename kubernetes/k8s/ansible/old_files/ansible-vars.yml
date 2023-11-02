@@ -1,0 +1,10 @@
+# specifying a CIDR for our cluster to use.
+# # can be basically any private range except for ranges already in use.
+# # apparently it isn't too hard to run out of IPs in a /24, so we're using a /22
+pod_cidr: "10.16.0.0/22"
+#
+# # this defines what the join command filename will be
+join_command_location: "join_command.out"
+#
+# # setting the home directory for retreiving, saving, and executing files
+home_dir: "/home/labredes"

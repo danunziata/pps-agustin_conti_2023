@@ -1,0 +1,26 @@
+---
+
+- name: set docker to use systemd cgroups driver
+  copy:
+    dest: "/etc/docker/daemon.json"
+    content: |
+      {
+        "exec-opts": ["native.cgroupdriver=systemd"]
+      }
+- name: restart docker
+  service:
+    name: docker
+    state: restarted
+  
+- name: read join command
+  debug:
+    msg: "{{ lookup('file', join_command_location) }}"
+  register: join_command_local
+
+- name: show join command
+  debug:
+    var: join_command_local.msg
+
+- name: join agents to cluster
+  command: "{{ join_command_local.msg }}"
+
