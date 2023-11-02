@@ -1,15 +1,12 @@
-# Naming
-BASE_NAME = "k8s"
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
 
-# Image
-BASE_IMAGE =  "bento/ubuntu-22.04" #"generic/ubuntu2004"#"ubuntu/trusty64" #"ubuntu/bionic64"
-BASE_IMAGE_VERSION =  "202309.08.0"
 
-# How many VMs to create. We need at least:
-# -initial_controller = must contain a single node that creates the worker and server tokens needed by the other nodes.
-# -controller = can contain nodes that, together with the host from initial_controller form a highly available isolated control plane.
-# -worker = must contain at least one node so that we can deploy Kubernetes objects.
+# Load configuration variables
+require 'yaml'
+config_file = YAML.load_file('config_vms.yaml')
 
+<<<<<<< HEAD
 NUM_INITIAL_CONTROLLERS = 0
 NUM_CONTROLLERS = 1
 NUM_WORKERS = 1
@@ -37,6 +34,10 @@ PUB_NET_MASK = "255.255.255.0"
 
 # Bridged interface
 BRIDGED_IFACE = "wlo1"
+=======
+# Obtain specific user params according to the context
+params = config_file['vagrant_config']['users'][config_file['vagrant_config']['env']]
+>>>>>>> 278b0f78d3270d9414f2f33d093309a1caf920eb
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -46,56 +47,55 @@ BRIDGED_IFACE = "wlo1"
 Vagrant.configure("2") do |config|
     
   # Image configuration (for all vm's)
-  config.vm.box = BASE_IMAGE
-  config.vm.box_version = BASE_IMAGE_VERSION
+  config.vm.box = params['base_image']
+  config.vm.box_version = params['base_image_version']
 
   # SSH (for all vm's)
   config.ssh.insert_key = false 
-  config.ssh.private_key_path = ["/home/aagustin/.vagrant.d/insecure_private_key",PRIV_KEY_PATH] 
+  config.ssh.private_key_path = [params['user_dir_path'] +"/.vagrant.d/insecure_private_key",params['priv_key_path']] 
     
   config.vm.provision "file",
-    source: PUB_KEY_PATH,
+    source: params['pub_key_path'],
     destination: "/home/vagrant/.ssh/authorized_keys"
   
   # Declaring nodes (iteratively)
-  (1..VMS).each do |i|
-    config.vm.define "#{BASE_NAME}-#{i}" do |node|
+  (1..params['vms']).each do |i|
+    config.vm.define params['base_name'] + "-#{i}" do |node|
      
       # Define hostname
-      node.vm.hostname =  "#{BASE_NAME}-#{i}.example.com"
+      node.vm.hostname =  params['base_name']+"-#{i}.example.com"
  
       # Resources (provider)
       node.vm.provider "virtualbox" do |vb|
         vb.gui = false
-        vb.name = "#{BASE_NAME}-#{i}"
-        vb.memory = "#{VB_MEMORY}"
-        vb.cpus = "#{VB_CPUS}"
+        vb.name = params['base_name']+"-#{i}"
+        vb.memory = params['vb_memory']
+        vb.cpus = params['vb_cpus']
       end
 
       # Network configuration
       node.vm.network "public_network",
-        bridge: BRIDGED_IFACE,
-        ip: "#{BASE_PUB_IP}.#{START_IP + i}",
-        netmask: PUB_NET_MASK
+        bridge: params['bridged_iface'],
+        ip: "#{params['base_pub_ip']}.#{params['start_ip'] + i}",
+        netmask: params['pub_net_mask']
       
       node.vm.network "private_network",
-        #name: "vboxnet1",
-        ip: "#{BASE_PRIV_IP}.#{START_IP + i}",
-        netmask: PRIV_NET_MASK
+        ip: "#{params['base_priv_ip']}.#{params['start_ip'] + i}",
+        netmask: params['priv_net_mask']
   
       # Script provisioning
-      node.vm.provision "shell", inline: "echo Starting configuration of #{BASE_NAME}-#{i}"
+      node.vm.provision "shell", inline: "echo Starting configuration of "+ params['base_name'] + "-#{i}"
       
       node.vm.provision "shell", inline: "sudo apt update"
       
-      node.vm.provision "shell", path: "scripts/add_routes.sh", args: [GATEWAY_IP, NAMESERVER_IP]
+      node.vm.provision "shell", path: "scripts/add_routes.sh", args: [params['gateway_ip'], params['nameserver_ip']]
       node.vm.provision "shell", path: "scripts/install_curl.sh"
       node.vm.provision "shell", path: "scripts/list_interfaces.sh"
       
       node.vm.provision "shell", path: "scripts/config_ssh_root.sh"
       
       node.vm.provision "shell", inline: "sudo apt update"
-      node.vm.provision "shell", inline: "echo All scripts have been executed. Hello #{BASE_NAME}-#{i}."
+      node.vm.provision "shell", inline: "echo All scripts have been executed. Hello "+ params['base_name'] + "-#{i}."
     end        
   end
 end
