@@ -1,8 +1,6 @@
-# PPS MLOps
+# Desarrollo
 
-## Desarrollo
-
-### Comparación
+## Comparación
 
 **Kubeflow** ofrece una forma escalable de entrenar y desplegar modelos en Kubernetes. Es un medio de orquestación que permite que un framework de aplicaciones en la nube funcione sin problemas. Algunos de los componentes de Kubeflow son los siguientes:
 
@@ -54,17 +52,18 @@ En nuestro caso de aplicación, como nuestro cluster ya tiene Kubernetes y consi
 >
 >(**) *DAGs:* Directed Acyclic Graph, es una forma de modelar las redes neuronales en forma de nodos interconectados por flechas.
 
-### Descripción del entorno de trabajo
+## Descripción del entorno de trabajo
 
-#### Recursos físicos
+### Recursos físicos
 
 Conjunto de 3 PC's con los siguientes recursos cada una:
+
 * CPU's: Ryzen 9 XXXX
 * Memoria RAM: 32GB
 * Almacenamiento: X GB
 * GPU's: NO, por el momento.
 
-#### Virtualización - Proxmox
+### Virtualización - Proxmox
 
 Proxmox Virtual Environment, comúnmente conocido como Proxmox, es una plataforma de virtualización de código abierto que permite la administración y la implementación de máquinas virtuales (VM) y contenedores en un entorno integrado. Proxmox se utiliza para crear y gestionar entornos virtuales en servidores físicos y es especialmente útil en entornos de centro de datos y en la administración de servidores.
 
@@ -79,13 +78,13 @@ Los siguientes son los conceptos clave y el principio de funcionamiento de Proxm
 7. **Seguridad y aislamiento:** Proxmox se esfuerza por garantizar el aislamiento y la seguridad entre VMs y contenedores. Las tecnologías de virtualización y contenedores se utilizan para asegurarse de que los sistemas en ejecución no interfieran entre sí.
 8. **Escalabilidad:** Los administradores pueden agregar servidores adicionales al clúster Proxmox según sea necesario para aumentar la capacidad de procesamiento y almacenamiento de la plataforma.
 
-#### Aprovisionamiento
+### Aprovisionamiento
 
 En el contexto de sistemas de software y tecnología de la información, el término "aprovisionamiento" se refiere al proceso de configurar y suministrar recursos informáticos, como servidores, redes, almacenamiento y otros componentes de infraestructura, para satisfacer las necesidades de una aplicación o servicio específico. El aprovisionamiento implica la asignación de recursos de manera eficiente y escalable, de modo que los sistemas puedan funcionar de manera óptima y satisfacer la demanda de los usuarios.
 
 El aprovisionamiento puede ser un proceso manual o automatizado, dependiendo de la complejidad de la infraestructura y de las herramientas disponibles. En entornos de nube, como Amazon Web Services (AWS), Microsoft Azure o Google Cloud Platform, el aprovisionamiento se realiza frecuentemente mediante servicios de aprovisionamiento automático que permiten escalar los recursos de manera dinámica según las necesidades de la aplicación. Esto es especialmente útil para garantizar que los sistemas sean flexibles y capaces de manejar cargas de trabajo variables.
 
-##### De Infraestructura - Terraform
+#### De Infraestructura - Terraform
 
 Terraform es una herramienta de código abierto desarrollada por HashiCorp que se utiliza para el aprovisionamiento y la gestión de **infraestructura como código (IaC, por sus siglas en inglés).** IaC es una práctica en la que la infraestructura se define y administra mediante código, lo que permite automatizar y estandarizar la creación y configuración de recursos de infraestructura, como servidores, redes, bases de datos y otros componentes, de manera consistente y repetible.
 
@@ -100,7 +99,7 @@ El principio de funcionamiento de Terraform se basa en los siguientes conceptos 
 
 Terraform es altamente extensible y es compatible con una amplia variedad de proveedores de infraestructura, incluidos proveedores de nube como AWS, Azure, Google Cloud, así como recursos locales, como servidores físicos y máquinas virtuales en centros de datos locales. Esto lo convierte en una herramienta poderosa para la gestión de infraestructura en entornos de nube, entornos locales o híbridos.
 
-##### De Software - Ansible
+#### De Software - Ansible
 
 Ansible es una herramienta de automatización y gestión de configuración de código abierto que se utiliza para aprovisionar y administrar software en sistemas y servidores. A diferencia de Terraform, que se enfoca en la infraestructura subyacente, Ansible se centra en la configuración y el mantenimiento de aplicaciones y servicios en sistemas ya aprovisionados. Ansible permite automatizar tareas como la instalación de software, la configuración de servidores, la actualización de aplicaciones y la gestión de configuraciones de manera eficiente y consistente.
 
@@ -113,7 +112,7 @@ El principio de funcionamiento de Ansible se basa en los siguientes conceptos cl
 5. **Inventario:** Ansible utiliza un archivo de inventario para definir los hosts (sistemas de destino) en los que se ejecutarán las tareas. Los inventarios pueden ser estáticos o dinámicos, lo que permite gestionar grupos de hosts de manera flexible y escalable.
 6. **Ejecución:** Para ejecutar un Playbook o una tarea de Ansible, los usuarios pueden utilizar el comando `ansible-playbook` o comandos similares. Ansible se encarga de conectarse a los sistemas de destino, aplicar las tareas definidas en el Playbook y garantizar que el sistema esté en el estado deseado.
 
-##### Uso en conjunto - Terraform + Ansible
+#### Uso en conjunto - Terraform + Ansible
 
 Terraform y Ansible son dos herramientas complementarias que se utilizan comúnmente juntas para gestionar de manera integral tanto la infraestructura como la configuración de software en un entorno de TI. La combinación de ambas herramientas permite automatizar todo el ciclo de vida de un sistema, desde la creación y aprovisionamiento de la infraestructura hasta la configuración y administración de aplicaciones y servicios en dicha infraestructura. Aquí hay algunas formas típicas en las que se utilizan Terraform y Ansible juntos:
 
@@ -124,7 +123,7 @@ Terraform y Ansible son dos herramientas complementarias que se utilizan comúnm
 5. **Automatización de despliegues y escalabilidad:** Terraform y Ansible permiten escalar la infraestructura y las aplicaciones de manera automatizada en función de la demanda. Por ejemplo, cuando se necesita escalar una aplicación web, Terraform puede agregar nuevos servidores, y Ansible puede configurarlos automáticamente para unirse al clúster de aplicaciones existente.
 6. **Gestión de la configuración continua:** Ansible se utiliza para garantizar que la configuración de software se mantenga coherente a lo largo del tiempo. Puede aplicar políticas de configuración y asegurarse de que los servidores y las aplicaciones cumplan con los estándares de seguridad y rendimiento.
 
-##### ¿Cómo se comunican Terraform y Ansible para poder realizar las configuraciones?
+#### ¿Cómo se comunican Terraform y Ansible para poder realizar las configuraciones?
 
 Tanto Terraform como Ansible son herramientas de automatización que pueden comunicarse con otros sistemas y recursos utilizando diferentes protocolos y mecanismos de autenticación. A continuación, se describen los protocolos y métodos de autenticación comunes utilizados por cada una de estas herramientas:
 
@@ -142,7 +141,7 @@ Tanto Terraform como Ansible son herramientas de automatización que pueden comu
 
 En cuanto a la comunicación con Proxmox, tanto Terraform como Ansible pueden utilizar SSH para conectarse a los nodos de Proxmox y administrarlos, ya que Proxmox es compatible con SSH para la administración remota. En este caso, se requerirán las claves SSH adecuadas y las configuraciones de acceso para autenticarse en los nodos de Proxmox.
 
-#### Orquestación de contenedores - Kubernetes
+### Orquestación de contenedores - Kubernetes
 
 Kubernetes, a menudo abreviado como K8s, es una plataforma de código abierto diseñada para la automatización, la implementación, la escalabilidad y la administración de aplicaciones en contenedores. Kubernetes es ampliamente utilizado en el despliegue y la gestión de aplicaciones en entornos de nube y en centros de datos locales. Su principal objetivo es facilitar la orquestación de contenedores, lo que permite administrar aplicaciones de manera eficiente y escalable.
 
@@ -158,7 +157,7 @@ Los siguientes son los conceptos clave y el principio de funcionamiento de Kuber
 8. **Escalabilidad y autorrecuperación:** Kubernetes permite escalar aplicaciones automáticamente según la demanda y recuperarse de fallos de forma automática. Esto garantiza que las aplicaciones sean altamente disponibles y capaces de manejar cargas de trabajo variables.
 9. **Configuración declarativa:** En Kubernetes, los usuarios definen el estado deseado de las aplicaciones y de la infraestructura a través de archivos de configuración YAML o JSON. Kubernetes se encarga de llevar el sistema al estado deseado y mantenerlo de esa manera.
 
-#### Despliegue, administración y la orquestación de flujos de trabajo de ML - Kubeflow
+### Despliegue, administración y la orquestación de flujos de trabajo de ML - Kubeflow
 
 Kubeflow es una plataforma de código abierto diseñada específicamente para el despliegue, la administración y la orquestación de flujos de trabajo de aprendizaje automático (machine learning, ML) en Kubernetes. Esta plataforma se creó para facilitar el desarrollo, la capacitación y la implementación de modelos de aprendizaje automático de manera eficiente y escalable en entornos basados en contenedores, aprovechando las ventajas de Kubernetes para la orquestación y la gestión de recursos.
 
@@ -179,10 +178,3 @@ Los siguientes son los conceptos clave y el principio de funcionamiento de Kubef
 7. **Monitorización y seguimiento:** Kubeflow incluye capacidades de monitoreo y seguimiento que permiten a los usuarios evaluar el rendimiento de los modelos implementados en producción y realizar ajustes según sea necesario.
 
 En resumen, Kubeflow es una plataforma de código abierto que simplifica y optimiza la gestión de flujos de trabajo de aprendizaje automático en entornos de Kubernetes. Facilita la implementación, la escalabilidad, la automatización y la gestión de modelos de ML en entornos basados en contenedores, lo que mejora la eficiencia y la reproducibilidad en proyectos de aprendizaje automático.
-
-
-
-#### Aprovisionamiento con Ansible - Minukube y Kubeflow
-https://v0-2.kubeflow.org/docs/started/getting-started-minikube/
-
-# Notas

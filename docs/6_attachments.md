@@ -1,22 +1,18 @@
-# PPS MLOps
+# Anexo
 
-## Anexo
+## Semantic Releases
 
-### Semantic Releases
-
-[How to Manage Releases with Semantic Versioning and Git Tags](https://www.youtube.com/watch?v=4wPjo5C-v8Y)
-
-#### ¿Qué es una ‘release’?
+### ¿Qué es una ‘release’?
 
 Una release es empaquetar cualquier cambio en el código y enviarlo a producción. Por ejemplo, un cambio de nuestra página web que vaya al público y no a nuestra etapa de desarrollo.
 
 El manejo de estas releases puede ser un poco complicado, especialmente si no seguimos un cierto standard. Por eso es que usamos ‘semantic versioning’ con git tags para manejar de manera fácil nuestras releases.
 
-#### ¿Qué es el ‘semantic versioning’?
+### ¿Qué es el ‘semantic versioning’?
 
 El semantic versioning es sólo un esqueman numérico, es una práctica estándar de la industria del software que sirve para indicar el “grado de cambios” que se han hecho desde la release de producción anterior. Todos usan semantic versioning, desde Git, hasta Firefox y los SO como iOS.
 
-#### ¿Qué estructura tiene la semantic versioning?
+### ¿Qué estructura tiene la semantic versioning?
 
 Tiene 3 partes:
 
@@ -32,30 +28,31 @@ Cada una de las partes indica algo diferente cuando incrementa:
 
 - **Patch:**  Cuando vamos de 1.0.1 a 1.0.2 indicamos arreglos de bugs y actualizaciones triviales.
 
-#### Premisas del semantic version
+### Premisas del semantic versioning
 
 - Una vez hecha una release, la versión no puede ser cambiada
 - Si nos olvidamos algo no podemos “retaggear” una versión, estos deberían entrar en una nueva release.
 - Somos responsables de checkear reiteradamente la versión actual antes de hacer un release.
 
-#### Git Tagging ¿Qué es un Tag?
+### Git Tagging ¿Qué es un Tag?
 
 Es una manera de agregar un marcador o marker a un commit para indicar que es importante de alguna manera en nuestro repositorio. Hay dos diferentes tipos de GitTags:
 
 - **Lightweigh tags:** Un puntero con nombre básico para un commit.
-    
+
     ```
     > git tag <tag-name> [commit]
-    ```    
+    ```
 
 - **Annotated tags:** Un objeto completo en la database de git verificado, contiene información de el tag, tiene un mensaje de taggeo (tagging message) y puede ser firmada y verificada con GNU Privacy Guard (GPG). Esta última es la que se recomienda usar.
-    
+
     ```
     > git tag -a <tag-name> -m"<annotation>" [commit]
     ```
-    
+
 Tanto el semantic versioning como el GitTagging van de la mano, podemos agregar un commit taggeando la versión correspondiente.
-#### Semantic versioning + Annotated Tags = Semantic Releases
+
+### Semantic versioning + Annotated Tags = Semantic Releases
 
 Nos permite tener commits marcados en nuestro repositorio de git con una versión específica. Los beneficios de esto en un repositorio de git son:
 
@@ -63,12 +60,12 @@ Nos permite tener commits marcados en nuestro repositorio de git con una versió
 - Comunica el “grado de cambio” entre los diferentes tags.
 - Vemos de manera directa el historial de tracking de los cambios realizados.
 
-#### Esto está soportada por:
+### ¿Por qué plataformas o herramientas está soportado esto?
 
 - Diferentes interfaces de Git, como Git Kraken o GitHub Desktop.
 - Diferentes herramientas de automatización como Circle CI, Bitbucket, Travis, etc.
 
-#### ¿Cómo creo las ‘Semantic Git Releases2?
+### ¿Cómo creo las 'Semantic Git Releases'?
 
 Es un proceso que consiste en 3 pasos:
 
@@ -85,7 +82,7 @@ Crear una un semantic release tag usando la consola:
 > git push <remote> v1.0.0
 ```
 
-#### Release Notes
+### Release Notes
 
 Tenemos que evitar las anotaciones mínimas. Se recomienda, para cada tipo de release:
 
@@ -101,20 +98,16 @@ git log --pretty=format:%s <last release>... HEAD --no-merges
 git tag -a <tag-name> -m"$(git log --pretty=format:%s <last release>... HEAD --no-merges)"
 ```
 
-#### ¿Cómo automatizo la generación de los tags?
+### ¿Cómo automatizo la generación de los tags?
 
 - Puedo buscar en el mercado por alguna herramienta de automatización.
 - Crear un script de bash por nosotros mismos para ayudarnos a automatizar los pasos repetitivos.
 
-[semtag-generator](https://github.com/mikemiles86/semtag-generator)
-
-### Git Workflow
-
-[](https://medium.com/@patrickporto/4-branching-workflows-for-git-30d0aaee7bf)
+## Git Workflow
 
 Los Git Workflows son metodologías de trabajo para los usuarios de de Git.  
 
-#### Git Flow
+### Git Flow
 
 Es el workflow más conocido, basado en dos branches principales que son perpetuas, con vida infinita. Estas son:
 
@@ -127,9 +120,7 @@ Durante el ciclo de desarrollo, una variedad de ramas de soporte son utilizadas:
 - ***hotfix-*:** Son necesarias para actuar inmediatamente ante un estado indeseado de la branch master. Debería desprenderse de la branch master y mergearse tanto en máster como en develop.
 - **release-*:** Son la preparación de una nueva release de producción. Permiten que haya menos bugs que arreglar y la preparación de la metadata para la release. Debe desprenderse de la rama develop y debe ser mergeada en la rama master y develop.
 
-#### GitHub Flow
-
-[GitHub flow - GitHub Docs](https://docs.github.com/en/get-started/quickstart/github-flow)
+### GitHub Flow
 
 Es un workflow liviano creado por GitHub y se basa en 6 principios:
 
@@ -140,7 +131,7 @@ Es un workflow liviano creado por GitHub y se basa en 6 principios:
 5. Despues de que alguien haya revisado y firmado la nueva característica, se puede hacer merge en la master.
 6. Una vez hecho el merge y pusheado a la rama master, debemos deployar inmediatamente.
 
-#### GitLab Flow
+### GitLab Flow
 
 Es un workflow creado por GitLab. Combina un desarrollo dirigido por las funcionalidades (caracteristicas) y con ramas de funcionalidades con un trackeo de problemas.
 
@@ -158,39 +149,39 @@ La mayor diferencia con GitHub Flow es el ambiente de las ramas que tenemos en G
 10. Corregir bugs en master primero, release branches segundo.
 11. Los commits reflejan la intención.
 
-#### ¿Cual elegimos?
+### ¿Cual elegimos?
 
 Por simplicidad y por la plataforma en la que estamos trabajando el workflow más conveniente será **GitHub Workflow**.
 
-### Metodologías ágiles
+## Metodologías ágiles
 
-#### Manifiesto ágil
+### Manifiesto ágil
 
 El Manifiesto Ágil es un documento que establece los valores y principios fundamentales para el desarrollo ágil de software. Fue creado en 2001 por un grupo de expertos en desarrollo de software que buscaban alternativas más flexibles y eficientes a los enfoques tradicionales de gestión de proyectos.
 
-**Valores del Manifiesto Ágil:**
+#### Valores del Manifiesto Ágil
 
 1. **Individuos e interacciones sobre procesos y herramientas:** Se enfoca en la importancia de las personas y la comunicación efectiva en el desarrollo de software.
 2. **Software funcionando sobre documentación extensiva:** Prioriza la entrega de software funcional y utilizable por encima de una documentación exhaustiva.
 3. **Colaboración con el cliente sobre negociación contractual:** Destaca la importancia de la colaboración continua con el cliente para adaptarse a los cambios y requisitos emergentes.
 4. **Responder a cambios sobre seguir un plan:** Aboga por la flexibilidad y la capacidad de adaptarse a cambios en los requisitos, incluso en etapas avanzadas del desarrollo.
 
-**Principios del Manifiesto Ágil:**
+#### Principios del Manifiesto Ágil
 
-1. **La más alta prioridad es satisfacer al cliente mediante la entrega temprana y continua de software valioso.**
-2. **Aceptar cambios en los requisitos, incluso en etapas tardías del desarrollo.**
-3. **Entregar software funcional con frecuencia, con preferencia a intervalos cortos.**
-4. **Colaborar con clientes y usuarios a lo largo del proyecto.**
-5. **Construir proyectos alrededor de individuos motivados, dándoles el entorno y el apoyo que necesitan y confiando en ellos para que hagan el trabajo.**
-6. **El método más eficiente y efectivo de comunicación es la conversación cara a cara.**
-7. **El software funcional es la principal medida de progreso.**
-8. **Mantenerte enfocado en la simplicidad, maximizando la cantidad de trabajo no realizado.**
-9. **Las mejores arquitecturas, requisitos y diseños surgen de equipos autoorganizados.**
-10. **A intervalos regulares, el equipo reflexiona sobre cómo ser más efectivo y ajusta su comportamiento en consecuencia.**
+1. La más alta prioridad es satisfacer al cliente mediante la entrega temprana y continua de software valioso.
+2. Aceptar cambios en los requisitos, incluso en etapas tardías del desarrollo.
+3. Entregar software funcional con frecuencia, con preferencia a intervalos cortos.
+4. Colaborar con clientes y usuarios a lo largo del proyecto.
+5. Construir proyectos alrededor de individuos motivados, dándoles el entorno y el apoyo que necesitan y confiando en ellos para que hagan el trabajo.
+6. El método más eficiente y efectivo de comunicación es la conversación cara a cara.
+7. El software funcional es la principal medida de progreso.**
+8. Mantenerte enfocado en la simplicidad, maximizando la cantidad de trabajo no realizado.
+9. Las mejores arquitecturas, requisitos y diseños surgen de equipos autoorganizados.
+10. A intervalos regulares, el equipo reflexiona sobre cómo ser más efectivo y ajusta su comportamiento en consecuencia.
 
 Hoy en día, el Manifiesto Ágil sigue siendo un marco de referencia influyente para el desarrollo de software. Las metodologías ágiles como Scrum, Kanban y XP (eXtreme Programming) se basan en estos valores y principios. Las organizaciones adoptan enfoques ágiles para mejorar la flexibilidad, la capacidad de respuesta a cambios y la entrega continua de software de alta calidad. Además, la cultura ágil ha trascendido el ámbito del desarrollo de software y se ha extendido a otras áreas como la gestión de proyectos, el marketing y la gestión empresarial.
 
-#### Scrum: Roles y responsabilidades
+### Scrum: Roles y responsabilidades
 
 Scrum es un marco de trabajo ágil que se utiliza comúnmente en el desarrollo de software para gestionar proyectos de manera iterativa e incremental. Los roles en Scrum son esenciales para la colaboración y la entrega efectiva de productos. Los roles principales en Scrum y sus responsabilidades son:
 
@@ -218,16 +209,16 @@ Es importante destacar que en Scrum, se fomenta la colaboración y la autogesti�
 En Scrum, tanto el "Backlog" como el "Sprint" son conceptos fundamentales que contribuyen al enfoque iterativo e incremental del desarrollo de software.
 
 1. **Backlog:**
-    
+
     El "Product Backlog" (Backlog del Producto) es una lista dinámica y priorizada de todas las funcionalidades, mejoras y tareas que podrían ser realizadas para un producto. Es responsabilidad del Product Owner mantener y gestionar este backlog. Algunas características del Product Backlog incluyen:
-    
+
     - **Priorización:** Las ítems del backlog están ordenados por prioridad, con las características más importantes o de mayor valor para el cliente en la parte superior.
     - **Flexibilidad:** El backlog es flexible y puede cambiar con el tiempo para adaptarse a las necesidades cambiantes del negocio o del cliente.
     - **Detalles:** Los elementos del backlog no necesitan estar detallados en exceso. Los detalles se refinan a medida que los elementos se acercan al tope del backlog y se preparan para ser incluidos en un sprint.
 2. **Sprint:**
-    
+
     Un "Sprint" es una unidad de tiempo fija y corta durante la cual se realiza un trabajo específico y se produce una versión potencialmente entregable del producto. Los sprints en Scrum generalmente tienen una duración de dos a cuatro semanas. Algunas características clave del Sprint incluyen:
-    
+
     - **Objetivo del Sprint:** Antes de comenzar un Sprint, el equipo selecciona elementos del Product Backlog para incluir en el Sprint Backlog, que es la lista de elementos que se comprometen a completar durante el sprint.
     - **Iterativo e Incremental:** El trabajo se realiza en ciclos iterativos, y al final de cada Sprint, se produce un incremento potencialmente entregable del producto.
     - **Reuniones:** Durante el sprint, el equipo se reúne diariamente en la "Daily Scrum" para revisar el progreso y planificar el trabajo del día.
@@ -237,11 +228,11 @@ La combinación del Backlog y los Sprints permite a los equipos Scrum mantener u
 
 Para nuestro caso, el tutor docente actuaría como Scrum Master, el tutor externo actuaría de Product Owner y el equipo de desarrollo estaría conformado por el alumno. Además hemos definido los **sprints de una semana**, y tomaremos tareas del backlog que se ha conformado a partir del plan de trabajo de esta PPS.
 
-#### Cultura DevOps
+### Cultura DevOps
 
 La cultura DevOps es una filosofía y práctica que promueve la colaboración estrecha y continua entre los equipos de desarrollo (Dev) y operaciones (Ops) en el ciclo de vida del desarrollo de software. El objetivo principal es superar las barreras tradicionales entre estos dos departamentos para lograr una entrega de software más rápida, eficiente y confiable.
 
-**Principios y Valores de la Cultura DevOps:**
+#### Principios y Valores de la Cultura DevOps
 
 1. **Colaboración y Comunicación:**
     - *Principio:* Fomentar la colaboración abierta y una comunicación efectiva entre los equipos de desarrollo y operaciones.
@@ -254,7 +245,7 @@ La cultura DevOps es una filosofía y práctica que promueve la colaboración es
 5. **Responsabilidad Compartida:**
     - *Principio:* Fomentar una mentalidad de responsabilidad compartida entre los equipos de desarrollo y operaciones en todo el ciclo de vida del software.
 
-**Cómo se utiliza hoy en día:**
+#### Cómo se utiliza hoy en día
 
 La cultura DevOps se implementa mediante la adopción de prácticas y herramientas específicas, como:
 
@@ -265,7 +256,7 @@ La cultura DevOps se implementa mediante la adopción de prácticas y herramient
 
 A modo de síntesis, la cultura DevOps busca mejorar la colaboración, eficiencia y velocidad en el desarrollo y despliegue de software, y se apoya en la automatización, la entrega continua y la responsabilidad compartida entre los equipos de desarrollo y operaciones.
 
-#### Objetivos SMART
+### Objetivos SMART
 
 Los objetivos SMART son una metodología utilizada para establecer metas y objetivos de manera clara y específica. El acrónimo SMART representa los criterios que deben cumplir estos objetivos:
 
@@ -283,11 +274,11 @@ Relacionando los objetivos SMART con Scrum en el contexto de Backlog, Sprint o T
 
 La aplicación de objetivos SMART en Scrum contribuye a una mayor claridad, enfoque y medición del progreso en el desarrollo de software, alineando los esfuerzos del equipo con metas claras y alcanzables.
 
-#### A modo de síntesis
+### A modo de síntesis
 
 Las metodologías ágiles, encabezadas por el Manifiesto Ágil, han transformado la forma en que se aborda el desarrollo de software al promover valores como la flexibilidad, la colaboración y la entrega continua de valor al cliente. SCRUM, una de las metodologías ágiles más populares, opera bajo los principios del Manifiesto Ágil y estructura el desarrollo en sprints, con roles claramente definidos y un enfoque en la transparencia y adaptabilidad. La cultura DevOps, por otro lado, se alinea con los principios ágiles al fomentar la colaboración estrecha entre los equipos de desarrollo y operaciones, buscando la automatización y la entrega continua. En este contexto, los objetivos SMART se integran como una metodología clave para establecer metas claras, medibles y alcanzables, proporcionando un marco estructurado que puede aplicarse tanto a la gestión del backlog en SCRUM como a los objetivos específicos de cada sprint. La combinación de metodologías ágiles, SCRUM, la cultura DevOps y objetivos SMART crea un entorno de desarrollo flexible, colaborativo y orientado a resultados, permitiendo a los equipos adaptarse rápidamente a los cambios, mejorar continuamente y cumplir con los objetivos estratégicos de la organización.
 
-### ¿Qué es Vagrant?
+## Vagrant
 
 Vagrant es una herramienta que podés usar para crear y gestionar entornos de desarrollo virtualizados de manera fácil y reproducible. Su uso típico es facilitar la creación de máquinas virtuales con configuraciones específicas para el desarrollo de proyectos.
 
@@ -516,31 +507,31 @@ Y luego, podemos acceder desde el navegador de la máquina host o cualquier nave
 
 ![Untitled](source/vagrant-service-2.png)
 
-### Creación del entorno de laboratorio
+## Creación del entorno de laboratorio
 
-#### Armado de la infraestructura de prueba - VirtualBox + Ubuntu Server
+### Armado de la infraestructura de prueba - VirtualBox + Ubuntu Server
 
 Teniendo ya los tres nodos levantados con Vagrant, podremos probar aprovisionar software a los mismos utilizando Ansible. Antes deberé asegurarme de tener lo siguiente:
 
 1. Deshabilito el port forwarding en la máquina host para evitar paquetes duplicados.
 2. Me aseguro de tener instalado open-ssh
 
-#### Aprovisionar con Ansible - Instalación y conexión del host con el servidor
+### Aprovisionar con Ansible - Instalación y conexión del host con el servidor
 
 1. Instalamos Ansible en Ubuntu de la máquina host:
 
 ```
-$ sudo apt update
-$ sudo apt install software-properties-common
-$ sudo apt-add-repository ppa:ansible/ansible
-$ sudo apt update
-$ sudo apt install ansible
+sudo apt update
+sudo apt install software-properties-common
+sudo apt-add-repository ppa:ansible/ansible
+sudo apt update
+sudo apt install ansible
 ```
 
 1. Nos dirigimos a la carpeta de Ansible en nuestra máquina host:
 
 ```
-$ cd /etc/ansible
+cd /etc/ansible
 ```
 
 2. Veremos listados los siguientes archivos y directorios:
@@ -552,7 +543,7 @@ ansible.cfg  hosts        roles/
 Nos nos haremos una copia de hosts en formato .yaml en nuestra carpeta de trabajo:
 
 ```
-$ sudo cp ./hosts ~/workdir/hosts.yaml
+sudo cp ./hosts ~/workdir/hosts.yaml
 ```
 
 El archivo `hosts.yaml` es el **inventario** donde tendremos listados todos nuestros equipos que queremos controlar.
@@ -584,7 +575,7 @@ mycluster:
 Lo anterior es equivalente a crear un **grupo** de equipos (en nuestro caso es uno solo) llamado "mycluster" y dentro de ese grupo definimos los hosts llamados **master, nodo1 y nodo2**. Además agregamos un usuario de ssh y una ruta para la llave privada, comentados, que nos servirán luego:
 
 ```
-$ ansible -i hosts.yaml  all --list-hosts
+ansible -i hosts.yaml  all --list-hosts
 ```
 
 Donde el `-i` nos sirve para indicar que queremos usar un archivo en particular de inventario, que en nuestro caso es `hosts.yaml` (importante que estemos posicionados en el directorio de ansible `/etc/ansible` o que indiquemos la ruta completa del archivo de inventario). Este comando nos devolverá el siguiente mensaje:
@@ -599,7 +590,7 @@ $ ansible -i hosts.yaml all --list-hosts
 
 Ahora deberemos configurar SSH para que Ansible pueda conectarse a los nodos que manejamos, en nuestro caso, a nuestra máquina virtual. Para configurar SSH y permitir conexiones SSH a sistemas remotos, debemos seguir estos pasos para agregar nuestra clave pública SSH al archivo `authorized_keys` en cada sistema remoto. En nuestro caso, ya lo hemos hecho con Vagrant:
 
-* **Generar un par de claves SSH (si aún no lo hemos hecho)**:
+- **Generar un par de claves SSH (si aún no lo hemos hecho)**:
 Si no tenemos un par de claves SSH (una pública y una privada), ppodemos generarlas usando el comando `ssh-keygen` en la terminal del host. Si deseamos utilizar la configuración predeterminada y sin contraseña, simplemente presionamos Enter cuando se nos solicite una contraseña. Aquí tienes un ejemplo:
 
 ```sh
@@ -616,7 +607,7 @@ Your public key has been saved in id_rsa_ansible.pub
 
 Esto generará un par de claves SSH en tu directorio de inicio (por defecto) en los archivos `id_rsa_asible` (clave privada) y `id_rsa_ansible.pub` (clave pública).
 
-* **Copiar nuestra clave pública al sistema remoto**:
+- **Copiar nuestra clave pública al sistema remoto**:
 Ahora, debes copiar nuestra clave pública (`id_rsa.pub` por defecto) al sistema remoto. Podemos hacerlo manualmente o utilizando el comando `ssh-copy-id`. Por ejemplo usando `ssh-copy-id`:
 
 ```sh
@@ -640,7 +631,7 @@ Now try logging into the machine, with:   "ssh 'vagrant@127.0.0.2'"
 and check to make sure that only the key(s) you wanted were added.
 ```
 
-* **Iniciar sesión en el sistema remoto con SSH**:
+- **Iniciar sesión en el sistema remoto con SSH**:
 Ahora, podemos iniciar sesión en el sistema remoto usando SSH y se utilizará nuestra clave pública para autenticarnos:
 
 ```sh
@@ -670,13 +661,12 @@ Last login: Mon Oct  9 14:32:17 2023 from 10.0.2.2
 
 ```
 
-* **Repetir el proceso para otros sistemas remotos**:
+- **Repetir el proceso para otros sistemas remotos**:
 Debes repetir estos pasos para cada sistema remoto al que deseemos acceder con SSH. Copia tu clave pública al archivo `authorized_keys` en cada uno de esos sistemas.
 
 Ahora podemos corroborar la conexión con los mismos con un modulo de ansible llamado `ping`, para ello necesitamos unos pasos previos así evitamos el error con el mensaje "Permission denied (publickey,password)" que sugiere que Ansible intentó usar autenticación mediante clave pública SSH, pero no pudo autenticarse con éxito.
 
 **Comando PING**:
-
 
 Es momento entonces de aplicar el comando de `ping` de la siguiente manera:
 
@@ -712,6 +702,7 @@ master | SUCCESS => {
     "ping": "pong"
 }
 ```
+
 Podremos empezar a ejecutar comandos con Ansible, por ejemplo, para ver qué tipo de SO y qué versión tenemos instalada nos vamos a valer del siguiente comando:
 
 ```sh
@@ -757,26 +748,26 @@ Antes de poder ejecutar cualquier tarea nos debemos asegurar de tener los **perm
 
 Agregar una entrada en `/etc/sudoers` para permitir que el usuario Ansible ejecute comandos como root sin contraseña:
 
-* Accedemos por SSH a la máquina de destino:
+- Accedemos por SSH a la máquina de destino:
 
 ```sh
 ssh vagrant@127.0.0.2
 ```
 
-* Abrimos el archivo sudoers para edición utilizando un editor de texto en el host remoto (como visudo que garantiza que no se cometan errores de sintaxis) para abrir el archivo sudoers con privilegios de superusuario:
+- Abrimos el archivo sudoers para edición utilizando un editor de texto en el host remoto (como visudo que garantiza que no se cometan errores de sintaxis) para abrir el archivo sudoers con privilegios de superusuario:
 
 ```sh
 sudo visudo
 ```
 
-* Agregamos la entrada para el usuario de Ansible en el archivo sudoers para permitir al usuario de Ansible ejecutar comandos sin requerir una contraseña. La entrada debe tener el siguiente formato:
+- Agregamos la entrada para el usuario de Ansible en el archivo sudoers para permitir al usuario de Ansible ejecutar comandos sin requerir una contraseña. La entrada debe tener el siguiente formato:
 
 ```sh
 # Ansible root privileges
 vagrant ALL=(ALL:ALL) NOPASSWD: ALL
 ```
 
-* Guardamos y cerramos.
+- Guardamos y cerramos.
 
 Esto permite que el usuario Ansible ejecute cualquier comando como root sin requerir una contraseña. Deberemos tener en cuenta que esta opción **tiene implicaciones de seguridad** y debe usarse con precaución.
 
@@ -833,9 +824,9 @@ Importante que a la hora de ejecutar dichos comandos, Ansible **no hará cambios
 
 Si el **estado deseado de la tarea fuera "absent"** en lugar de "latest", cuando lo corramos de nuevo, buscará que dicha librería *no esté*, nuevamente habrá un cambio y será la eliminación de dicha librería.
 
-### Aprovisionamiento de Kubernetes
+## Aprovisionamiento de Kubernetes
 
-#### Comparación de diferentes tecnologías
+### Comparación de diferentes tecnologías
 
 Deberemos explorar diferentes alternativas a la hora de ver qué nos conviene implementar, para ello se presentan las siguientes:
 
@@ -849,7 +840,7 @@ Deberemos explorar diferentes alternativas a la hora de ver qué nos conviene im
 
 Por el momento centraremos nuestra atención en **k8s y k0s**, que a modo general podremos comparar rendimientos entre uno más completo y uno más simple, además podremos comparar la facilidad de instalación de los mismos.
 
-#### k0s: Versión alternativa y ligera de K8s
+### k0s: Versión alternativa y ligera de K8s
 
 **K0s (pronunciado "k-zeros")** es una plataforma Kubernetes ligera y autosuficiente diseñada para ser fácilmente desplegada en diferentes entornos, incluso aquellos con restricciones de conectividad. A diferencia de las implementaciones de Kubernetes convencionales, k0s es un clúster autónomo y no requiere de componentes externos para su funcionamiento. A continuación, se detallan sus componentes y funcionalidades clave:
 
@@ -869,7 +860,6 @@ Por el momento centraremos nuestra atención en **k8s y k0s**, que a modo genera
 
 K0s es especialmente adecuado para entornos donde la conectividad a Internet es limitada o inestable, ya que puede operar de manera completamente autónoma. Su diseño ligero y su capacidad para funcionar como un clúster autónomo lo hacen apropiado para despliegues en dispositivos de borde (edge computing), entornos de desarrollo local y escenarios donde la simplicidad y la independencia de infraestructura externa son prioritarias. La facilidad de implementación y la capacidad de operar en entornos variados hacen que k0s sea una opción atractiva para casos de uso diversos.
 
-
 **Aprovisionamiento de k0s con Ansible sobre VMs de Vagrant**
 
 Creamos la carpeta k0s, donde aplicaremos primero el siguiente comando:
@@ -879,6 +869,7 @@ vagrant init
 ```
 
 Dentro de la misma carpeta deberemos tener la siguiente estructura de archivos:
+
 ```
 k0s/
 |_ Vagrantfle
@@ -892,6 +883,7 @@ k0s/
             |_ .../
 
 ```
+
 Ahora veremos que poner dentro de cada archivo.
 
 En la `Vagrantfile` deberemos tener lo siguiente:
@@ -1021,9 +1013,10 @@ all:
     ansible_private_key: /home/aagustin/.ssh/vagrant_key
 
 ```
+
 Con el inventario creado, podemos controlar que tenemos los hosts bien configurados y hacer un ping para ver si tenemos conectividad:
 
-* Listamos todos los hosts:
+- Listamos todos los hosts:
 
 ```sh
 > ansible -i ansible/inventory/inventory2.yaml --list-hosts all
@@ -1033,7 +1026,7 @@ Con el inventario creado, podemos controlar que tenemos los hosts bien configura
     k0s-3
 ```
 
-* Ejecutamos el comando PING:
+- Ejecutamos el comando PING:
 
 ```sh
 > ansible -i ansible/inventory/inventory.yaml -m ping all      
@@ -1060,8 +1053,8 @@ k0s-2 | SUCCESS => {
 }
 
 ```
-*Recordar que si es la primera vez que le damos up y no indicamos ningun fingerprint deberemos aceptar que queremos ingresar sin fingerprint poniendo `yes` en la terminal cuando nos pregunte.*
 
+*Recordar que si es la primera vez que le damos up y no indicamos ningun fingerprint deberemos aceptar que queremos ingresar sin fingerprint poniendo `yes` en la terminal cuando nos pregunte.*
 
 Ahora nos disponemos a crear el `playbook.yaml`, con el siguiente contenido:
 
@@ -1110,7 +1103,7 @@ Una vez tenemos esto, podemos ejecutar el aprovisionamiento con Asible a los nod
 ansible-playbook ansible/playbook.yaml -i ansible/inventory/inventory.yaml
 ```
 
-### K8s: Kubernetes convencional
+## K8s: Kubernetes convencional
 
 **Kubernetes (k8s)** es una plataforma de código abierto diseñada para automatizar, escalar y operar aplicaciones en contenedores. Su arquitectura se basa en un modelo maestro-nodo que coordina la gestión de contenedores en un clúster. Aquí se describen sus principales componentes y funcionalidades:
 
@@ -1130,23 +1123,284 @@ ansible-playbook ansible/playbook.yaml -i ansible/inventory/inventory.yaml
 
 Kubernetes es altamente versátil y puede desplegarse en una variedad de entornos, desde infraestructuras locales hasta nubes públicas. Es especialmente eficaz en entornos de producción donde la orquestación y escalabilidad de contenedores son fundamentales. Kubernetes también es utilizado comúnmente en entornos de desarrollo y pruebas para garantizar la coherencia entre los diferentes ciclos de vida de las aplicaciones. Su capacidad para gestionar cargas de trabajo en diversos entornos y su gran comunidad de usuarios lo hacen adecuado para una amplia gama de casos de uso.
 
+### Automatización de la implementación de Kubernetes (k8s) en máquinas Vagrant utilizando Ansible
 
-**Aprovisionamiento de k8s con Ansible sobre VMs de Vagrant**
+#### Pasos para el aprovisionamiento
 
-1. Explicar el funcionamiento general
-2. Explicar la distribución de los archivos
-3. Explicar configuración específica de Vagrant
-4. Explicar configuración específica de los archivos de Ansible
-5. Explicar cómo se ejecuta
-6. Mostrar resultado
+1. Cargar nuestra propia configuración de Vagrant en `config_vms.yaml`
+
+   * Detalles a tener en cuenta:
+     - Dependiendo de la cantidad de máquinas virtuales que requieras para tu laboratorio **deberás cambiar** la variable `vms` al número correspondiente.
+     - Observar que la variable de `vb_memory` es igual a `2048` , sino habrá problemas con la ejecución de cualquier configuración de Kubernetes debido a que el requerimiento **minimo de memoria son 2GB.**
+     - Recordar que **debes cambiar** las variables `pub_key_path` y `priv_key_path` con los valores correspondientes a la ruta hacia tus claves pública y privada respectivamente.
+     - Recordar que **debes cambiar** la variable `base_pub_ip` a la correspondiente a tu red LAN del laboratorio u hogar.
+     - Recordar que **debes cambiar** la variable `bridged_iface` por la interfaz correspondiente a la que está conectada a tu red LAN del laboratorio u hogar.
+
+     Deberás colocar en la variable `env` la correspondiente a tu configuración, quedando como sigue:
+
+      ```yaml
+      ---
+      vagrant_config:
+      env: 'tu_usuario'
+      users:
+          tu_usuario:
+            base_name: "k8s"
+            base_image: "bento/ubuntu-22.04"
+            base_image_version: "202309.08.0"
+            #### -> Resto de tus configuraciones
+      ```
+
+   Ahora sí, podemos levantar las máquinas virtuales estando en el directorio correspondiente al archivo `Vagrantfile`:
+
+   ```sh
+   vagrant up
+   ```
+
+   Para la eliminación de las máquianas creadas usar:
+
+   ```sh
+   vagrant destroy
+   ```
+
+2. Entender el directory layout de `ansible/`:
+
+   Existen "buenas prácticas" a la hora de acomodar los archivos que utilizamos para aprovisionar con Ansible. Podés encontrar más información acá: [Ansible Best Practicas - Directory Layout](https://docs.ansible.com/ansible/2.8/user_guide/playbooks_best_practices.html#DirectoryLayout)
+
+   Luego de seguir a éste se acomodaron los directorios y archivos de la siguiente manera:
+
+   ```sh
+   > tree
+   .
+   ├── cluster_reset.yml
+   ├── cluster_setup.yml
+   ├── group_vars
+   │   └── all.yml
+   ├── host_vars
+   ├── inventory.yml
+   ├── old_files
+   │   ├── ansible-get-join-command.yaml
+   │   ├── ansible-hosts.txt
+   │   ├── ansible-init-cluster.yml
+   │   ├── ansible-install-kubernetes-dependencies.yml
+   │   ├── ansible-join-workers.yml
+   │   └── ansible-vars.yml
+   ├── reset.yml
+   ├── roles
+   │   ├── get_join_command
+   │   │   ├── defaults
+   │   │   └── tasks
+   │   │       └── main.yml
+   │   ├── init_cluster
+   │   │   ├── defaults
+   │   │   └── tasks
+   │   │       └── main.yml
+   │   ├── install_kubernetes_dependencies
+   │   │   ├── defaults
+   │   │   └── tasks
+   │   │       └── main.yml
+   │   ├── join_workers
+   │   │   ├── defaults
+   │   │   └── tasks
+   │   │       └── main.yml
+   │   └── reset
+   │       ├── defaults
+   │       └── tasks
+   │           └── main.yml
+   └── site.yml
+   ```
+
+   Cada uno de estos directorios y archivos juega un papel importante en la organización de las configuraciones y tareas de Ansible. Los elementos principales de la estructura de directorios son:
+
+   - `cluster_reset.yml` y `cluster_setup.yml`: Son los puntos de entrada para los playbooks de Ansible. Estos archivos especifican las tareas que se deben realizar en el entorno objetivo.
+
+   - `group_vars/all.yml`: Acá se definen variables específicas de grupo que se aplicarán a todos los hosts en el inventario.
+
+   - `host_vars/`: Este directorio se utilizaría para almacenar variables específicas de host si es necesario.
+
+   - `inventory.yml`: Este archivo es donde se define nuestro inventario, es decir, la lista de hosts en los que Ansible ejecutará las tareas. Puedes definir grupos de hosts y asignar variables en este archivo.
+
+   - `old_files/`: Este directorio contiene archivos antiguos o archivos de configuración anteriores que ya no se utilizan en el proyecto, es decir, los originales previos a la reestructuración.
+
+   - `reset.yml`: Un playbook para restablecer la configuración de tu sistema o clúster.
+
+   - `roles/`: Este directorio contiene los roles de Ansible, que son módulos reutilizables que definen tareas específicas. Cada rol tiene subdirectorios para las tareas y las variables por defecto asociadas a ese rol.
+
+      - `get_join_command/`, `init_cluster/`, `install_kubernetes_dependencies/`, `join_workers/`, y `reset/` son los nombres de los roles que estás utilizando en tu proyecto.
+
+      - Dentro de cada rol, hay subdirectorios `defaults` y `tasks` que contienen variables por defecto y tareas específicas para ese rol.
+
+   - `site.yml`: Es un archivo de nivel superior que suele utilizarse para orquestar la ejecución de varios playbooks y roles en un orden específico.
+
+   Notarás que como extra tenemos el playbook y role para hacer un reset de las configuraciones, entonces **no será necesario eliminar todas las máquinas virtuales para volver a comenzar en caso de error**.
+
+3. Comprender lo que hace cada role en `roles`:
+
+   - `install_kubernetes_dependencies`:
+     - Instala paquetes necesarios para configurar Kubernetes y Docker, como `apt-transport-https`, `docker-ce`, `kubelet`, etc.
+     - Configura claves de firma y repositorios para Docker y Kubernetes.
+     - Asegura que Docker esté habilitado y en funcionamiento.
+     - Deshabilita el archivo de swap y elimina las configuraciones de swap.
+     - Reinicia el sistema para aplicar los cambios.
+
+   - `init_cluster`:
+     - Configura Docker para usar el controlador de cgroups systemd.
+     - Inicializa el clúster de Kubernetes con un comando `kubeadm init`, especificando una máscara de subred para la red de pod.
+     - Crea un directorio `.kube` en el directorio de inicio del usuario.
+     - Configura el archivo de configuración de Kubernetes en el directorio de inicio del usuario.
+     - Reinicia el servicio kubelet para aplicar las configuraciones.
+     - Descarga y aplica las configuraciones de red Calico y el panel de control de Kubernetes Dashboard.
+
+   - `get_join_command`:
+     - Extrae el comando para unirse al clúster Kubernetes con el comando `kubeadm token create --print-join-command`.
+     - Guarda el comando de unión en un archivo local (`join_command.out`).
+
+   - `join_workers`:
+     - Configura Docker para usar el controlador de cgroups systemd.
+     - Lee el comando de unión del archivo local.
+     - Ejecuta el comando de unión para agregar nodos trabajadores al clúster.
+
+   - `reset`:
+     - Elimina los paquetes de Kubernetes y Docker instalados previamente.
+     - Elimina las claves de firma y los repositorios relacionados con Docker y Kubernetes.
+     - Elimina cualquier configuración de intercambio y habilita el intercambio si estaba deshabilitado previamente.
+     - Elimina la configuración del controlador de cgroups Docker.
+     - Reinicia el sistema para aplicar los cambios.
+
+4. Modificar la variable `ansible_private_key: tu_ruta/tu_clave_privada` del archivo `group_vars/all.yml`.
+
+5. Checkear que se hayan levantado correctamente las máquinas virtuales:
+
+   ```sh
+   > vagrant status
+   Current machine states:
+
+   k8s-1                     running (virtualbox)
+   k8s-2                     running (virtualbox)
+   k8s-3                     running (virtualbox)
+
+   This environment represents multiple VMs. The VMs are all listed
+   above with their current state. For more information about a specific
+   VM, run `vagrant status NAME`.
+   ```
+
+6. **¡Atención!** Según tus requerimientos en cuanto a cantidad de máquinas virtuales (cual número definiste en la variable `vms` del archivo de configuración `config_vms.yaml`) deberás modificar el inventario:
+
+   ```yaml
+   ---
+
+   all:
+   children:
+      kube_server:
+         hosts:
+         k8s-1:
+            ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 1 }}"
+      kube_agents:
+         hosts:
+         k8s-2:
+            ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 2 }}"
+         k8s-3:
+            ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 3 }}"
+   ```
+
+   En nuestro caso, tenemos 3 máquinas virtuales, en el caso de haber más o menos nos aseguraremos de agregarla o eliminarla según corresponda.
+
+7. Comprobamos conectividad con todos los nodos:
+
+   ```sh
+   # En el directorio /ansible
+   ansible -i inventory.yml -m ping all
+   ```
+
+   Obtendríamos el siguiente output:
+
+   ```json
+   k8s-1 | SUCCESS => {
+      "ansible_facts": {
+         "discovered_interpreter_python": "/usr/bin/python3"
+      },
+      "changed": false,
+      "ping": "pong"
+   }
+   k8s-2 | SUCCESS => {
+      "ansible_facts": {
+         "discovered_interpreter_python": "/usr/bin/python3"
+      },
+      "changed": false,
+      "ping": "pong"
+   }
+   k8s-3 | SUCCESS => {
+      "ansible_facts": {
+         "discovered_interpreter_python": "/usr/bin/python3"
+      },
+      "changed": false,
+      "ping": "pong"
+   }
+   ```
+
+8. Ejecutar el aprovisionamiento con Ansible:
+
+   ```sh
+   # En el directorio /ansible
+   ansible-playbook -vvv site.yml -i inventory.yml
+   ```
+
+   En caso de querer resetear la configuración:
+
+   ```sh
+   # 1) Ejecutamos el role
+   ansible-playbook reset.yml -i inventory.yml
+   
+   # 2) Eliminamos el archivo creado con los commands
+   rm  rm join_command.out 
+   ```
+
+   En caso de querer ejecutar sólo un role específico
+
+   ```sh  
+   ansible-playbook -vvv site.yml -i inventory.yml --tags tag_del_rol_a_ejecutar
+   ```
+
+9. Checkear que todo se haya ejecutado correctamente:
+
+   Primero, veremos que el output luego de ejecutar el playbook de Ansible es el siguiente:
+
+   ```sh
+   PLAY RECAP **********************************************************************************************
+   k8s-1                      : ok=31   changed=21   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+   k8s-2                      : ok=21   changed=12   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+   k8s-3                      : ok=21   changed=16   unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+   ```
+
+   Segundo, ingresamos por SSH a la máquina que hayamos definido como control-plane o master y nos fijaremos los nodos:
+
+   ```sh
+   > ssh -i ~/.ssh/vagrant_key vagrant@192.168.55.51
+   Welcome to Ubuntu 22.04.3 LTS (GNU/Linux 5.15.0-83-generic x86_64)
+
+   * Documentation:  https://help.ubuntu.com
+   * Management:     https://landscape.canonical.com
+   * Support:        https://ubuntu.com/advantage
+
+   System information as of Thu Nov  2 05:33:07 PM UTC 2023
+
+   System load:  1.34521484375      Users logged in:          0
+   Usage of /:   15.6% of 30.34GB   IPv4 address for docker0: 172.17.0.1
+   Memory usage: 12%                IPv4 address for eth0:    10.0.2.15
+   Swap usage:   0%                 IPv4 address for eth1:    192.168.102.51
+   Processes:    166                IPv4 address for eth2:    192.168.55.51
 
 
-### Extras
+   This system is built by the Bento project by Chef Software
+   More information can be found at https://github.com/chef/bento
+   Last login: Thu Nov  2 17:34:59 2023 from 192.168.55.1
+   
+   vagrant@k8s-1:~$ kubectl get nodes
+   NAME    STATUS   ROLES                  AGE   VERSION
+   k8s-1   Ready    control-plane,master   2m    v1.23.6
+   k8s-2   Ready    <none>                 96s   v1.23.6
+   k8s-3   Ready    <none>                 96s   v1.23.6
+   ```
 
-**Instalar pluggin de vagrant vbguest para poder deshabilitar la autoconfiguración de vbguest**
-https://www.devopsroles.com/vagrant-unknown-configuration-section-vbguest/
+**¡Listo!** Tenemos nuestro pequeño cluster de Kubernetes levantado en nuestro entorno de laboratorio.
 
-```sh
-vagrant plugin uninstall vagrant-vbguest
-vagrant plugin install vagrant-vbguest
-```
+## Extras
