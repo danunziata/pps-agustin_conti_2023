@@ -10,6 +10,6 @@ all:
       hosts:
         k8s-2:
           ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 2 }}"
-        #k8s-3:
-          #ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 3 }}"
+        k8s-3:
+          ansible_host: "{{ foo.base_host_ip }}.{{ foo.start_host_ip + 3 }}"
 

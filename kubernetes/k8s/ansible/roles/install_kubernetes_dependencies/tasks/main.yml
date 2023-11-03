@@ -70,9 +70,9 @@
     update_cache: yes
   vars:
     packages:
-      - kubelet=1.23.6-00
-      - kubeadm=1.23.6-00
-      - kubectl=1.23.6-00
+      - kubelet=1.21.10-00
+      - kubeadm=1.21.10-00
+      - kubectl=1.21.10-00
 
 - name: Hold Kubernetes binary versions (prevent them from being updated)
   dpkg_selections:
