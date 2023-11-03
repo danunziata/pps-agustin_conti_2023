@@ -6,38 +6,8 @@
 require 'yaml'
 config_file = YAML.load_file('config_vms.yaml')
 
-<<<<<<< HEAD
-NUM_INITIAL_CONTROLLERS = 0
-NUM_CONTROLLERS = 1
-NUM_WORKERS = 1
- 
-VMS = NUM_INITIAL_CONTROLLERS + NUM_CONTROLLERS + NUM_WORKERS
-
-# Resources configuration
-VB_CPUS = 4 
-VB_MEMORY = 2048 
-
-# Private keys routes
-PUB_KEY_PATH = "/home/aagustin/.ssh/vagrant_key.pub"
-PRIV_KEY_PATH ="/home/aagustin/.ssh/vagrant_key"
-   
-# IP configuration  
-BASE_PRIV_IP = "192.168.55"
-BASE_PUB_IP = "192.168.102"
-START_IP = 50
-
-GATEWAY_IP = "#{BASE_PUB_IP}.1"
-NAMESERVER_IP = "8.8.8.8"
-
-PRIV_NET_MASK = "255.255.255.0"
-PUB_NET_MASK = "255.255.255.0"
-
-# Bridged interface
-BRIDGED_IFACE = "wlo1"
-=======
 # Obtain specific user params according to the context
 params = config_file['vagrant_config']['users'][config_file['vagrant_config']['env']]
->>>>>>> 278b0f78d3270d9414f2f33d093309a1caf920eb
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
