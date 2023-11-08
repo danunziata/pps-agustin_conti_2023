@@ -64,10 +64,15 @@
    kubectl create -f crds.yaml -f common.yaml -f operator.yaml
    ```
 
-   Checkeamos que el pods se haya levantado correctamente:
+   Checkeamos que el pods se haya levantado correctamente (veremos una actualización cada dos segundos del get pods, esperamos a que todos esten en estado Running):
 
    ```sh
-    vagrant@k8s-1:~/rook/rook/cluster/examples/kubernetes/ceph$ kubectl get pods -A
+   watch kubectl get pods -A
+   ```
+
+   Deberíamos ver lo siguiente:
+
+   ```sh
     NAMESPACE              NAME                                         READY   STATUS    RESTARTS        AGE
     kube-system            calico-kube-controllers-57c6dcfb5b-9x8kp     1/1     Running   1 (5m58s ago)   8m12s
     kube-system            calico-node-4dtgw                            1/1     Running   2 (4m39s ago)   8m6s
@@ -93,10 +98,9 @@
     kubectl create -f cluster-test.yaml
     ```
 
-    Validamos la instalación:
+    Validamos la instalación (veremos una actualización cada dos segundos del get pods, esperamos a que todos esten en estado Running):
 
     ```sh
-    # Veremos una actualización cada dos segundos del get pods, esperamos a que todos esten en estado Running
     watch kubectl get pods -n rook-ceph
     ```
 
@@ -110,7 +114,12 @@
    Checkeamos que se haya aprovisionado correctamente:
 
    ```sh
-    vagrant@k8s-1:~/rook/rook/cluster/examples/kubernetes/ceph/csi/rbd$ kubectl get sc
+   kubectl get sc
+   ```
+
+   Deberíamos ver lo siguiente:
+
+   ```sh
     NAME              PROVISIONER                  RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
     rook-ceph-block   rook-ceph.rbd.csi.ceph.com   Delete          Immediate           true                   73s
    ```
@@ -130,7 +139,12 @@
     Checkeamos que esté por Default:
 
     ```sh
-    vagrant@k8s-1:~/rook/rook/cluster/examples/kubernetes/ceph/csi/rbd$ kubectl get sc
+    kubectl get sc
+    ```
+
+    Deberíamos ver lo siguiente:
+
+    ```sh
     NAME                        PROVISIONER                  RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
     rook-ceph-block (default)   rook-ceph.rbd.csi.ceph.com   Delete          Immediate           true                   5m19s
     ```
@@ -154,7 +168,12 @@
     - Checkeamos versión:
 
     ```sh
-    vagrant@k8s-1:~$ kustomize version
+    kustomize version
+    ```
+
+    Deberíamos ver lo siguiente:
+
+    ```sh
     Version: {KustomizeVersion:3.2.0 GitCommit:a3103f1e62ddb5b696daa3fd359bb6f2e8333b49 BuildDate:2019-09-18T16:26:36Z GoOs:linux GoArch:amd64}
     ```
 
@@ -183,68 +202,101 @@
     kubectl get pods -n kubeflow-user-example-com
     ```
 
-## Errores
-
-- Puede que haya errores debido a la falta de recursos.
-  - Necesitamos más RAM y más núcleos.
-    ![](./htop-master-node.png)
-
-- Al ejecutar el comando para la instalación de KF en el directorio del repositorio:
-
-  - Este:
+    El que más nos importa ver que esté correiendo correctamente es:
 
     ```sh
-    2023/11/03 17:45:45 nil value at `valueFrom.configMapKeyRef.name` ignored in mutation attempt
-    2023/11/03 17:45:45 nil value at `valueFrom.secretKeyRef.name` ignored in mutation attempt
-    2023/11/03 17:45:45 well-defined vars that were never replaced: kfp-app-name,kfp-app-version
+    watch kubectl get pods -n kubeflow
     ```
 
-  - Este también:
+    Donde cuando veamos que están todos los pods corriendo, nos fijaremos si se levantaron los pods correspondientes al ejemplo:
 
     ```sh
-    Warning: apiextensions.k8s.io/v1beta1 CustomResourceDefinition is deprecated in v1.16+, unavailable in v1.22+; use apiextensions.k8s.io/v1 CustomResourceDefinition
+    watch kubectl get pods -n kubeflow-user-example-com
     ```
 
-  - Este también:
+12. Hacemos la exposición de los puertos para poder acceder a la interfaz gráfica de Kubeflow:
 
     ```sh
-    Warning: rbac.authorization.k8s.io/v1beta1 ClusterRoleBinding is deprecated in v1.17+, unavailable in v1.22+; use rbac.authorization.k8s.io/v1 ClusterRoleBinding
+    kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
     ```
 
-  - Este último, el MÁS IMPORTANTE:
+    ERROR! No funciona, es Forbidden tanto haciendo CURL desde adentro de la VPC Master como desde la PC HOST.
+
+## Problemas que detecté y "resolví"
+
+1. Corregir la IP de los hosts.
+
+    Cuando aplicamos el siguiente comando:
 
     ```sh
-    E1103 17:53:32.118650   32886 request.go:1027] Unexpected error when reading response body: http2: server sent GOAWAY and closed the connection; LastStreamID=1, ErrCode=NO_ERROR, debug=""
-    [unable to recognize "STDIN": no matches for kind "Image" in version "caching.internal.knative.dev/v1alpha1", unable to recognize "STDIN": no matches for kind "Certificate" in version "cert-manager.io/v1", unable to recognize "STDIN": no matches for kind "ClusterIssuer" in version "cert-manager.io/v1", unable to recognize "STDIN": no matches for kind "Issuer" in version "cert-manager.io/v1", unable to recognize "STDIN": no matches for kind "Certificate" in version "cert-manager.io/v1alpha2", unable to recognize "STDIN": no matches for kind "Issuer" in version "cert-manager.io/v1alpha2", unable to recognize "STDIN": no matches for kind "Profile" in version "kubeflow.org/v1beta1", unable to recognize "STDIN": no matches for kind "CompositeController" in version "metacontroller.k8s.io/v1alpha1", unable to recognize "STDIN": no matches for kind "DestinationRule" in version "networking.istio.io/v1alpha3", unable to recognize "STDIN": no matches for kind "EnvoyFilter" in version "networking.istio.io/v1alpha3", unable to recognize "STDIN": no matches for kind "Gateway" in version "networking.istio.io/v1alpha3", unable to recognize "STDIN": no matches for kind "VirtualService" in version "networking.istio.io/v1alpha3", unable to recognize "STDIN": no matches for kind "VirtualService" in version "networking.istio.io/v1beta1", unable to recognize "STDIN": no matches for kind "AuthorizationPolicy" in version "security.istio.io/v1beta1", unable to recognize "STDIN": no matches for kind "PeerAuthentication" in version "security.istio.io/v1beta1"]
-    error when creating "STDIN": Post "https://192.168.55.51:6443/api/v1/namespaces/knative-serving/services?fieldManager=kubectl-client-side-apply": net/http: TLS handshake timeout
+    kubectl get nodes -o wide
     ```
 
-    Este connection time-out tengo la sospecha que es por la mala configuración de Kubernetes. Sucede que cuando quiero ingresar a la interfaz:
+    Notamos que la IP interna (`Internal IP`) no es la correspondiente a la red privada, sino a la de la NAT. Para corregir esto tenemos que modificar el role de Ansible que hace la instalación de los componentes:
 
     ```sh
-    kubectl cluster-info
+    vi k8s/ansible/roles/install_kubernetes_dependencies/tasks/main.yml
     ```
 
-    Tengo el siguiente output:
+    Donde descomentamos la siguiente sección y le agregamos `create: yes`:
 
-    ```json
-    {
-    "kind": "Status",
-    "apiVersion": "v1",
-    "metadata": {
-        
-    },
-    "status": "Failure",
-    "message": "error trying to reach service: EOF",
-    "reason": "ServiceUnavailable",
-    "code": 503
-    }
+    ```yaml
+    - name: Configure node IP
+      lineinfile:
+        path: /etc/default/kubelet
+        line: "KUBELET_EXTRA_ARGS=--node-ip={{ ansible_host }}"
+        create: yes
     ```
 
-    Según estuve leyendo, puede ser que se deba a que no tiene la suficiente RAM para levantar la interfaz.
+    Ya que al no existir dicho archivo, se creaba un conflicto, por ende debíamos crearlo para que luego sea usado en las configuraciones y no tome las IP por defecto (que corresponden a las de la interfaz de la NAT).
+
+2. Corregir el estado de los componentes.
+
+    Cuando aplicamos el siguiente comando:
+
+    ```sh
+    kubectl get componentstatuses
+    ```
+
+    Tenemos un error que nos dice `Unhealthy` en los componentes de `controller-manager` y `scheduler` que dice que la conexión fue rechazada: `dial 128.0.0.1:1025n connect: onnection refused`. Para solucionar este problema debemos seguir los siguientes pasos:
+
+      - Comentar la linea `- --port=0`  en (spec->containers->command) del siguiente archivo:
+
+        ```sh
+        sudo vi /etc/kubernetes/manifests/kube-scheduler.yaml
+        ```
+
+      - Comentar la linea `- --port=0`  en (spec->containers->command) del siguiente archivo:
+
+          ```sh
+          sudo vi /etc/kubernetes/manifests/kube-controller-manager.yaml
+          ```
+
+      - Reiniciar el servicio de Kubelet:
+
+          ```sh
+          sudo systemctl restart kubelet.service
+          ```
+
+        Ahora el output del comando debería ser el siguiente:
+
+          ```sh
+          vagrant@k8s-1:~$ kubectl get componentstatuses
+          Warning: v1 ComponentStatus is deprecated in v1.19+
+          NAME                 STATUS    MESSAGE             ERROR
+          scheduler            Healthy   ok                  
+          controller-manager   Healthy   ok                  
+          etcd-0               Healthy   {"health":"true"}  
+          ```
 
 ## Referencias
 
 [YouTube - Setting up a Local Kubernetes cluster on bare metal Ubuntu workstations](https://www.youtube.com/watch?v=nw8OxozYstk)
+
 [YouTube - Deploying a local Kubeflow setup (Part-2)](https://www.youtube.com/watch?v=5E-r_0MGZ20)
+
 [Error - Kubernetes cluster access](https://stackoverflow.com/questions/45094665/user-systemanonymous-cannot-get-path)
+
+[Error - Kubectl Node IP](https://stackoverflow.com/questions/58892994/destination-etc-default-kubelet-does-not-exist)
+
+[Error - Kubectl Component Statuses](https://stackoverflow.com/questions/64296491/how-to-resolve-scheduler-and-controller-manager-unhealthy-state-in-kubernetes)
