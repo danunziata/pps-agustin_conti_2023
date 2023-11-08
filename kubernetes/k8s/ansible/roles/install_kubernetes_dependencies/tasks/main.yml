@@ -83,10 +83,11 @@
     - kubeadm
     - kubectl
 
-#- name: Configure node IP
-#  lineinfile:
-#    path: /etc/default/kubelet
-#    line: "KUBELET_EXTRA_ARGS=--node-ip={{ ansible_host }}"
+- name: Configure node IP
+  lineinfile:
+    path: /etc/default/kubelet
+    line: "KUBELET_EXTRA_ARGS=--node-ip={{ ansible_host }}"
+    create: yes
 
 - name: Restart kubelet
   service:
