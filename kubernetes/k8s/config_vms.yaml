@@ -1,7 +1,7 @@
 ---
 
 vagrant_config:
-  env: 'agus'
+  env: 'agus_local_test_kubeflow'
   users:
     agus:
         base_name: "k8s"
@@ -10,6 +10,25 @@ vagrant_config:
         vb_memory: 2048
         vb_cpus: 2
         vms: 3 
+        base_priv_ip: "192.168.55"
+        nameserver_ip: "8.8.8.8"
+        pub_net_mask: "255.255.255.0"
+        priv_net_mask: "255.255.255.0"
+        user_dir_path: "/home/aagustin"
+        pub_key_path: "/home/aagustin/.ssh/vagrant_key.pub"
+        priv_key_path: "/home/aagustin/.ssh/vagrant_key"
+        base_pub_ip: "192.168.102"
+        gateway_ip: "192.168.102.1"
+        start_ip: 50
+        bridged_iface: "wlo1"
+    
+    agus_local_test_kubeflow:
+        base_name: "k8s"
+        base_image: "bento/ubuntu-22.04"
+        base_image_version: "202309.08.0"
+        vb_memory: 4096
+        vb_cpus: 2
+        vms: 2 
         base_priv_ip: "192.168.55"
         nameserver_ip: "8.8.8.8"
         pub_net_mask: "255.255.255.0"
