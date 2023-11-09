@@ -8,6 +8,8 @@
 /kubernetes/k8s/.vagrant
 /kubernetes/k8s/ansible/join_command.out
 
+/kubernetes/k8s_fixed/configs/
+
 
 # PRIVATE FILES
 *.json
