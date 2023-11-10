@@ -1,0 +1,40 @@
+---
+- name: Pull required container images
+  command: kubeadm config images pull
+  become: yes
+
+- name: Initialize Control Plane (Master)
+  command: kubeadm init --apiserver-advertise-address={{ CONTROL_IP }} --apiserver-cert-extra-sans={{ CONTROL_IP }} --pod-network-cidr={{ POD_CIDR }} --service-cidr={{ SERVICE_CIDR }} --node-name "{{ ansible_hostname }}" --ignore-preflight-errors Swap
+  become: yes
+
+- name: Copy Kubernetes config to user's home
+  block:
+    - name: Create .kube directory
+      file:
+        path: "{{ ansible_env.HOME }}/.kube"
+        state: directory
+      become: yes
+
+    - name: Copy admin.conf to user's .kube directory
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: "{{ ansible_env.HOME }}/.kube/config"
+        owner: "{{ ansible_user_id }}"
+        group: "{{ ansible_user_id }}"
+      become: yes
+
+- name: Save configs to shared location
+  # Include the necessary tasks for saving configurations to the shared /vagrant location
+  # ...
+
+- name: Install Calico Network Plugin
+  block:
+    - name: Download Calico YAML
+      get_url:
+        url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ CALICO_VERSION }}/manifests/calico.yaml"
+        dest: "{{ ansible_env.HOME }}/calico.yaml"
+
+    - name: Apply Calico Network
+      command: kubectl apply -f "{{ ansible_env.HOME }}/calico.yaml"
+      become: yes
+

@@ -1,0 +1,28 @@
+---
+
+# Available roles:
+# 1) common 
+# 2) master  
+# 3) node
+ 
+- hosts: all
+  name: "Common configurations"
+  become: yes
+  roles:
+    - role: common
+      tags: common
+
+- hosts: kube_master
+  name: "Master configuration"
+  become: yes
+  roles:
+    - role: master
+      tags: master
+
+- hosts: kube_node
+  name: "Nodeconfiguration"
+  become: yes
+  roles:
+    - role: node
+      tags: node
+
