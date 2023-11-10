@@ -1,6 +1,3 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
-
 
 require "yaml"
 settings = YAML.load_file "settings.yaml"
@@ -13,8 +10,14 @@ IP_START = Integer(IP_SECTIONS.captures[1])
 NUM_WORKER_NODES = settings["nodes"]["workers"]["count"]
 
 Vagrant.configure("2") do |config|
+  config.vm.provision "shell", env: { "IP_NW" => IP_NW, "IP_START" => IP_START, "NUM_WORKER_NODES" => NUM_WORKER_NODES }, inline: <<-SHELL
+      apt-get update -y
+      echo "$IP_NW$((IP_START)) master-node" >> /etc/hosts
+      for i in `seq 1 ${NUM_WORKER_NODES}`; do
+        echo "$IP_NW$((IP_START+i)) worker-node0${i}" >> /etc/hosts
+      done
+  SHELL
 
-  # Check architecture
   if `uname -m`.strip == "aarch64"
     config.vm.box = settings["software"]["box"] + "-arm64"
   else
@@ -22,21 +25,14 @@ Vagrant.configure("2") do |config|
   end
   config.vm.box_check_update = true
 
-  # Configure master node
   config.vm.define "master" do |master|
-    
-    # Setting up IP
     master.vm.hostname = "master-node"
     master.vm.network "private_network", ip: settings["network"]["control_ip"]
-    
-    # Setting up shared folder
     if settings["shared_folders"]
       settings["shared_folders"].each do |shared_folder|
         master.vm.synced_folder shared_folder["host_path"], shared_folder["vm_path"]
       end
     end
-
-    # Setting up resources
     master.vm.provider "virtualbox" do |vb|
         vb.cpus = settings["nodes"]["control"]["cpu"]
         vb.memory = settings["nodes"]["control"]["memory"]
@@ -44,8 +40,6 @@ Vagrant.configure("2") do |config|
           vb.customize ["modifyvm", :id, "--groups", ("/" + settings["cluster_name"])]
         end
     end
-
-    # Seting up environment variables
     master.vm.provision "shell",
       env: {
         "DNS_SERVERS" => settings["network"]["dns_servers"].join(" "),

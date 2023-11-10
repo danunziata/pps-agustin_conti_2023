@@ -1,0 +1,27 @@
+---
+- name: Run join command for node
+  command: /bin/bash /vagrant/configs/join.sh -v
+  become: yes
+
+- name: Copy Kubernetes config to user's home
+  block:
+    - name: Create .kube directory for the user
+      file:
+        path: "/{{ HOME_DIR }}/.kube"
+        state: directory
+        owner: "{{ USER_ID }}"
+        group: "{{ GROUP_ID }}"
+      become: yes
+
+    - name: Copy config to user's .kube directory
+      copy:
+        src: /vagrant/configs/config
+        dest: "{{ HOME_DIR }}/.kube/config"
+        owner: "{{ USER_ID }}"
+        group: "{{ GROUP_ID }}"
+      become: yes
+
+- name: Label the node and set node-role
+  command: kubectl label node {{ ansible_hostname }} node-role.kubernetes.io/worker=worker
+  become: yes
+

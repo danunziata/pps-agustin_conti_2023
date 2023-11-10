@@ -1,24 +1,34 @@
-foo:
-  base_host_ip: "192.168.55"
-  start_host_ip: 50
+---
+# Profile settings
+SETTINGS: "{{ lookup('file', '../../settings.yaml') }}" 
+SELECTED_ENV: "{{ SETTINGS.settings.env }}"
 
-# SSH configuration
-ansible_user: vagrant
-ansible_private_key: /home/aagustin/.ssh/vagrant_key
+## SSH configuration
+ansible_ssh_user: "{{ SETTINGS.users[SELECTED_ENV].ssh.user }}"
+ansible_ssh_private_key_file: "{{ SETTINGS.users[SELECTED_ENV].ssh.private_key_path }}"
+ansible_ssh_pass: "{{ SETTINGS.users[SELECTED_ENV].ssh.password }}"
 
-# specifying a CIDR for our cluster to use.
-# # can be basically any private range except for ranges already in use.
-# # apparently it isn't too hard to run out of IPs in a /24, so we're using a /22
-pod_cidr: "10.244.0.0/16"
+ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
+## Setting up hosts
+CONTROL_IP: "{{ SETTINGS.users[SELECTED_ENV].network.control_ip }}"
+IP_SECTIONS: "{{ CONTROL_IP | regex_search('^([0-9.]+\\.)([^.]+)$') }}"
+IP_NW: "{{ IP_SECTIONS.captures[0] }}"
+NUM_WORKER_NODES: "{{ SETTINGS.users[SELECTED_ENV].nodes.workers.count }}"
 
-# this defines what the join command filename will be
-join_command_location: "join_command.out"
+## Setting up DNS servers
+DNS_SERVERS: "{{ SETTINGS.users[SELECTED_ENV].network.dns_servers | join(' ') }}"
 
-# setting the home directory for retreiving, saving, and executing files
-home_dir: "/home/vagrant"
+## Setting up Kubernetes
+KUBERNETES_VERSION: "{{ SETTINGS.users[SELECTED_ENV].software.kubernetes }}"
+CALICO: "{{ SETTINGS.users[SELECTED_ENV].software.calico }}"
+POD_CIDR: "{{ SETTINGS.users[SELECTED_ENV].network.pod_cidr }}"
+SERVICE_CIDR: "{{ SETTINGS.users[SELECTED_ENV].network.service_cidr }}"
+CLUSTER_NAME: "{{ SETTINGS.users[SELECTED_ENV].cluster_name }}"
 
-remote_user: "vagrant"
-
-
+## Setting up system variables
+OS: "{{ SETTINGS.users[SELECTED_ENV].software.os }}"
+HOME_DIR: "{{ SETTINGS.users[SELECTED_ENV].home_dir }}"
+USER_ID: 1000
+GROUP_ID: 1000
 

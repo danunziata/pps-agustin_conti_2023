@@ -2,27 +2,64 @@
 
 # Available roles:
 # 1) common 
-# 2) master  
+#a- configure_etc_hosts
+#b- ensure_dns_settings
+#c- disable_swap
+#d- install_crio_runtime
+#e-add_kubernetes_crio_repo
+#f-install_crio_and_kubernetes
+
+
+# 2) master
+#a- initialize_master
+#b- copy_kubernetes_config
+#c- install_calico_plugin
+
+
 # 3) node
- 
+#a- run_join_command
+#b- copy_kubernetes_configs
+#c- label_and_set_node_role
+
+
+
 - hosts: all
   name: "Common configurations"
   become: yes
   roles:
-    - role: common
-      tags: common
+    - role: configure_etc_hosts
+      tags: configure_etc_hosts
+    - role: ensure_dns_settings
+      tags: ensure_dns_settings
+    - role: disable_swap
+      tags: disable_swap
+    - role: install_crio_runtime
+      tags: install_crio_runtime
+    - role: add_kubernetes_crio_repo
+      tags: add_kubernetes_crio_repo
+    - role: install_crio_and_kubernetes
+      tags: install_crio_and_kubernetes
+ 
 
 - hosts: kube_master
   name: "Master configuration"
   become: yes
   roles:
-    - role: master
-      tags: master
+    - role: initialize_master 
+      tags: initialize_master
+    - role: copy_kubernetes_config 
+      tags: copy_kubernetes_config
+    - role: install_calico_plugin 
+      tags: install_calico_plugin
 
-- hosts: kube_node
-  name: "Nodeconfiguration"
+- hosts: kube_nodes
+  name: "Nodes configuration"
   become: yes
   roles:
-    - role: node
-      tags: node
+    - role: run_join_command 
+      tags: run_join_command
+    - role: copy_kubernetes_configs
+      tags: copy_kubernetes_configs
+    - role: label_and_set_node_role
+      tags: label_and_set_node_role
 

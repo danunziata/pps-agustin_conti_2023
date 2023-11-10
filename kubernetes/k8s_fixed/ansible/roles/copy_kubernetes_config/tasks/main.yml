@@ -7,18 +7,18 @@
   block:
     - name: Create .kube directory for the user
       file:
-        path: "/home/{{ ansible_user }}/home/vagrant/.kube"
+        path: "/{{ HOME_DIR }}/.kube"
         state: directory
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        owner: "{{ USER_ID }}"
+        group: "{{ GROUP_ID }}"
       become: yes
 
     - name: Copy config to user's .kube directory
       copy:
         src: /vagrant/configs/config
-        dest: "/home/{{ ansible_user }}/.kube/config"
-        owner: "{{ ansible_user }}"
-        group: "{{ ansible_user }}"
+        dest: "{{ HOME_DIR }}/.kube/config"
+        owner: "{{ USER_ID }}"
+        group: "{{ GROUP_ID }}"
       become: yes
 
 - name: Label the node and set node-role

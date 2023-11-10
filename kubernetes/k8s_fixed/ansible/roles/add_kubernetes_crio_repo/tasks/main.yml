@@ -1,4 +1,51 @@
 ---
+
+# VAGRANT SHELL PROVISION
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+  become: yes
+
+- name: Configure /etc/hosts
+  block:
+    - name: Load IP configuration from settings.yaml
+      set_fact:
+        settings: "{{ lookup('file', 'settings.yaml') }}"
+      become: yes
+
+    - name: Extract IP sections
+      set_fact:
+        ip_sections: "{{ settings.network.control_ip | regex_search('^([0-9.]+\\.)([^.]+)$') }}"
+      become: yes
+
+    - name: Set IP_NW variable
+      set_fact:
+        IP_NW: "{{ ip_sections.captures[0] }}"
+      become: yes
+
+    - name: Set IP_START variable
+      set_fact:
+        IP_START: "{{ ip_sections.captures[1] | int }}"
+      become: yes
+
+    - name: Set NUM_WORKER_NODES variable
+      set_fact:
+        NUM_WORKER_NODES: "{{ settings.nodes.workers.count }}"
+      become: yes
+
+    - name: Add entries to /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ IP_NW }}{{ item }}"
+      with_sequence: start="{{ IP_START }}" end="{{ IP_START + NUM_WORKER_NODES }}"
+      become: yes
+
+
+
+
+# SCRIPTS PROVISION
+
 - name: Ensure DNS Settings
   block:
     - name: Create systemd resolved configuration directory if not exists
@@ -72,13 +119,13 @@
       block:
         - name: Add stable libcontainers repository
           apt_repository:
-            repo: "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ ansible_distribution_release }}/ /"
+            repo: "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ OS }}/ /"
             state: present
             filename: devel:kubic:libcontainers:stable.list
 
         - name: Add stable CRI-O repository
           apt_repository:
-            repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ KUBERNETES_VERSION | regex_replace('([0-9]+)\\.([0-9]+)', '\\1.\\2') }}/{{ ansible_distribution_release }}/ /"
+            repo: "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ KUBERNETES_VERSION | regex_replace('([0-9]+)\\.([0-9]+)', '\\1.\\2') }}/{{ OS }}/ /"
             state: present
             filename: devel:kubic:libcontainers:stable:cri-o-{{ KUBERNETES_VERSION | regex_replace('([0-9]+)\\.([0-9]+)', '\\1.\\2') }}.list
 

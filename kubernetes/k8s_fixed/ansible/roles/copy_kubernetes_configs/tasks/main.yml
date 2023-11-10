@@ -11,16 +11,16 @@
   block:
     - name: Create .kube directory
       file:
-        path: "{{ ansible_env.HOME }}/.kube"
+        path: "{{ HOME_DIR }}/.kube"
         state: directory
       become: yes
 
     - name: Copy admin.conf to user's .kube directory
       copy:
         src: /etc/kubernetes/admin.conf
-        dest: "{{ ansible_env.HOME }}/.kube/config"
-        owner: "{{ ansible_user_id }}"
-        group: "{{ ansible_user_id }}"
+        dest: "{{ HOME_DIR }}/.kube/config"
+        owner: "{{ USER_ID }}"
+        group: "{{ GROUP_ID }}"
       become: yes
 
 - name: Save configs to shared location
@@ -32,9 +32,9 @@
     - name: Download Calico YAML
       get_url:
         url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ CALICO_VERSION }}/manifests/calico.yaml"
-        dest: "{{ ansible_env.HOME }}/calico.yaml"
+        dest: "{{ HOME_DIR }}/calico.yaml"
 
     - name: Apply Calico Network
-      command: kubectl apply -f "{{ ansible_env.HOME }}/calico.yaml"
+      command: kubectl apply -f "{{ HOME_DIR }}/calico.yaml"
       become: yes
 
