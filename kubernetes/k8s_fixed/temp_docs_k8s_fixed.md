@@ -269,17 +269,25 @@ Finalmente al ingresar veremos lo siguiente:
 
 - [ ] Pasar todos los scripts y configuraciones a Ansible.
 
-  - Incluir configuración de Dashboard
+  - Incluir configuración de Dashboard un un role a parte
+  - Realizar una correcta configuración de SSH
+  - Redefinir variables de grupo
 
 - [ ] Mejorar archivos de configuración según cada perfil requerido.
 
-- [ ] Probar Kubeflow en su versión 1.7 (latest) usando los manifests y Kustomize.
+- [ ] Probar Kubeflow en su versión 1.8 (latest) usando los manifests y Kustomize.
 
   - [Repositorio de los manifest](https://github.com/kubeflow/manifests#installation)
   
   - [Local Storage Class](https://kubernetes.io/docs/concepts/storage/storage-classes/#local)
 
 - [ ] Ver como hacer "accesible DESDE AFUERA" a las IP de los servicios que necesitemos.
+
+## Test Kubeflow
+
+(Siguiendo los pasos de la rama `act_8_kubeflow`)
+
+- Recordar que se necesita la versión de Kubernetes 1.21.10-00 y que se instala la versión 1.5 de Kubeflow.
 
 ## Referencias
 
