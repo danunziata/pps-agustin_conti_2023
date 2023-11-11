@@ -3,7 +3,17 @@ settings:
   env: 'agus'
   users:
     agus:
-      home_dir: /home/vagrant
+      environment: ""
+      
+      user_dir_path: /home/aagustin
+      node_home_dir: /home/vagrant
+
+      shared_folders:
+        - host_path: ./shared_folder
+          vm_path: /home/vagrant 
+
+      cluster_name: Kubernetes Cluster
+      
       ssh:
         user: "vagrant"
         password: "vagrant"
@@ -27,7 +37,6 @@ settings:
         pod_cidr: 172.16.1.0/16
         service_cidr: 172.17.1.0/18
       
-      cluster_name: Kubernetes Cluster
 
       software:
         box: bento/ubuntu-22.04
@@ -36,7 +45,17 @@ settings:
         os: xUbuntu_22.04
     
     user_n:
-      home_dir: /home/vagrant
+      environment: ""
+      
+      user_dir_path: /home/aagustin
+      node_home_dir: /home/vagrant
+
+      shared_folders:
+        - host_path: ./shared_folder
+          vm_path: /home/vagrant 
+
+      cluster_name: Kubernetes Cluster
+      
       ssh:
         user: "vagrant"
         password: "vagrant"
@@ -60,10 +79,10 @@ settings:
         pod_cidr: 172.16.1.0/16
         service_cidr: 172.17.1.0/18
       
-      cluster_name: Kubernetes Cluster
 
       software:
         box: bento/ubuntu-22.04
         calico: 3.25.0
         kubernetes: 1.26.1-00
         os: xUbuntu_22.04
+ 
