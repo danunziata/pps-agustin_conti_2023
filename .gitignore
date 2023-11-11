@@ -9,7 +9,9 @@
 /kubernetes/k8s/ansible/join_command.out
 
 /kubernetes/k8s_fixed/configs/
-/kubernetes/k8s_fixed/.vagrant
+/kubernetes/k8s_fixed/.vagrant/
+/kubernetes/k8s_fixed/shared_folder/
+/kubernetes/k8s_fixed/.sudo_as_admin_successful 
 
 
 # PRIVATE FILES
