@@ -18,7 +18,7 @@ settings:
         user: "vagrant"
         password: "vagrant"
         private_key_path: /home/aagustin/.ssh/vagrant_key
-        public_key_path: /home/aagustin/.ssh/vagrant_key
+        public_key_path: /home/aagustin/.ssh/vagrant_key.pub
 
       nodes:
         control:
