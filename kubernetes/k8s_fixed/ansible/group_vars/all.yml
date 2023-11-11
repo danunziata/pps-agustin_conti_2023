@@ -21,14 +21,15 @@ DNS_SERVERS: "{{ SETTINGS.users[SELECTED_ENV].network.dns_servers | join(' ') }}
 
 ## Setting up Kubernetes
 KUBERNETES_VERSION: "{{ SETTINGS.users[SELECTED_ENV].software.kubernetes }}"
-CALICO: "{{ SETTINGS.users[SELECTED_ENV].software.calico }}"
+CALICO_VERSION: "{{ SETTINGS.users[SELECTED_ENV].software.calico }}"
 POD_CIDR: "{{ SETTINGS.users[SELECTED_ENV].network.pod_cidr }}"
 SERVICE_CIDR: "{{ SETTINGS.users[SELECTED_ENV].network.service_cidr }}"
 CLUSTER_NAME: "{{ SETTINGS.users[SELECTED_ENV].cluster_name }}"
 
 ## Setting up system variables
 OS: "{{ SETTINGS.users[SELECTED_ENV].software.os }}"
-HOME_DIR: "{{ SETTINGS.users[SELECTED_ENV].home_dir }}"
+ENVIRONMENT: "{{ SETTINGS.users[SELECTED_ENV].environment }}"
+HOME_DIR: "{{ SETTINGS.users[SELECTED_ENV].node_home_dir }}"
 USER_ID: 1000
 GROUP_ID: 1000
 
