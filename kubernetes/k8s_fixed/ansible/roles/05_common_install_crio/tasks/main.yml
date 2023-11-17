@@ -1,0 +1,64 @@
+---
+
+- name: Debug variables
+  ansible.builtin.debug:
+    msg: "KUBERNETES: {{ KUBERNETES_VERSION_SEC }} | OS: {{ OS }}"
+
+
+- name: Download apt sources libcontainers:stable.list
+  shell:
+    cmd: 'echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ OS }}/ /"|  tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list'
+
+- name: Download apt sources libcontainers:stable:cri-o:{{ KUBERNETES_VERSION_SEC }}.list
+  shell:
+    cmd: 'echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ KUBERNETES_VERSION_SEC }}/{{ OS }}/ /" |  tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:{{ KUBERNETES_VERSION_SEC }}.list'
+
+- name: Add keys for cri-o repository
+  shell:
+    cmd: "{{ item }}"
+  with_items:
+    - 'curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:{{ KUBERNETES_VERSION_SEC }}/{{ OS }}/Release.key | apt-key add -'
+    - 'curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ OS }}/Release.key | apt-key add -'
+
+- name: Update packages
+  apt:
+    update_cache: yes
+
+- name: Debug apt info
+  command: "apt info cri-o"
+  register: out
+- name: Debug apt info
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+- name: Install cri-o and cri-o-runc
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: fixed 
+  loop:
+    - cri-o
+    - cri-o-runc
+
+- name: Configure cri-o environment
+  ansible.builtin.shell: 
+    cmd: |
+      cat >> /etc/default/crio << EOF
+      {{ ENVIRONMENT }}
+      EOF
+
+- name: Reload systemd and enable/start cri-o service
+  ansible.builtin.systemd:
+    name: crio
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+- name: Verify cri-o installation
+  ansible.builtin.command:
+    cmd: "systemctl status crio"
+  register: out
+
+- name: Debug cri-o installation
+  ansible.builtin.debug:
+    msg: "{{ out.stdout_lines }}"
+
