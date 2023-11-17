@@ -1,0 +1,23 @@
+---
+
+- name: Remove swapfile from /etc/fstab
+  mount:
+    name: "{{ item }}"
+    fstype: swap
+    state: absent
+  with_items:
+    - swap
+    - none
+
+- name: Disable swap
+  command: swapoff -a
+  when: ansible_swaptotal_mb >= 0
+
+- name: Read /etc/fstab
+  command: "cat /etc/fstab"
+  register: out
+
+- name: Debug /etc/fstab
+  debug:
+    msg: "{{ out.stdout_lines  }}"
+
