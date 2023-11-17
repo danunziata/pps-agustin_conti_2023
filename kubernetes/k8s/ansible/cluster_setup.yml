@@ -1,37 +1,47 @@
 ---
 
-# Available roles:
-# 1) install_kubernetes_dependencies 
-# 2) init_cluster  
-# 3) get_join_command
-# 4) join_workers
- 
 - hosts: all
-  name: "Initial configuration"
+  name: "Common configurations"
   become: yes
   roles:
-    - role: install_kubernetes_dependencies
-      tags: install_kubernetes_dependencies
-
-- hosts: kube_server
-  name: "Server configuration"
+    - role: 01_common_set_hosts 
+      tags: 01_common_set_hosts
+    - role: 02_common_dns_settings
+      tags: 02_common_dns_settings
+    - role: 03_common_disable_swap
+      tags: 03_common_disable_swap
+    - role: 04_common_kernel_setup 
+      tags: 04_common_kernel_setup
+    - role: 05_common_install_crio 
+      tags: 05_common_install_crio
+    - role: 06_common_install_kubernetes
+      tags: 06_common_install_kubernetes
+ 
+- hosts: kube_master
+  name: "Master configuration"
   become: yes
   roles:
-    - role: init_cluster
-      tags: init_cluster
+    - role: 07_master_initialize_master 
+      tags: 07_master_initialize_master
+    - role: 08_master_install_calico 
+      tags: 08_master_install_calico
+    - role: 09_master_copy_configs 
+      tags: 09_master_copy_configs
 
-- hosts: kube_server
-  name: "Get join command"
-  become: no 
+
+- hosts: kube_workers
+  name: "Workers configuration"
+  become: yes 
   roles:
-    - role: get_join_command
-      tags: get_join_command
+    - role: 10_workers_join_worker
+      tags: 10_workers_join_worker
 
-- hosts: kube_agents
-  name: "Join workers"
+
+- hosts: kube_master
+  name: "Install extra plugins on Master"
   become: yes
   roles:
-    - role: join_workers
-      tags: join_workers
-
-
+    - role: a_master_install_nginx_test
+      tags: a_master_install_nginx_test
+    - role: b_master_install_dashboard
+      tags: b_master_install_dashboard

@@ -1,0 +1,38 @@
+---
+- name: Extract the join command
+  command: kubeadm token create --print-join-command  
+  register: join_command
+  become: no
+
+- name: Show join command
+  debug:
+    var: join_command
+
+- name: Create a directory to store configs 
+  file:
+    path: "{{ SHARED_FOLDER_VM }}/configs"
+    state: directory
+
+- name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
+  file:
+    path: "{{ SHARED_FOLDER_VM }}/configs/join_command.out"
+    state: touch
+    mode: "0644"
+
+- name: Copy join command using inline content
+  copy:
+    content: "{{ join_command.stdout_lines | last | trim }}"
+    dest: "{{ SHARED_FOLDER_VM }}/configs/join_command.out"
+
+
+- name: Fetch del archivo desde el host remoto
+  fetch:
+    src: "{{ SHARED_FOLDER_VM }}/configs/join_command.out"
+    dest: "./configs/"
+    flat: yes 
+
+- name: Copy admin.conf on local
+  fetch:
+    src: /etc/kubernetes/admin.conf
+    dest: "./configs/"
+    flat: yes

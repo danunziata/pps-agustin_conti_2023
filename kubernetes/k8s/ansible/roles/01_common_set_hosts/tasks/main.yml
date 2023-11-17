@@ -1,0 +1,25 @@
+---
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Add entries to /etc/hosts (master node)
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ CONTROL_IP }} master-node-{{ (IP_START | int) }}"
+
+- name: Add entries to /etc/hosts (worker nodes)
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ IP_SECTIONS }}{{ (IP_START | int + item | int) }} worker-node-{{  (IP_START | int + item | int) }}"
+  with_sequence: start=1 end="{{ (NUM_WORKER_NODES | int) }}"
+
+
+- name: Read /etc/hosts file
+  command: "cat /etc/hosts"
+  register: out
+
+- name: Debug /etc/hosts
+  debug:
+    msg: "{{ out.stdout_lines }}"

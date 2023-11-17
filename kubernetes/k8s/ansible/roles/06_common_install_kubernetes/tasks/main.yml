@@ -1,0 +1,65 @@
+---
+
+- name: Update cache
+  apt:
+    update_cache: yes
+
+- name: Install dependencies for Kubernetes
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+
+- name: Download Kubernetes GPG key
+  command: "curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://dl.k8s.io/apt/doc/apt-key.gpg"
+
+- name: Add Kubernetes repository
+  shell:
+    cmd: 'echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list'
+
+- name: Update apt package index
+  apt:
+    update_cache: yes
+
+- name: Install kubelet, kubectl, kubeadm
+  apt:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - kubelet={{ KUBERNETES_VERSION }}
+    - kubectl={{ KUBERNETES_VERSION }}
+    - kubeadm={{ KUBERNETES_VERSION }}
+
+
+- name: Hold Kubernetes binary versions (prevent them from being updated)
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: Display the IP address
+  debug:
+    var:  ansible_host 
+
+- name: Configure node ip
+  lineinfile:
+    path: /etc/default/kubelet
+    line: KUBELET_EXTRA_ARGS=--node-ip={{ ansible_host }}
+    create: yes
+
+- name: Restart kubelet
+  service:
+    name: kubelet
+    daemon_reload: yes
+    state: restarted
+
+- name: Reboot to apply swap disable
+  reboot:
+    reboot_timeout: 180  # Allow 3 minutes for the reboot to happen
+
