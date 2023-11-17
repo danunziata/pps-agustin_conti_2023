@@ -10,7 +10,10 @@
 
 /kubernetes/k8s_fixed/configs/
 /kubernetes/k8s_fixed/.vagrant/
-/kubernetes/k8s_fixed/shared_folder/
+/kubernetes/k8s_fixed/shared_folder/*
+/kubernetes/k8s_fixed/ansible/configs/admin.conf
+/kubernetes/k8s_fixed/ansible/configs/join_command.out
+/kubernetes/k8s_fixed/ansible/configs/bearer_token.out
 
 
 # PRIVATE FILES
