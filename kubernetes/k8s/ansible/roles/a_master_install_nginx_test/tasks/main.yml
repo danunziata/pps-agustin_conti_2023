@@ -15,5 +15,5 @@
 
 - name: Debug output
   debug:
-    msg: "You can access to NGINX on http://{{ CONTROL_IP }}:32000"
+    msg: "You can access to NGINX on http://{{ IP_SECTIONS }}{{ (IP_START | int + 1) }}:32000"
 

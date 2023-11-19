@@ -1,7 +1,5 @@
 ---
 
-
-
 - name: Test
   command: "kubectl get nodes -o wide"
   register: out
