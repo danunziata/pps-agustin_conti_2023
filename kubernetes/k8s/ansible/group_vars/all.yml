@@ -3,6 +3,8 @@ settings:
   env: 'agus'
   users:
     agus:
+      prod_test: false
+      
       environment: ""
       
       user_dir_path: /home/aagustin
@@ -22,15 +24,15 @@ settings:
 
       nodes:
         control:
-          cpu: 2
-          memory: 4096
+          cpu: 4
+          memory: 8192
         workers:
           count: 1
           cpu: 2
-          memory: 4096
+          memory: 2048 
       
       network:
-        control_ip: 10.0.0.10
+        control_ip: 192.168.100.170
         dns_servers:
           - 8.8.8.8
           - 1.1.1.1
@@ -43,25 +45,26 @@ settings:
         calico: 3.25.0
         kubernetes: 1.26.1-00
         os: xUbuntu_22.04
-        gpg_key: 4D64390375060AA4
     
-    user_n:
+    test_lab:
+      prod_test: true
+      
       environment: ""
       
       user_dir_path: /home/aagustin
-      node_home_dir: /home/vagrant
+      node_home_dir: /home/labredes
 
       shared_folders:
         - host_path: ./shared_folder
-          vm_path: /home/vagrant 
+          vm_path: /home/labredes 
 
       cluster_name: Kubernetes Cluster
       
       ssh:
-        user: "vagrant"
-        password: "vagrant"
+        user: "labredes"
+        password: "labredes"
         private_key_path: /home/aagustin/.ssh/vagrant_key
-        public_key_path: /home/aagustin/.ssh/vagrant_key
+        public_key_path: /home/aagustin/.ssh/vagrant_key.pub
 
       nodes:
         control:
@@ -73,7 +76,7 @@ settings:
           memory: 4096
       
       network:
-        control_ip: 10.0.0.10
+        control_ip: 192.168.100.171
         dns_servers:
           - 8.8.8.8
           - 1.1.1.1
@@ -85,10 +88,14 @@ settings:
         box: bento/ubuntu-22.04
         calico: 3.25.0
         kubernetes: 1.26.1-00
-        os: xUbuntu_20.04
-
+        os: xUbuntu_22.04
+ 
 
 # Ansible
+
+# Prod or local test (reboot issues)
+PROD_TEST: "{{ settings.users[settings.env].prod_test}}"
+
 
 ## Configuración SSH
 ansible_ssh_user: "{{ settings.users[settings.env].ssh.user}}"
@@ -109,7 +116,6 @@ DNS_SERVERS: "{{ settings.users[settings.env].network.dns_servers | join(' ') }}
 ## Configuración de Kubernetes
 KUBERNETES_VERSION: "{{ settings.users[settings.env].software.kubernetes }}"
 KUBERNETES_VERSION_SEC: "{{ settings.users[settings.env].software.kubernetes | regex_replace('([0-9]+\\.[0-9]+)\\..*', '\\1') }}"
-GPG_KEY: "{{ settings.users[settings.env].software.gpg_key }}"
 
 CALICO_VERSION: "{{ settings.users[settings.env].software.calico }}"
 POD_CIDR: "{{ settings.users[settings.env].network.pod_cidr }}"
