@@ -1,0 +1,16 @@
+---
+
+all:
+  children:
+    kube_master:
+      hosts:
+        master-node-171:
+          ansible_host: "{{ CONTROL_IP }}"
+    kube_workers:
+      hosts:
+        worker-node-172:
+          ansible_host: "{{ IP_SECTIONS }}172"
+        
+        worker-node-173:
+          ansible_host: "{{ IP_SECTIONS }}173"
+        
