@@ -59,7 +59,7 @@
     daemon_reload: yes
     state: restarted
 
-- name: Reboot to apply swap disable
-  reboot:
-    reboot_timeout: 180  # Allow 3 minutes for the reboot to happen
-
+- name: Reboot a slow machine that might have lots of updates to apply
+  ansible.builtin.reboot:
+    reboot_timeout: 180
+  when: PROD_TEST 
