@@ -13,6 +13,11 @@
   command: swapoff -a
   when: ansible_swaptotal_mb >= 0
 
+- name: Reboot a slow machine that might have lots of updates to apply
+  ansible.builtin.reboot:
+    reboot_timeout: 180
+  when: PROD_TEST 
+
 - name: Read /etc/fstab
   command: "cat /etc/fstab"
   register: out

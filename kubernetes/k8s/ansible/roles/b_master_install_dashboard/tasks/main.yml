@@ -1,51 +1,53 @@
 ---
 
-- name: Download Calico YAML
-  get_url:
-    url: "https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml"
-    dest: "{{ HOME_DIR }}/dashboard.yaml"
+- name: Copy file from local to remote (dashboard.yaml)
+  copy:
+    src: "./configs/dashboard.yaml"  # Local path
+    dest: "{{ SHARED_FOLDER_VM }}/configs/dashboard.yaml"
+    owner: 1000
+    group: 1000
 
-- name: Apply Dahsboard 
-  command: 'kubectl apply -f "{{ HOME_DIR }}/dashboard.yaml"'
+- name: Apply dashboard.yaml
+  command: 'kubectl apply -f {{ SHARED_FOLDER_VM }}/configs/dashboard.yaml'
   become: no
 
-- name: Copiar archivo desde la máquina local a la máquina remota (dashboard_service_account.yml)
+- name: Copy file from local to remote (dashboard_service_account.yml)
   copy:
-    src: "./configs/dashboard_service_account.yml"  # Ruta del archivo en la máquina local
+    src: "./configs/dashboard_service_account.yml"  # Local path
     dest: "{{ SHARED_FOLDER_VM }}/configs/dashboard_service_account.yml"
     owner: 1000
     group: 1000
 
-- name: Aplicamos configuración de dashboard_service_account.yml
+- name: Apply dashboard_service_account.yml
   command: 'kubectl apply -f {{ SHARED_FOLDER_VM }}/configs/dashboard_service_account.yml'
   become: no
 
 
-- name: Copiar archivo desde la máquina local a la máquina remota (dashboard_cluster_role_binding.yml)
+- name: Copy from local to remote (dashboard_cluster_role_binding.yml)
   copy:
-    src: "./configs/dashboard_cluster_role_binding.yml"  # Ruta del archivo en la máquina local
+    src: "./configs/dashboard_cluster_role_binding.yml"  # Local path
     dest: "{{ SHARED_FOLDER_VM }}/configs/dashboard_cluster_role_binding.yml"
     owner: 1000
     group: 1000
 
-- name: Aplicamos configuración de dashboard_cluster_role_binding.yml
+- name: Apply  dashboard_cluster_role_binding.yml
   command: 'kubectl apply -f {{ SHARED_FOLDER_VM }}/configs/dashboard_cluster_role_binding.yml'
   become: no
 
 
-- name: Copiar archivo desde la máquina local a la máquina remota (dashboard_long_lived_token.yml)
+- name: Copy from local to remote (dashboard_long_lived_token.yml)
   copy:
-    src: "./configs/dashboard_long_lived_token.yml"  # Ruta del archivo en la máquina local
+    src: "./configs/dashboard_long_lived_token.yml"  # Local path
     dest: "{{ SHARED_FOLDER_VM }}/configs/dashboard_long_lived_token.yml"
     owner: 1000
     group: 1000
 
-- name: Aplicamos configuración de dashboard_long_lived_token.yml
+- name: Apply dashboard_long_lived_token.yml
   command: 'kubectl apply -f {{ SHARED_FOLDER_VM }}/configs/dashboard_long_lived_token.yml'
   become: no
 
 
-- name: Extraemos el Bearer token
+- name: Extract  Bearer token
   command: 'kubectl -n kubernetes-dashboard create token admin-user'  
   register: bearer_token
   become: no
@@ -66,22 +68,16 @@
     dest: "{{ SHARED_FOLDER_VM }}/configs/bearer_token.out"
 
 
-- name: Fetch del archivo desde el host remoto
+- name: Fetch desde el host remoto
   fetch:
     src: "{{ SHARED_FOLDER_VM }}/configs/bearer_token.out"
-    dest: "./configs/"
+    dest: "./configs/" # Local path
     flat: yes 
 
 
-
-- name: Port forwarding
-  command: 'kubectl -n kubernetes-dashboard port-forward --address {{ CONTROL_IP }} svc/kubernetes-dashboard 4433:443 &'
-  become: no
-
 - name: Debug dashboard
   debug:
-    msg: "Now you can access to dashboard on https://{{CONTROL_IP}}:4433, check the admin token at ansible/configs/bearer_token.out"
+    msg: "Now you can access to dashboard on https://{{ IP_SECTIONS }}{{ (IP_START | int + item | int) }}:30001, check the admin token at ansible/configs/bearer_token.out"
+  with_sequence: start=1 end="{{ (NUM_WORKER_NODES | int) }}"
+ 
 
-
-
-### Now you can access to dashboard using Service Tokens at https://{{CONTROL_IP}}:{{DASHBOARD_PORT}}

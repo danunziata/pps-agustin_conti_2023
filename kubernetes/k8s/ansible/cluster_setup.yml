@@ -1,5 +1,12 @@
 ---
 
+- hosts: localhost 
+  name: "Cleanup directories"
+  become: no
+  roles:
+    - role: 00_local_cleanup
+      tags: 00_local_cleanup
+
 - hosts: all
   name: "Common configurations"
   become: yes

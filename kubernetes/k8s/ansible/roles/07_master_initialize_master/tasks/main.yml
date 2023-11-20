@@ -4,7 +4,7 @@
   command: kubeadm config images pull
 
 - name: Initialize Control Plane
-  command: 'kubeadm init --apiserver-advertise-address={{ CONTROL_IP }} --apiserver-cert-extra-sans={{ CONTROL_IP }} --pod-network-cidr={{ POD_CIDR }} --service-cidr={{ SERVICE_CIDR }} --node-name master-node --ignore-preflight-errors Swap'
+  command: 'kubeadm init --apiserver-advertise-address={{ CONTROL_IP }} --apiserver-cert-extra-sans={{ CONTROL_IP }} --pod-network-cidr={{ POD_CIDR }} --service-cidr={{ SERVICE_CIDR }} --node-name {{ ansible_hostname }} --ignore-preflight-errors Swap'
   args:
     creates: /etc/kubernetes/admin.conf  # Skip this task if the file already exists
   register: kube_init

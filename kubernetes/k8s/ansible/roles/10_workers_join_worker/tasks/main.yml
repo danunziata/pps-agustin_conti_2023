@@ -1,11 +1,11 @@
 ---
 
-- name: read join command
+- name: Read join command
   debug:
     msg: "{{ lookup('file','./configs/join_command.out') }}"
   register: join_command_local
 
-- name: show join command
+- name: Show join command
   debug:
     var: join_command_local.msg
 
@@ -27,6 +27,6 @@
     group: 1000
 
 
-- name: Etiquetar el nodo y establecer el rol del nodo
+- name: Set node role
   command: "kubectl label node {{ ansible_hostname }} node-role.kubernetes.io/worker=worker"
   become: no
