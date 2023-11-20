@@ -1,0 +1,37 @@
+---
+
+- name: Pull required container images
+  command: kubeadm config images pull
+
+- name: Initialize Control Plane
+  command: 'kubeadm init --apiserver-advertise-address={{ CONTROL_IP }} --apiserver-cert-extra-sans={{ CONTROL_IP }} --pod-network-cidr={{ POD_CIDR }} --service-cidr={{ SERVICE_CIDR }} --node-name {{ ansible_hostname }} --ignore-preflight-errors Swap'
+  args:
+    creates: /etc/kubernetes/admin.conf  # Skip this task if the file already exists
+  register: kube_init
+
+- name: Show kube init info
+  debug:
+    var: kube_init
+
+- name: Create .kube directory in user home
+  file:
+    path: "{{ HOME_DIR  }}/.kube"
+    state: directory
+    owner: 1000
+    group: 1000
+
+- name: Configure .kube/config files in user home
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ HOME_DIR }}/.kube/config"
+    remote_src: yes
+    owner: 1000
+    group: 1000
+
+- name: Restart kubelet for config changes
+  service:
+    name: kubelet
+    state: restarted
+
+
+

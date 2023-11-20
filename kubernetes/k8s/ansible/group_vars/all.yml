@@ -1,24 +1,133 @@
-foo:
-  base_host_ip: "192.168.55"
-  start_host_ip: 50
+---
+settings:
+  env: 'agus'
+  users:
+    agus:
+      prod_test: false
+      
+      environment: ""
+      
+      user_dir_path: /home/aagustin
+      node_home_dir: /home/vagrant
 
-# SSH configuration
-ansible_user: vagrant
-ansible_private_key: /home/aagustin/.ssh/vagrant_key
+      shared_folders:
+        - host_path: ./shared_folder
+          vm_path: /home/vagrant 
 
-# specifying a CIDR for our cluster to use.
-# # can be basically any private range except for ranges already in use.
-# # apparently it isn't too hard to run out of IPs in a /24, so we're using a /22
-pod_cidr: "10.244.0.0/16"
+      cluster_name: Kubernetes Cluster
+      
+      ssh:
+        user: "vagrant"
+        password: "vagrant"
+        private_key_path: /home/aagustin/.ssh/vagrant_key
+        public_key_path: /home/aagustin/.ssh/vagrant_key.pub
+
+      nodes:
+        control:
+          cpu: 4
+          memory: 8192
+        workers:
+          count: 1
+          cpu: 2
+          memory: 2048 
+      
+      network:
+        control_ip: 192.168.100.170
+        dns_servers:
+          - 8.8.8.8
+          - 1.1.1.1
+        pod_cidr: 172.16.1.0/16
+        service_cidr: 172.17.1.0/18
+      
+
+      software:
+        box: bento/ubuntu-22.04
+        calico: 3.25.0
+        kubernetes: 1.26.1-00
+        os: xUbuntu_22.04
+    
+    test_lab:
+      prod_test: true
+      
+      environment: ""
+      
+      user_dir_path: /home/aagustin
+      node_home_dir: /home/labredes
+
+      shared_folders:
+        - host_path: ./shared_folder
+          vm_path: /home/labredes 
+
+      cluster_name: Kubernetes Cluster
+      
+      ssh:
+        user: "labredes"
+        password: "labredes"
+        private_key_path: /home/aagustin/.ssh/vagrant_key
+        public_key_path: /home/aagustin/.ssh/vagrant_key.pub
+
+      nodes:
+        control:
+          cpu: 2
+          memory: 4096
+        workers:
+          count: 1
+          cpu: 2
+          memory: 4096
+      
+      network:
+        control_ip: 192.168.100.171
+        dns_servers:
+          - 8.8.8.8
+          - 1.1.1.1
+        pod_cidr: 172.16.1.0/16
+        service_cidr: 172.17.1.0/18
+      
+
+      software:
+        box: bento/ubuntu-22.04
+        calico: 3.25.0
+        kubernetes: 1.26.1-00
+        os: xUbuntu_22.04
+ 
+
+# Ansible
+
+# Prod or local test (reboot issues)
+PROD_TEST: "{{ settings.users[settings.env].prod_test}}"
 
 
-# this defines what the join command filename will be
-join_command_location: "join_command.out"
+## Configuración SSH
+ansible_ssh_user: "{{ settings.users[settings.env].ssh.user}}"
+ansible_ssh_private_key_file: "{{ settings.users[settings.env].ssh.private_key_path }}"
+#ansible_ssh_pass: {{ settings.users[settings.env.ssh.password }}
 
-# setting the home directory for retreiving, saving, and executing files
-home_dir: "/home/vagrant"
+ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
-remote_user: "vagrant"
+## Configuración de hosts
+CONTROL_IP: "{{ settings.users[settings.env].network.control_ip }}"
+IP_SECTIONS: "{{ CONTROL_IP | regex_search('^(\\d+\\.\\d+\\.\\d+\\.)') }}"
+IP_START: "{{ CONTROL_IP.split('.')[-1] }}"
+NUM_WORKER_NODES: "{{ settings.users[settings.env].nodes.workers.count }}"
 
+## Configuración de servidores DNS
+DNS_SERVERS: "{{ settings.users[settings.env].network.dns_servers | join(' ') }}"
 
+## Configuración de Kubernetes
+KUBERNETES_VERSION: "{{ settings.users[settings.env].software.kubernetes }}"
+KUBERNETES_VERSION_SEC: "{{ settings.users[settings.env].software.kubernetes | regex_replace('([0-9]+\\.[0-9]+)\\..*', '\\1') }}"
+
+CALICO_VERSION: "{{ settings.users[settings.env].software.calico }}"
+POD_CIDR: "{{ settings.users[settings.env].network.pod_cidr }}"
+SERVICE_CIDR: "{{ settings.users[settings.env].network.service_cidr }}"
+CLUSTER_NAME: "{{ settings.users[settings.env].cluster_name }}"
+
+## Configuración de variables del sistema
+OS: "{{ settings.users[settings.env].software.os }}"
+ENVIRONMENT: "{{ settings.users[settings.env].environment }}"
+HOME_DIR: "{{ settings.users[settings.env].node_home_dir }}"
+USER_ID: 1000
+GROUP_ID: 1000
+SHARED_FOLDER_VM: "{{ settings.users[settings.env].shared_folders[0].vm_path }}"
+SHARED_FOLDER_HOST: "{{ settings.users[settings.env].shared_folders[0].host_path }}"
 

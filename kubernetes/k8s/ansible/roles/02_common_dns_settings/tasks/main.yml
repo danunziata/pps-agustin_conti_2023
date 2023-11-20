@@ -1,0 +1,27 @@
+---
+
+- name: Create systemd resolved configuration directory if not exists
+  file:
+    path: /etc/systemd/resolved.conf.d
+    state: directory
+
+- name: Set DNS servers in resolved configuration
+  copy:
+    content: |
+      [Resolve]
+      DNS={{ DNS_SERVERS }}
+    dest: /etc/systemd/resolved.conf.d/dns_servers.conf
+
+- name: Restart systemd-resolved service
+  service:
+    name: systemd-resolved
+    state: restarted
+
+- name: Read /etc/systemd/resolved.conf.d/dns_servers.conf
+  command: "cat /etc/systemd/resolved.conf.d/dns_servers.conf"
+  register: out
+
+- name: Debug /etc/systemd/resolved.conf.d/dns_servers.conf
+  debug:
+    msg: "{{ out.stdout_lines }}"
+

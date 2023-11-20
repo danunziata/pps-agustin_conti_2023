@@ -1,0 +1,19 @@
+---
+
+- name: Copy deployment file to remote folder
+  copy:
+    src: "./configs/deploy_nginx.yml"  # Ruta del archivo en la máquina local
+    dest: "{{ SHARED_FOLDER_VM }}/configs/deploy_nginx.yml"
+    owner: 1000
+    group: 1000
+
+
+- name: Deploy nginx test
+  command: "kubectl apply -f {{ SHARED_FOLDER_VM }}/configs/deploy_nginx.yml"
+  become: no
+
+
+- name: Debug output
+  debug:
+    msg: "You can access to NGINX on http://{{ IP_SECTIONS }}{{ (IP_START | int + 1) }}:32000"
+

@@ -1,3 +1,0 @@
----
-# Master playbook
-- import_playbook: cluster_reset.yml
