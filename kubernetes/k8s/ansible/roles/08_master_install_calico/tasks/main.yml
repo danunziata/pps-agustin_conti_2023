@@ -9,12 +9,12 @@
   debug: var=out
 
 
-
 - name: Download Calico YAML
   get_url:
     url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ CALICO_VERSION }}/manifests/calico.yaml"
     dest: "{{ HOME_DIR }}/calico.yaml"
-
+  when: CALICO_VERSION != 3.20
+  
 - name: Apply Calico Network
   command: kubectl apply -f "{{ HOME_DIR }}/calico.yaml"
   become: no

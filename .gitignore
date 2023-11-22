@@ -11,6 +11,7 @@
 /kubernetes/k8s/ansible/configs/admin.conf
 /kubernetes/k8s/ansible/configs/join_command.out
 /kubernetes/k8s/ansible/configs/bearer_token.out
+/kubernetes/k8s/ansible/configs/long_lived_token.out
 
 
 # PRIVATE FILES

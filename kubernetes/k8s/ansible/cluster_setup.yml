@@ -21,6 +21,10 @@
       tags: 04_common_kernel_setup
     - role: 05_common_install_crio 
       tags: 05_common_install_crio
+      
+    #- role: 05_common_install_containerd 
+    #  tags: 05_common_install_containerd
+    
     - role: 06_common_install_kubernetes
       tags: 06_common_install_kubernetes
  
@@ -32,6 +36,10 @@
       tags: 07_master_initialize_master
     - role: 08_master_install_calico 
       tags: 08_master_install_calico
+
+    #- role: 08_master_install_flannel
+    #  tags: 08_master_install_flannel
+
     - role: 09_master_copy_configs 
       tags: 09_master_copy_configs
 
@@ -52,3 +60,5 @@
       tags: a_master_install_nginx_test
     - role: b_master_install_dashboard
       tags: b_master_install_dashboard
+    - role: c_master_install_helm
+      tags: c_master_install_helm
