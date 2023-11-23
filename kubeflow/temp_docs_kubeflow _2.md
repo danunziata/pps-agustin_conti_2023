@@ -359,7 +359,7 @@ Necesitaremos elegir la versión que nos convenga, en nuestro caso, utlizaremos 
 
 Leeremos el README para poder seguir el instructivo de instalación, pero para también poder ver los pre-requisitos que nos solicita Kubeflow para su funcionamiento.
 
-Trabajaremos en la carpeta `~/` del nodo master.
+> **¡Importante!** Trabajaremos en el directorio `~/` del nodo master.
 
 Si observamos, a la fecha y para dicha versión nos pide:
 
@@ -368,6 +368,8 @@ Si observamos, a la fecha y para dicha versión nos pide:
 El primer requisito, de la versión de Kubernetes, está cubierto debido a que hemos instalado la misma, nos falta definir una Default StorageClass.
 
 > **¿Qué es una StorageClass?** Las clases de almacenamiento de Kubernetes proporcionan una forma de aprovisionar dinámicamente almacenamiento persistente para aplicaciones que se ejecutan en un clúster de Kubernetes. Cada StorageClass contiene los campos provisioner, parameters y reclaimPolicy, que se utilizan cuando un PersistentVolume que pertenece a la clase debe aprovisionarse dinámicamente.
+>
+> <a href="https://ranchermanager.docs.rancher.com/how-to-guides/new-user-guides/manage-clusters/create-kubernetes-persistent-storage/manage-persistent-storage/about-persistent-storage"><img src="img/kubernetes-sc.png" style="background-color: #ffffff"></a>
 
 El segundo requisito es tener Kustomize instalado, esto nos permitirá la aplicación de las configuraciones (`kubectl apply ...`) de Kubernetes de manera automatizada.
 
@@ -375,7 +377,7 @@ Y por último, nos pide tener Kubectl, el cual está cubierto ya que se ha insta
 
 En limpio, debemos crear una Default StorageClass e instalar Kustomize. Para ello:
 
-1. Storage Class:
+1. Storage Class
    1. Definir la SC:
    2. Hacerla Default:
 
@@ -413,4 +415,125 @@ En limpio, debemos crear una Default StorageClass e instalar Kustomize. Para ell
 
 Una vez cumplimos con los requisitos podemos comenzar a instalar Kubeflow en nuestro Cluster. Para ello tenemos dos caminos, la instalación en un solo comando o la intalación módulo a módulo. Elegiremos la segunda por una cuestión de asegurarnos la correcta instalación paso a paso de cada uno de los módulos.
 
-1. Instalación de ...
+1. Descarga del repositorio, en específico la branch `v1.8-branch`:
+
+    ```sh
+    # Clonamos el repositorio
+    git clone -b v1.8-branch https://github.com/kubeflow/manifests.git
+    
+    # Ingresamos a la carpeta
+    cd manifests
+    ```
+2. Instalamos el cert-manager:
+
+    ```sh
+    kustomize build common/cert-manager/cert-manager/base | kubectl apply -f -
+    kubectl wait --for=condition=ready pod -l 'app in (cert-manager,webhook)' --timeout=180s -n cert-manager
+    kustomize build common/cert-manager/kubeflow-issuer/base | kubectl apply -f -
+    ```
+
+    Checkeamos que todos los pods estén creados y corriendo:
+
+    ```sh
+    watch kubectl get pods -n cert-manager
+    ```
+
+3. Instalamos Istio:
+
+    ```sh
+    kustomize build common/istio-1-17/istio-crds/base | kubectl apply -f -
+    kustomize build common/istio-1-17/istio-namespace/base | kubectl apply -f -
+    kustomize build common/istio-1-17/istio-install/base | kubectl apply -f -
+    ```
+
+    Checkeamos que todos los pods estén creados y corriendo:
+
+    ```sh
+    watch kubectl get pods -n istio-system
+    ```
+
+4. Instalamos el AuthService:
+
+    ```sh
+    kustomize build common/oidc-client/oidc-authservice/base | kubectl apply -f -
+    ```
+
+    Checkeamos que todos los pods estén creados y corriendo:
+
+    ```sh
+    watch kubectl get pods -n auth
+    ```
+
+5. Instalamos Dex:
+
+    ```sh
+    kustomize build common/dex/overlays/istio | kubectl apply -f -
+    ```
+
+
+6. Instalamos K-Native Serving
+
+    ```sh
+    kustomize build common/knative/knative-serving/overlays/gateways | kubectl apply -f -
+    kustomize build common/istio-1-17/cluster-local-gateway/base | kubectl apply -f -
+    ```
+
+    Checkeamos que todos los pods estén creados y corriendo:
+
+    ```sh
+    watch kubectl get pods -n knative-eventing
+    ```
+
+    Y también:
+
+    ```sh
+    watch kubectl get pods -n knative-serving
+    ```
+
+7. Creamos el namespace de Kubeflow:
+
+    ```sh
+    kustomize build common/kubeflow-namespace/base | kubectl apply -f -
+    ```
+
+8. Instalamos los Kubeflow Roles:
+
+    ```sh
+    kustomize build common/kubeflow-roles/base | kubectl apply -f -
+    ```
+
+    Checkeamos que todos los pods estén creados y corriendo:
+
+    ```sh
+    watch kubectl get pods -n kubeflow
+    ```
+
+9. Creamos los recursos de Istio:
+
+    ```sh
+    kustomize build common/istio-1-17/kubeflow-istio-resources/base | kubectl apply -f -
+    ```
+
+    Checkeamos que todos los pods estén creados y corriendo:
+
+    ```sh
+    watch kubectl get pods -n istio-system
+    ```
+
+10. Creamos las Pipelines de Kubeflow
+
+    ```sh
+    kustomize build apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user | kubectl apply -f -
+    ```
+
+    Checkeamos que todos los pods estén creados y corriendo:
+
+    ```sh
+    watch kubectl get pods -n kubeflow
+    ```
+
+11. Checkeamos la creación de los pods del ejemplo:
+
+    ```sh
+    watch kubectl get pods -n kubeflow-user-example-com
+    ```
