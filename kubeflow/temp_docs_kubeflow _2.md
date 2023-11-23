@@ -353,7 +353,64 @@ ansible-playbook -vvv ansible/site.yml -i ansible/inventory_<local o lab>.yml
 
 ## Instalación manual de Kubeflow
 
-- Presentación de los requisitos
-- Instalación de Kustomize
-- Creación de la SC
-- Instalación manual paso a paso
+Para la instalación de Kubeflow tenemos dos métodos: Paquetizado para diferentes plataformas o mediante los manifest (inistalación manual). En nuestro caso, al hacer una instalación local y limpia (bare-metal) de Kubernetes, **vamos a utilizar la segunda, mediante sus manifests**, los cuales se encuentran en su [repositorio](https://github.com/kubeflow/manifests).
+
+Necesitaremos elegir la versión que nos convenga, en nuestro caso, utlizaremos la más reciente a la fecha que es la correspondiente a la branch `v1.8-branch` del correspondiente repositorio. Seleccionaremos dicha branch para observar los requerimientos.
+
+Leeremos el README para poder seguir el instructivo de instalación, pero para también poder ver los pre-requisitos que nos solicita Kubeflow para su funcionamiento.
+
+Trabajaremos en la carpeta `~/` del nodo master.
+
+Si observamos, a la fecha y para dicha versión nos pide:
+
+![Pre-Requisitos](img/kf-prerequisites.png)
+
+El primer requisito, de la versión de Kubernetes, está cubierto debido a que hemos instalado la misma, nos falta definir una Default StorageClass.
+
+> **¿Qué es una StorageClass?** Las clases de almacenamiento de Kubernetes proporcionan una forma de aprovisionar dinámicamente almacenamiento persistente para aplicaciones que se ejecutan en un clúster de Kubernetes. Cada StorageClass contiene los campos provisioner, parameters y reclaimPolicy, que se utilizan cuando un PersistentVolume que pertenece a la clase debe aprovisionarse dinámicamente.
+
+El segundo requisito es tener Kustomize instalado, esto nos permitirá la aplicación de las configuraciones (`kubectl apply ...`) de Kubernetes de manera automatizada.
+
+Y por último, nos pide tener Kubectl, el cual está cubierto ya que se ha instalado durante el aprovisionamiento de Software.
+
+En limpio, debemos crear una Default StorageClass e instalar Kustomize. Para ello:
+
+1. Storage Class:
+   1. Definir la SC:
+   2. Hacerla Default:
+
+2. Kustomize
+   1. Descargar el archivo de instalación:
+
+        ```sh
+        wget https://github.com/kubernetes-sigs/kustomize/blob/master/hack/install_kustomize.sh
+        ```
+
+   2. Darle permisos de ejecución:
+
+        ```sh
+        chmod +x install_kustomize.sh
+        ```
+
+   3. Descargar el binario de kustomize de la versión 5.0.3:
+
+        ```sh
+        ./install_kustomize.sh 5.0.3
+        ```
+
+   4. Darle permisos de ejecución y hacer disponible en `$PATH`:
+
+        ```sh
+        chmod +x
+        sudo mv kustomize /usr/local/bin/
+        ```
+
+   5. Checkear versión instalada:
+
+        ```sh
+        kustomize version
+        ```
+
+Una vez cumplimos con los requisitos podemos comenzar a instalar Kubeflow en nuestro Cluster. Para ello tenemos dos caminos, la instalación en un solo comando o la intalación módulo a módulo. Elegiremos la segunda por una cuestión de asegurarnos la correcta instalación paso a paso de cada uno de los módulos.
+
+1. Instalación de ...
