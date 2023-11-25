@@ -359,7 +359,11 @@ Necesitaremos elegir la versión que nos convenga, en nuestro caso, utlizaremos 
 
 Leeremos el README para poder seguir el instructivo de instalación, pero para también poder ver los pre-requisitos que nos solicita Kubeflow para su funcionamiento.
 
-> **¡Importante!** Trabajaremos en el directorio `~/` del nodo master.
+> **¡Importante!** Trabajaremos en el directorio `~/` del nodo master, ingresaremos mediante SSH al mismo:
+>
+> ```sh
+> ssh -i ~/.ssh/key <user>@<IP-master>
+> ```
 
 Si observamos, a la fecha y para dicha versión nos pide:
 
@@ -377,11 +381,84 @@ Y por último, nos pide tener Kubectl, el cual está cubierto ya que se ha insta
 
 En limpio, debemos crear una Default StorageClass e instalar Kustomize. Para ello:
 
-1. Storage Class
-   1. Definir la SC:
-   2. Hacerla Default:
+1. Storage Class:
 
-2. Kustomize
+   1. Creación de la Local StorageClass:
+      1. Creamos el archivo
+
+          ```sh
+          vi local-sc.yaml
+          ```
+
+      2. Escribimos lo siguiente dentro y guardamos:
+
+          ```yaml
+          apiVersion: storage.k8s.io/v1
+          kind: StorageClass
+          metadata:
+          name: local-storage
+          provisioner: kubernetes.io/no-provisioner
+          volumeBindingMode: WaitForFirstConsumer
+          ```
+
+      3. Hacemos deploy:
+
+          ```sh
+          kubectl apply -f local_sc.yaml
+          ```
+
+      4. La hacemos por defecto:
+
+          ```sh
+          kubectl patch sc local-storage -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+          ```
+
+      5. Checkeamos que esté configurada:
+
+          ```sh
+          kubectl get sc
+          ```
+
+   2. Creación de un Local PersistentVolume:
+
+      1. Creamos el archivo
+
+          ```sh
+          vi local-pv.yaml
+          ```
+
+      2. Escribimos lo siguiente dentro y guardamos:
+
+          ```yaml
+          apiVersion: v1
+          kind: PersistentVolume
+          metadata:
+          name: test-pv
+          labels:
+              type: local
+          spec:
+          storageClassName: local-storage
+          capacity:
+              storage: 25Gi # Acá ponemos lo que nos parezca
+          accessModes:
+              - ReadWriteOnce
+          hostPath:
+              path: "~/data" # Acá la ubicación en el nodo master donde se almacenarán los datos
+          ```
+
+      3. Hacemos deploy:
+
+          ```sh
+          kubectl apply -f local_pv.yaml
+          ```
+
+      4. Checkeamos que esté configurada:
+
+          ```sh
+          kubectl get pv
+          ```
+
+2. Kustomize:
    1. Descargar el archivo de instalación:
 
         ```sh
@@ -403,7 +480,7 @@ En limpio, debemos crear una Default StorageClass e instalar Kustomize. Para ell
    4. Darle permisos de ejecución y hacer disponible en `$PATH`:
 
         ```sh
-        chmod +x
+        chmod +x kustomize
         sudo mv kustomize /usr/local/bin/
         ```
 
@@ -424,6 +501,7 @@ Una vez cumplimos con los requisitos podemos comenzar a instalar Kubeflow en nue
     # Ingresamos a la carpeta
     cd manifests
     ```
+
 2. Instalamos el cert-manager:
 
     ```sh
@@ -469,7 +547,6 @@ Una vez cumplimos con los requisitos podemos comenzar a instalar Kubeflow en nue
     ```sh
     kustomize build common/dex/overlays/istio | kubectl apply -f -
     ```
-
 
 6. Instalamos K-Native Serving
 
@@ -537,3 +614,93 @@ Una vez cumplimos con los requisitos podemos comenzar a instalar Kubeflow en nue
     ```sh
     watch kubectl get pods -n kubeflow-user-example-com
     ```
+
+## Test y errores
+
+Al hacer la configuración siguiente, con 2 nodos:
+
+![Node config](img/error-node-config.png)
+
+Y habiendo aplicado la Default StorageClass como se indica en los pasos arriba, se sigue obteniendo el tipo de error:
+
+![Replica Sets Logs](img/error-istio-replica-sets.png)
+
+Vemos que dice: `MountVolume.SetUp failed for volume "ingressgateway-ca-certs" : failed to sync secret cache: timed out waiting for the condition
+Readiness probe failed: Get "http://172.16.7.197:15021/healthz/ready": dial tcp 172.16.7.197:15021: connect: connection refused`
+
+Además, si vamos a los eventos:
+
+![Error Istio Ingressgateway](img/error-istio-ingressgateway.png)
+
+Donde nos dice que hay un error `FailedGetResourceMetric` con la descripción `failed to get cpu utilization: did not receive metrics for any ready pods` en `horizontal-pod-autoscaler`.
+
+Además, investigando los archivos de los manifests referentes a la versión de Istio instalada, notamos que en  `/manifests/common/istio-1-17/istio-install/base/install.yaml` los recursos que solicita el Istio Ingressgateway son:
+
+![/manifests/common/istio-1-17/istio-install/base/install.yaml](img/manifest-install-istio-ingress-gateway.png)
+
+Los cuales parece que cumplimos.
+
+Por otro lado, desde el dashboard entramos al archivo de configuración de los Deployments que fallaron, en este caso, el de Istio Ingressgateway y observamos los requerimientos que pedia:
+
+![Deployment requirements](img/istio-ingressgateway-deployments.png)
+
+Posible causa: Error en el HPA (mala configuración):
+
+```sh
+
+vagrant@master-node-171:~/manifests$ kubectl describe hpa -A
+Name:                     istio-ingressgateway
+Namespace:                istio-system
+Labels:                   app=istio-ingressgateway
+                          install.operator.istio.io/owning-resource=unknown
+                          istio=ingressgateway
+                          istio.io/rev=default
+                          operator.istio.io/component=IngressGateways
+                          release=istio
+Annotations:              autoscaling.alpha.kubernetes.io/conditions:
+                            [{"type":"AbleToScale","status":"True","lastTransitionTime":"2023-11-24T22:28:33Z","reason":"SucceededGetScale","message":"the HPA control...
+CreationTimestamp:        Fri, 24 Nov 2023 22:28:18 +0000
+Reference:                Deployment/istio-ingressgateway
+Target CPU utilization:   80%
+Current CPU utilization:  <unknown>%
+Min replicas:             1
+Max replicas:             5
+Deployment pods:          1 current / 0 desired
+Events:
+  Type     Reason                   Age                    From                       Message
+  ----     ------                   ----                   ----                       -------
+  Warning  FailedGetResourceMetric  2m42s (x298 over 77m)  horizontal-pod-autoscaler  failed to get cpu utilization: did not receive metrics for any ready pods
+
+
+Name:                     istiod
+Namespace:                istio-system
+Labels:                   app=istiod
+                          install.operator.istio.io/owning-resource=unknown
+                          istio.io/rev=default
+                          operator.istio.io/component=Pilot
+                          release=istio
+Annotations:              autoscaling.alpha.kubernetes.io/conditions:
+                            [{"type":"AbleToScale","status":"True","lastTransitionTime":"2023-11-24T22:28:33Z","reason":"ReadyForNewScale","message":"recommended size...
+                          autoscaling.alpha.kubernetes.io/current-metrics:
+                            [{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":60,"currentAverageValue":"6m"}}]
+CreationTimestamp:        Fri, 24 Nov 2023 22:28:18 +0000
+Reference:                Deployment/istiod
+Target CPU utilization:   80%
+Current CPU utilization:  60%
+Min replicas:             1
+Max replicas:             5
+Deployment pods:          1 current / 1 desired
+Events:
+  Type     Reason                        Age                    From                       Message
+  ----     ------                        ----                   ----                       -------
+  Warning  FailedGetResourceMetric       8m58s (x2 over 9m13s)  horizontal-pod-autoscaler  failed to get cpu utilization: unable to get metrics for resource cpu: no metrics returned from resource metrics API
+  Warning  FailedComputeMetricsReplicas  8m58s (x2 over 9m13s)  horizontal-pod-autoscaler  invalid metrics (1 invalid out of 1), first error is: failed to get cpu resource metric value: failed to get cpu utilization: unable to get metrics for resource cpu: no metrics returned from resource metrics API
+
+
+```
+
+## Referencias
+
+- [Creación de Local StorageClass y Local PersistentVolume](https://www.civo.com/academy/kubernetes-volumes/local-volume-demo)
+
+- [Error Istio IngressGateway]()
