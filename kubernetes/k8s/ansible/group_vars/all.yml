@@ -115,12 +115,12 @@ settings:
 
       nodes:
         control:
-          cpu: 4
-          memory: 4096
-        workers:
-          count: 2
-          cpu: 2 
+          cpu: 2
           memory: 4096 
+        workers:
+          count: 1 
+          cpu: 4 
+          memory: 8192 
       
       network:
         control_ip: 192.168.100.171

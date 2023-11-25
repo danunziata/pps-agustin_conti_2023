@@ -10,5 +10,5 @@ all:
       hosts:
         worker-node-172:
             ansible_host: "{{ IP_SECTIONS }}172"
-        worker-node-173:
-            ansible_host: "{{ IP_SECTIONS }}173"
+        #worker-node-173:
+        #    ansible_host: "{{ IP_SECTIONS }}173"
