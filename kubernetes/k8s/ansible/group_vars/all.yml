@@ -1,6 +1,6 @@
 ---
 settings:
-  env: 'test_kubeflow'
+  env: 'test_lab'
   users:
     agus:
       prod_test: false
@@ -51,7 +51,7 @@ settings:
       
       environment: ""
       
-      user_dir_path: /home/aagustin
+      user_dir_path: /home/dani
       node_home_dir: /home/labredes
 
       shared_folders:
@@ -63,20 +63,20 @@ settings:
       ssh:
         user: "labredes"
         password: "labredes"
-        private_key_path: /home/aagustin/.ssh/cluster_key
-        public_key_path: /home/aagustin/.ssh/cluster_key.pub
+        private_key_path: /home/dani/.ssh/id_key_labredes
+        public_key_path: /home/dani/.ssh/id_key_labredes.pub
 
       nodes:
         control:
           cpu: 2
           memory: 4096
         workers:
-          count: 1
+          count: 2
           cpu: 2
           memory: 4096
       
       network:
-        control_ip: 192.168.100.171
+        control_ip: 192.168.100.181
         dns_servers:
           - 8.8.8.8
           - 1.1.1.1

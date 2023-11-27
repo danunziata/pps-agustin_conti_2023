@@ -9,8 +9,8 @@ all:
     kube_workers:
       hosts:
         worker-node-172:
-          ansible_host: "{{ IP_SECTIONS }}172"
+          ansible_host: "{{ IP_SECTIONS }}182"
         
         worker-node-173:
-          ansible_host: "{{ IP_SECTIONS }}173"
+          ansible_host: "{{ IP_SECTIONS }}183"
         
