@@ -14,6 +14,22 @@
 /kubernetes/k8s/ansible/configs/long_lived_token.out
 
 
+kubernetes/k8s/shared_folder/*
+!kubernetes/k8s/shared_folder/configs/
+!kubernetes/k8s/shared_folder/*.yaml
+kubernetes/k8s/shared_folder/calico.yaml
+!kubernetes/k8s/shared_folder/local_sc_rancher/
+!kubernetes/k8s/shared_folder/install_kustomize.sh
+
+kubernetes/k8s/shared_folder/configs/*
+!kubernetes/k8s/shared_folder/configs/*.yml
+!kubernetes/k8s/shared_folder/configs/*.yaml
+
+kubernetes/k8s/ansible/configs/*
+!kubernetes/k8s/ansible/configs/*.yml
+!kubernetes/k8s/ansible/configs/*.yaml
+
+
 # PRIVATE FILES
 *.json
 *.csv
