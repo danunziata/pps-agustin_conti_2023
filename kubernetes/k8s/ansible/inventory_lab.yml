@@ -4,13 +4,13 @@ all:
   children:
     kube_master:
       hosts:
-        master-node-171:
+        master-node-181:
           ansible_host: "{{ CONTROL_IP }}"
     kube_workers:
       hosts:
-        worker-node-172:
+        worker-node-182:
           ansible_host: "{{ IP_SECTIONS }}182"
         
-        worker-node-173:
+        worker-node-183:
           ansible_host: "{{ IP_SECTIONS }}183"
         
