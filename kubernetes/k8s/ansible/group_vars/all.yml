@@ -51,7 +51,7 @@ settings:
       
       environment: ""
       
-      user_dir_path: /home/dani
+      user_dir_path: /home/aagustin
       node_home_dir: /home/labredes
 
       shared_folders:
@@ -63,8 +63,8 @@ settings:
       ssh:
         user: "labredes"
         password: "labredes"
-        private_key_path: /home/dani/.ssh/id_key_labredes
-        public_key_path: /home/dani/.ssh/id_key_labredes.pub
+        private_key_path: /home//agustin/.ssh/cluster_key
+        public_key_path: /home/dani/.ssh/cluster_key.pub
 
       nodes:
         control:
