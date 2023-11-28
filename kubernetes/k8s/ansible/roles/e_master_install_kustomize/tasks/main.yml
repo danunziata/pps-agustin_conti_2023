@@ -1,0 +1,34 @@
+---
+
+- name: Copy file with owner and permissions
+  ansible.builtin.copy:
+    src: configs/install_kustomize.sh
+    dest: configs/
+
+- name: Change permissions of installation file
+  shell:
+    cmd: "chmod +x configs/install_kustomize.sh"
+
+- name: Install kustomize
+  shell:
+    cmd: "configs/install_kustomize.sh {{ KUSTOMIZE_VERSION }}"
+
+- name: Change permissions of binary file
+  shell:
+    cmd: "chmod +x kustomize"
+
+- name: Make accesible from $PATH
+  shell:
+    cmd: "mv kustomize /usr/local/bin/"
+
+- name: Show kustomize version
+  shell:
+    cmd: "kustomize version"
+  register: out
+
+- name: Debug kustomize version
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+  
+

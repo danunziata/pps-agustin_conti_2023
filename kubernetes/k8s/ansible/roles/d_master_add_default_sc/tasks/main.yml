@@ -1,0 +1,44 @@
+---
+
+- name: Check current folder
+  command: ls -lA
+  register: out
+
+- name: Debug current folder
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+
+- name: Copy file with owner and permissions
+  ansible.builtin.copy:
+    src: configs/local_sc_rancher/
+    dest: configs/local_sc_rancher/
+
+
+- name: Check current folder
+  command: ls -lA configs/
+  register: out
+
+- name: Debug current folder
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+
+- name: Create local StorageClass
+  shell:
+    cmd: "kubectl apply -f configs/local_sc_rancher/local-path-storage.yaml"
+
+- name: Set StorageClass as default
+  shell:
+    cmd: kubectl patch sc local-path -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+- name: Check if Local StorageClass has been setted up
+  shell:
+    cmd: "kubectl get sc"
+  register: out
+
+- name: Debug kubectl get sc
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+
