@@ -88,25 +88,33 @@
     msg: "{{ out.stdout_lines }}"
 
 
-- name: Remove localhost default configuration
-  lineinfile:
-    dest:  /etc/hosts
-    state:  absent
-    regexp: '^127\.0\.0\.1'
+- name: Read /etc/hosts file
+  command: "cat /etc/hosts"
+  register: out
 
-- name: Remove vagrant default configuration
-  lineinfile:
-    dest:  /etc/hosts
-    state:  absent
-    regexp: '^127\.0\.2\.1'
+- name: Debug /etc/hosts
+  debug:
+    msg: "{{ out.stdout_lines }}"
 
-- name: Replace a localhost entry with our own
+
+- name: Remove /etc/hosts file (delete file)
+  ansible.builtin.file:
+    path: /etc/hosts
+    state: absent
+
+
+- name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
+  file:
+    path: /etc/hosts 
+    state: touch
+    mode: "0644"
+
+- name: Add new localhost to /etc/hosts
   lineinfile:
     path: /etc/hosts
     line: "127.0.0.1 {{inventory_hostname}} {{ansible_hostname}} localhost"
 
-
-- name: Add entries to /etc/hosts (master node)
+- name: Add other hosts to /etc/hosts (master node)
   lineinfile:
     path: /etc/hosts
     line: "{{ CONTROL_IP }} master-node-{{ (IP_START | int) }}"
