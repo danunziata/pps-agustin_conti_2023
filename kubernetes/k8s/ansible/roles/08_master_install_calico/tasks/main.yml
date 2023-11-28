@@ -9,6 +9,11 @@
   debug: var=out
 
 
+- name: Create a directory to store configs
+  file:
+    path: "{{ SHARED_FOLDER_VM }}/configs"
+    state: directory
+
 - name: Download Calico YAML
   get_url:
     url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ CALICO_VERSION }}/manifests/calico.yaml"
