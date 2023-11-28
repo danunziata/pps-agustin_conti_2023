@@ -9,15 +9,25 @@
   debug:
     msg: "- ansible_hostname: {{ansible_hostname}}  - inventory_hostname: {{inventory_hostname}}  - ansible_fqdn: {{ansible_fqdn}}  - ansible_ssh_host: {{ansible_ssh_host}}"
 
-#- name: Change the hostname to our standard
-#  hostname:
-#    name: "{{ inventory_hostname }}"
+
+- name: Show cloud.cfg
+  shell:
+    cmd: "cat /etc/cloud/cloud.cfg | grep update_etc_hosts && cat /etc/cloud/cloud.cfg | grep preserve_hostname"
+  register: out
+  
+- name: Debug cloud.cfg
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
 
 - name: Cloud init setup - Remove update_etc_hosts
-  replace:
-    dest: /etc/cloud/cloud.cfg
-    regexp: '^  - update_etc_hosts' 
-    replace: "#  - update_etc_hosts"
+  lineinfile:
+    path: /etc/cloud/cloud.cfg
+    regexp: '^ - update_etc_hosts'
+    line: '#- update_etc_hosts'
+    owner: root
+    group: root
+    mode: '0644'
 
 - name: Cloud init setup - Set preserve_hostname true
   ansible.builtin.lineinfile:
