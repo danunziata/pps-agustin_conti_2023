@@ -27,15 +27,18 @@
 - name: Create local StorageClass
   shell:
     cmd: "kubectl apply -f configs/local_sc_rancher/local-path-storage.yaml"
+  become: no
 
 - name: Set StorageClass as default
   shell:
     cmd: kubectl patch sc local-path -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+  become: no
 
 - name: Check if Local StorageClass has been setted up
   shell:
     cmd: "kubectl get sc"
   register: out
+  become: no
 
 - name: Debug kubectl get sc
   debug:
