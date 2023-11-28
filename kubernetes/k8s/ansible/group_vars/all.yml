@@ -1,6 +1,6 @@
 ---
 settings:
-  env: 'test_kubeflow_2'
+  env: 'test_kubeflow'
   users:
     agus:
       prod_test: false
