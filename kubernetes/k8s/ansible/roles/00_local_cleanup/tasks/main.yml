@@ -25,25 +25,9 @@
   when: not PROD_TEST
 
 
-- name: Remove all files from shared folder - dashboard.yaml 
-  file: 
-    path: "../shared_folder/dashboard.yaml" 
-    state: absent 
-  when: not PROD_TEST
-
-- name: Remove all files from shared folder - calico.yaml
-  file: 
-    path: "../shared_folder/calico.yaml" 
-    state: absent 
-  when: not PROD_TEST
-
-
 - name: ls localhost
   command: "ls -lA ../shared_folder"
   register: ls_la
 
 - name: debug ls
   debug: var=ls_la
-
-
-
