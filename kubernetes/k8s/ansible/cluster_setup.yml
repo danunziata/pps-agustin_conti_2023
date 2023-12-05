@@ -48,8 +48,8 @@
   name: "Install extra plugins on Master"
   become: yes
   roles:
-    - role: a_master_install_nginx_test
-      tags: a_master_install_nginx_test
+    #- role: a_master_install_nginx_test
+    #  tags: a_master_install_nginx_test
     - role: b_master_install_dashboard
       tags: b_master_install_dashboard
     - role: c_master_install_helm
