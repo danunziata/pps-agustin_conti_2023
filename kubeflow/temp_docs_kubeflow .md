@@ -58,9 +58,9 @@ users:
             calico: 3.25.0 # Versión de Calico para configurar la red de los Pods
             kubernetes: 1.26.1-00 # Versión de Kubernetes para instalarlo y configurar CRI-O
             os: xUbuntu_22.04 # Versión del SO para configurar CRI-O
-    
-            flannel: 0.23.0 # No está configurado, no es de importancia
-            contained: v1.5 # No está configurado, no es de importancia
+            kustomize: 5.0.3 # La versión de Kustomize que requiere Kubeflow 1.8
+            kubeflow: 1.8 # La versión del repo de manifests que queremos descargar
+
 ```
 
 > **¡IMPORTANTE!** : Recordar seleccionar en la variable `env` nuestro usuario.
@@ -304,6 +304,8 @@ Aquí simplemente modificamos, tanto como si utilizamos Vagrant o Terraform, los
         calico: 3.25.0 # Versión de Calico para configurar la red de los Pods
         kubernetes: 1.26.1-00 # Versión de Kubernetes para instalarlo y configurar CRI-O
         os: xUbuntu_22.04 # Versión del SO para configurar CRI-O
+        kustomize: 5.0.3 # La versión de Kustomize que requiere Kubeflow 1.8
+        kubeflow: 1.8 # La versión del repo de manifests que queremos descargar
     ```
 
 Además deberemos modificar el inventario en ambos casos, en nuestro caso, para ser pŕacticos separamos en dos inventarios correspondientes a las prubas locales (`ansible/inventory_local.yml`) y las pruebas de laboratorio (`ansible/inventory_lab.yml`). Modificaremos el que corresponda como sigue:
@@ -379,128 +381,16 @@ El segundo requisito es tener Kustomize instalado, esto nos permitirá la aplica
 
 Y por último, nos pide tener Kubectl, el cual está cubierto ya que se ha instalado durante el aprovisionamiento de Software.
 
-En limpio, debemos crear una Default StorageClass e instalar Kustomize. Para ello:
+Habiendo hecho el aprovisionamiento con Ansible nos habremos asegurado de tener la Local StorageClass agregada y por defecto, de tener Kustomize instalado y de tener el repositorio correspondiente a los manifests de la versión deseada ya descargado, por lo que nos queda instalar manualmente Kubeflow en nuestro Cluster. Para ello tenemos dos caminos, la instalación en un solo comando o la intalación módulo a módulo. Elegiremos la segunda por una cuestión de asegurarnos la correcta instalación paso a paso de cada uno de los módulos.
 
-1. Storage Class:
-
-   1. Creación de la Local StorageClass:
-      1. Creamos el archivo
-
-          ```sh
-          vi local-sc.yaml
-          ```
-
-      2. Escribimos lo siguiente dentro y guardamos:
-
-          ```yaml
-          apiVersion: storage.k8s.io/v1
-          kind: StorageClass
-          metadata:
-          name: local-storage
-          provisioner: kubernetes.io/no-provisioner
-          volumeBindingMode: WaitForFirstConsumer
-          ```
-
-      3. Hacemos deploy:
-
-          ```sh
-          kubectl apply -f local_sc.yaml
-          ```
-
-      4. La hacemos por defecto:
-
-          ```sh
-          kubectl patch sc local-storage -p '{"metadata":{"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
-          ```
-
-      5. Checkeamos que esté configurada:
-
-          ```sh
-          kubectl get sc
-          ```
-
-   2. Creación de un Local PersistentVolume:
-
-      1. Creamos el archivo
-
-          ```sh
-          vi local-pv.yaml
-          ```
-
-      2. Escribimos lo siguiente dentro y guardamos:
-
-          ```yaml
-          apiVersion: v1
-          kind: PersistentVolume
-          metadata:
-          name: test-pv
-          labels:
-              type: local
-          spec:
-          storageClassName: local-storage
-          capacity:
-              storage: 25Gi # Acá ponemos lo que nos parezca
-          accessModes:
-              - ReadWriteOnce
-          hostPath:
-              path: "~/data" # Acá la ubicación en el nodo master donde se almacenarán los datos
-          ```
-
-      3. Hacemos deploy:
-
-          ```sh
-          kubectl apply -f local_pv.yaml
-          ```
-
-      4. Checkeamos que esté configurada:
-
-          ```sh
-          kubectl get pv
-          ```
-
-2. Kustomize:
-   1. Descargar el archivo de instalación:
-
-        ```sh
-        wget https://github.com/kubernetes-sigs/kustomize/blob/master/hack/install_kustomize.sh
-        ```
-
-   2. Darle permisos de ejecución:
-
-        ```sh
-        chmod +x install_kustomize.sh
-        ```
-
-   3. Descargar el binario de kustomize de la versión 5.0.3:
-
-        ```sh
-        ./install_kustomize.sh 5.0.3
-        ```
-
-   4. Darle permisos de ejecución y hacer disponible en `$PATH`:
-
-        ```sh
-        chmod +x kustomize
-        sudo mv kustomize /usr/local/bin/
-        ```
-
-   5. Checkear versión instalada:
-
-        ```sh
-        kustomize version
-        ```
-
-Una vez cumplimos con los requisitos podemos comenzar a instalar Kubeflow en nuestro Cluster. Para ello tenemos dos caminos, la instalación en un solo comando o la intalación módulo a módulo. Elegiremos la segunda por una cuestión de asegurarnos la correcta instalación paso a paso de cada uno de los módulos.
-
-1. Descarga del repositorio, en específico la branch `v1.8-branch`:
+1. Accedemos a la carpeta de los manifests:
 
     ```sh
-    # Clonamos el repositorio
-    git clone -b v1.8-branch https://github.com/kubeflow/manifests.git
-    
-    # Ingresamos a la carpeta
+    # Posicionados en ~/
     cd manifests
     ```
+
+    > **¡Importante!** Se recomienda instalar comando a comando, tomando su tiempo en cada uno para checkear que se hayan levantado todos los pods, pudiendo visualizar todo esto desde el dashboard. Además, puede que algunos elementos de la instalación, como el Authservice no se inicien hasta que no hayamos levantado el siguiente, Dex en este caso. Por lo que se recomienda continuar si Eventos corresponden a errores de Webhooks. Ante la duda, podemos hacer la instalación de un solo comando que figura en el mismo repositorio.
 
 2. Instalamos el cert-manager:
 
@@ -615,92 +505,219 @@ Una vez cumplimos con los requisitos podemos comenzar a instalar Kubeflow en nue
     watch kubectl get pods -n kubeflow-user-example-com
     ```
 
-## Test y errores
+## Crear servicio para exponer el Dashboard de Kubeflow a la IP del nodo
 
-Al hacer la configuración siguiente, con 2 nodos:
-
-![Node config](img/error-node-config.png)
-
-Y habiendo aplicado la Default StorageClass como se indica en los pasos arriba, se sigue obteniendo el tipo de error:
-
-![Replica Sets Logs](img/error-istio-replica-sets.png)
-
-Vemos que dice: `MountVolume.SetUp failed for volume "ingressgateway-ca-certs" : failed to sync secret cache: timed out waiting for the condition
-Readiness probe failed: Get "http://172.16.7.197:15021/healthz/ready": dial tcp 172.16.7.197:15021: connect: connection refused`
-
-Además, si vamos a los eventos:
-
-![Error Istio Ingressgateway](img/error-istio-ingressgateway.png)
-
-Donde nos dice que hay un error `FailedGetResourceMetric` con la descripción `failed to get cpu utilization: did not receive metrics for any ready pods` en `horizontal-pod-autoscaler`.
-
-Además, investigando los archivos de los manifests referentes a la versión de Istio instalada, notamos que en  `/manifests/common/istio-1-17/istio-install/base/install.yaml` los recursos que solicita el Istio Ingressgateway son:
-
-![/manifests/common/istio-1-17/istio-install/base/install.yaml](img/manifest-install-istio-ingress-gateway.png)
-
-Los cuales parece que cumplimos.
-
-Por otro lado, desde el dashboard entramos al archivo de configuración de los Deployments que fallaron, en este caso, el de Istio Ingressgateway y observamos los requerimientos que pedia:
-
-![Deployment requirements](img/istio-ingressgateway-deployments.png)
-
-Posible causa: Error en el HPA (mala configuración):
+### Exponer el servicio (port-forward) - No recomendado
 
 ```sh
-
-vagrant@master-node-171:~/manifests$ kubectl describe hpa -A
-Name:                     istio-ingressgateway
-Namespace:                istio-system
-Labels:                   app=istio-ingressgateway
-                          install.operator.istio.io/owning-resource=unknown
-                          istio=ingressgateway
-                          istio.io/rev=default
-                          operator.istio.io/component=IngressGateways
-                          release=istio
-Annotations:              autoscaling.alpha.kubernetes.io/conditions:
-                            [{"type":"AbleToScale","status":"True","lastTransitionTime":"2023-11-24T22:28:33Z","reason":"SucceededGetScale","message":"the HPA control...
-CreationTimestamp:        Fri, 24 Nov 2023 22:28:18 +0000
-Reference:                Deployment/istio-ingressgateway
-Target CPU utilization:   80%
-Current CPU utilization:  <unknown>%
-Min replicas:             1
-Max replicas:             5
-Deployment pods:          1 current / 0 desired
-Events:
-  Type     Reason                   Age                    From                       Message
-  ----     ------                   ----                   ----                       -------
-  Warning  FailedGetResourceMetric  2m42s (x298 over 77m)  horizontal-pod-autoscaler  failed to get cpu utilization: did not receive metrics for any ready pods
-
-
-Name:                     istiod
-Namespace:                istio-system
-Labels:                   app=istiod
-                          install.operator.istio.io/owning-resource=unknown
-                          istio.io/rev=default
-                          operator.istio.io/component=Pilot
-                          release=istio
-Annotations:              autoscaling.alpha.kubernetes.io/conditions:
-                            [{"type":"AbleToScale","status":"True","lastTransitionTime":"2023-11-24T22:28:33Z","reason":"ReadyForNewScale","message":"recommended size...
-                          autoscaling.alpha.kubernetes.io/current-metrics:
-                            [{"type":"Resource","resource":{"name":"cpu","currentAverageUtilization":60,"currentAverageValue":"6m"}}]
-CreationTimestamp:        Fri, 24 Nov 2023 22:28:18 +0000
-Reference:                Deployment/istiod
-Target CPU utilization:   80%
-Current CPU utilization:  60%
-Min replicas:             1
-Max replicas:             5
-Deployment pods:          1 current / 1 desired
-Events:
-  Type     Reason                        Age                    From                       Message
-  ----     ------                        ----                   ----                       -------
-  Warning  FailedGetResourceMetric       8m58s (x2 over 9m13s)  horizontal-pod-autoscaler  failed to get cpu utilization: unable to get metrics for resource cpu: no metrics returned from resource metrics API
-  Warning  FailedComputeMetricsReplicas  8m58s (x2 over 9m13s)  horizontal-pod-autoscaler  invalid metrics (1 invalid out of 1), first error is: failed to get cpu resource metric value: failed to get cpu utilization: unable to get metrics for resource cpu: no metrics returned from resource metrics API
-
-
+kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
 ```
+
+### Exponer el servicio (NodePort) - Recomendado
+
+1. Creamos el siguiente archivo para el servicio servicio `forwarding-svc.yaml`:
+
+    ```yaml
+    apiVersion: v1
+    kind: Service
+    metadata:
+    name: custom-pf-svc
+    namespace: istio-system
+    spec:
+    type: NodePort
+    ports:
+        - targetPort: 8080 # Where the other service is listening
+        port: 80  # Where this service are available inside the cluster
+        nodePort: 30002 # Where to expose this service
+    selector:
+        app: istio-ingressgateway  # Service to expose 
+    ```
+
+2. Aplicamos la configuración:
+
+    ```sh
+    kubectl apply -f forwarding-svc.yaml
+    ```
+
+3. Buscamos la IP (url) donde está expuesto:
+
+    ```sh
+    # Caso de que no funcione el comando, ingresamos a la IP del nodo y al puerto configurado.
+    kubectl get service -n istio-system custom-pf-svc --url
+    ```
+
+4. Ingresamos a la url que nos muestra.
+
+## Correr ejemplo
+
+Una vez hayamos ingresado a Kubeflow con nuestra usuario y contraseña de ejemplo: `user@example.com` y `12341234`.
+
+> **¡Importante!** Como vamos a trabajar sobre HTTP y no sobre HTTPS deberemos modificar la variable de entorno de `APP_SECURE_COOKIES` y setearla en `false` en cada web app que necesitemos, en nuestro caso será para Notebooks. De todas maneras no es recomendado por riesgos de seguridad. Para nuestro ejemplo:
+>
+> ```sh
+> kubectl edit deploy jupyter-web-app-deployment -n kubeflow
+> ```
+>
+> Y este también:
+>
+> ```sh
+> kubectl edit deploy volumes-web-app-deployment -n kubeflow
+> ```
+
+1. Seleccionamos nuestro namespace (en nuestro caso el ejemplo que viene desplegado con la instalación)
+
+    ![Kubeflow Example 1](img/kubeflow-example-1.png)
+
+2. Ingresar a Kubeflow en su sección "Notebooks"
+
+    ![Kubeflow Example 2](img/kubeflow-example-2.png)
+
+3. Crear un Nuevo Notebook Server haciendo clicl en "+ New Notebook"
+
+    ![Kubeflow Example 3](img/kubeflow-example-3.png)
+
+4. Elegimos un nombre para el Notebook Server, un entorno, el tipo de imágen, la cantidad de CPU's y RAM del mismo:
+
+    ![Kubeflow Example 4](img/kubeflow-example-4.png)
+
+5. En nuestro caso no utilizamos GPU y crearemos un nuevo volumen para el mismo:
+
+    ![Kubeflow Example 5](img/kubeflow-example-5.png)
+
+6. Hacemos click en "Lauch":
+
+    ![Kubeflow Example 6](img/kubeflow-example-6.png)
+
+7. Esperamos que esté Ready y hacemos Click en "Connect"
+
+    ![Kubeflow Example 7](img/kubeflow-example-7.png)
+
+8. Copiamos el siguiente código en el notebook:
+
+    [Basic classification: Classify images of clothing](https://www.tensorflow.org/tutorials/keras/classification)
+
+    ![Kubeflow Example 8-a](img/kubeflow-example-8-a.png)
+
+    ![Kubeflow Example 8-b](img/kubeflow-example-8-b.png)
+
+> **¡Importante!** Con *Ctrl + S* podemos guardar el notebook creado, a partir de acá nos manejamos como si tuvieramos Notebook en local. Tambien recordar instalar dependencias abriendo una consola desde le mismo Notebook Server (boton + arriba a la izquierda)
+
+## Extra: Instalación local con Minikube
+
+Si deseamos correr en local con Minikube, podemos seguir los sigueintes pasos:
+
+### Instalación del binario
+
+```sh
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+```
+
+### Configuración de alias para kubectl
+
+```sh
+alias kubectl="minikube kubectl --"
+```
+
+### Despliegue de 1 nodo
+
+```sh
+minikube start --kubernetes-version='1.26.1' --memory='12288' --cpus='8' --disk-size='80GB' --vm=true
+minikube addons enable metrics-server
+```
+
+> **¡Importante!** La cantidad de CPUs es como mínimo de 8, sino no se levantarán todos los servicios. La RAM es como mínimo de 12HB y el almacenamiento debe ser de como mínimo de 60GB.
+
+### Detener la ejecución del Cluster
+
+```sh
+minikube stop --all
+```
+
+### Visualización
+
+Desde otra terminal o antes de empezar podemos correr el Dashboard con el siguiente comando:
+
+```sh
+minikube dashboard
+```
+
+### Instalación de Kustomize
+
+1. Descarga de instalador
+
+    ```sh
+    wget https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh
+    ```
+
+2. Instalación de versión 5.0.3
+
+    ```sh
+    chmod +x install_kustomize.sh
+    ./install_kustomize.sh 5.0.3
+    chmod +x kustomize
+    mv kustomize /usr/local/bin
+    ```
+
+### Descarga de los manifiestos
+
+```sh
+git clone https://github.com/kubeflow/manifests.git -b v1.8-branch
+cd manifests/
+```
+
+### Instalación de un solo comando (aprox 40min)
+
+```sh
+while ! kustomize build example | kubectl apply -f -; do echo "Retrying to apply resources"; sleep 10; done
+```
+
+### Exposición de servicio dentro del cluster (port-forward)
+
+```sh
+kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
+```
+
+### Exponer fuera del cluster (NodePort)
+
+1. Creamos el siguiente archivo para el servicio servicio `forwarding-svc.yaml`:
+
+    ```yaml
+    apiVersion: v1
+    kind: Service
+    metadata:
+    name: custom-pf-svc
+    namespace: istio-system
+    spec:
+    type: NodePort
+    ports:
+        - targetPort: 8080 # Where the other service is listening
+        port: 80  # Where this service are available inside the cluster
+        nodePort: 30001 # Where to expose this service
+    selector:
+        app: istio-ingressgateway  # Service to expose 
+    ```
+
+2. Aplicamos la configuración:
+
+    ```sh
+    kubectl apply -f forwarding-svc.yaml
+    ```
+
+3. Buscamos la IP (url) donde está expuesto:
+
+    ```sh
+    minikube service -n istio-system custom-pf-svc --url
+    ```
+
+4. Ingresamos a la url que nos muestra.
 
 ## Referencias
 
 - [Creación de Local StorageClass y Local PersistentVolume](https://www.civo.com/academy/kubernetes-volumes/local-volume-demo)
 
-- [Error Istio IngressGateway]()
+- [Fix Bug HTTP for Notebook creation - "Could not find CSRF cookie XSRF-TOKEN"](https://medium.com/@ratchaphon/fix-bug-kubeflow-403-could-not-find-csrf-cookie-xsrf-token-in-the-request-1f4ac886050c)
+
+- [Tensorflow - Basic classification: Classify images of clothing](https://www.tensorflow.org/tutorials/keras/classification)
+
+- [Levantar Kubeflow con Minikube](https://dagshub.com/blog/how-to-install-kubeflow-locally/)
