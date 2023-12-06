@@ -23,3 +23,11 @@
 - [GitHub - AudelDiaz - kubeadm-cluster](https://github.com/AudelDiaz/kubeadm-cluster/blob/main/ansible/roles/kubeadm-deploy-master/tasks/main.yml)
 
 - [Ansible Best Practicas - Directory Layout](https://docs.ansible.com/ansible/2.8/user_guide/playbooks_best_practices.html#DirectoryLayout)
+
+- [Creación de Local StorageClass y Local PersistentVolume](https://www.civo.com/academy/kubernetes-volumes/local-volume-demo)
+
+- [Fix Bug HTTP for Notebook creation - "Could not find CSRF cookie XSRF-TOKEN"](https://medium.com/@ratchaphon/fix-bug-kubeflow-403-could-not-find-csrf-cookie-xsrf-token-in-the-request-1f4ac886050c)
+
+- [Tensorflow - Basic classification: Classify images of clothing](https://www.tensorflow.org/tutorials/keras/classification)
+
+- [Levantar Kubeflow con Minikube](https://dagshub.com/blog/how-to-install-kubeflow-locally/)

@@ -1,7 +1,6 @@
-# Plan de Trabajo
-
-Las actividades deben detallar claramente cómo se alcanzará cada uno de los objetivos planteados, indicando brevemente o enunciando la metodología de trabajo, técnica analítica, entre otros. La actividad 1 debe contener el análisis de riesgos asociados propios al área, línea de trabajo.
-
+---
+title: Plan de trabajo
+---
 ## Cronograma de actividades
 
 Del 27 de Septiembre al 7 de Diciembre de 2023 con 6 horas diarias en la franja horaria de 8 a 14 hs.

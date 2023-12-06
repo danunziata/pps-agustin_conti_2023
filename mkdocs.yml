@@ -87,6 +87,13 @@ markdown_extensions:
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
 
+plugins:
+    - search
+    - pdf-export
+
+#extra_css:
+#  - css/extra.css
+
 # Copyright footer
 copyright: |
   &copy; 2023 <a href="https://www.ing.unrc.edu.ar/inicio.php"  target="_blank" rel="noopener">Universidad Nacional de Río cuarto | Facultad de Ingeniería</a>

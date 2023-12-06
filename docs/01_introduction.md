@@ -1,4 +1,6 @@
-# Introducción
+---
+title: Introducción
+---
 
 En la era digital actual, el campo de la Ingeniería en Telecomunicaciones se encuentra en constante evolución, impulsado por la creciente demanda de conectividad y el acceso a datos a una escala sin precedentes. Dentro de este panorama, el Machine Learning ha surgido como una herramienta poderosa para extraer conocimientos valiosos de estos datos, transformando la manera en que interactuamos con la información y mejorando la toma de decisiones en una amplia gama de aplicaciones. En este contexto, las prácticas profesionales desempeñan un papel crucial al abordar desafíos complejos y relevantes que enfrenta la industria de las telecomunicaciones.
 
