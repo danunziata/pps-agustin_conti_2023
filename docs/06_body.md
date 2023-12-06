@@ -33,6 +33,14 @@ El grupo reconoce que extraer información valiosa de grandes volúmenes de dato
 
 ## Descripción de las tareas realizadas
 
+### Contextualización: DEVOps y MLOps
+
+En el contexto del proyecto, la implementación de prácticas DevOps y MLOps se traduce en la automatización eficiente de los procesos relacionados con la infraestructura, el desarrollo de software, el entrenamiento de modelos de aprendizaje automático y la implementación de soluciones. Estos enfoques garantizan una entrega continua, confiable y eficiente, permitiendo a los equipos de desarrollo y operaciones colaborar de manera efectiva y proporcionar soluciones que se ajusten a los requisitos del proyecto de manera ágil y escalable. La adopción de DevOps y MLOps contribuye a la eficiencia, la calidad y la innovación en el desarrollo y operación del proyecto.
+
+![DevOps vs MLOps](img/devops-vs-mlops.png)
+
+Con lo mencionado, se entiende que las pŕacticas llevada a cabo en este proyecto están estrictamente relacionadas con estos conceptos, entendiendo que hay un equipo de desarrolladores (científicos) que se verán beneficiados por el despliegue e implementación de esta herramienta que seleccionamos.
+
 ### Comparación de herramientas
 
 **Kubeflow** ofrece una forma escalable de entrenar y desplegar modelos en Kubernetes. Es un medio de orquestación que permite que un framework de aplicaciones en la nube funcione sin problemas. Algunos de los componentes de Kubeflow son los siguientes:
@@ -85,75 +93,55 @@ En nuestro caso de aplicación, como nuestro cluster ya tiene Kubernetes y consi
 >
 >(**) *DAGs:* Directed Acyclic Graph, es una forma de modelar las redes neuronales en forma de nodos interconectados por flechas.
 
+### Metodologías ágiles y GitHub
+
+En la elección de la metodología ágil para la gestión de este proyecto, se optó por Scrum debido a su capacidad para fomentar la colaboración efectiva, la entrega iterativa y la adaptabilidad a los cambios en los requisitos del cliente. Scrum, alineado con los valores y principios del Manifiesto Ágil, proporciona un marco de trabajo estructurado con roles claramente definidos, destacando la importancia de la comunicación constante y la entrega continua de software valioso. La división de roles, con el tutor docente asumiendo el papel de Scrum Master y el tutor externo como Product Owner, permite una distribución clara de responsabilidades. Además, la elección de sprints semanales se alinea con la naturaleza del proyecto, facilitando una planificación detallada y una entrega regular de incrementos de valor.
+
+![Scrum](img/scrum.jpg)
+
+En cuanto al Git Workflow, se adoptó GitHub Workflow por su simplicidad y la familiaridad con la plataforma en la que se desarrolla el proyecto. GitHub Workflow ofrece un enfoque liviano y eficiente para el control de versiones, integrando la entrega continua con la capacidad de desplegar inmediatamente en la rama master. Este enfoque se ajusta adecuadamente a la naturaleza colaborativa del desarrollo, permitiendo la creación de ramas descriptivas para nuevas características, la apertura de Pull Requests para facilitar la revisión y la rápida integración en la rama principal una vez que se ha confirmado la funcionalidad.
+
+![Git Workflow](img/gitflow.png)
+
+En conjunto, la combinación de Scrum como metodología ágil y GitHub Workflow como enfoque de control de versiones establece un marco sólido para la gestión y desarrollo efectivos de este proyecto, enfocándose en la entrega continua, la adaptabilidad y la colaboración eficiente entre los diferentes actores involucrados.
+
+La adopción de esta combinación demostró ser sumamente beneficiosa en la fase de adquisición de conocimientos sobre las nuevas tecnologías a implementar. La orientación hacia las tareas específicas y los objetivos concretos proporciona una flexibilidad significativa al alumno en términos de gestión del tiempo. Al mismo tiempo, confronta al alumno con los desafíos de manera inmediata, estimulando la resolución ágil de problemas y promoviendo un aprendizaje efectivo. Además, la naturaleza ágil de este enfoque posibilita ajustes rápidos de objetivos, permitiendo cambios dinámicos en la dirección del proyecto si un objetivo particular no alcanza un destino previsto o se evalúa como de escasa utilidad. En conjunto, estos elementos contribuyen a una curva de aprendizaje inicial gradual que, una vez superada, acelera notablemente la ejecución de tareas, resultando en una alta productividad.
+
 ### Diseño e implementación de la infraestructura basada en la herramienta seleccionada
 
-Para la plataforma que deseamos implementar (Kubeflow) necesitamos cumplir con varios requisitos de infraestructura y de software instalado sobre la misma. En nuestro caso contamos con un Cluster conformado por 3 PC's sobre las cuales utilzaremos la virtualización para generar máquinas virtuales con ciertos recursos asignados y sobre dichas máquinas virtuales se aprovisionará el software necesario.
+Para implementar la plataforma Kubeflow, hemos definido requisitos específicos de infraestructura y software. Nuestra infraestructura se basa en un cluster compuesto por tres PC, donde utilizaremos la virtualización para crear máquinas virtuales con recursos específicos. El aprovisionamiento de software se realizará en estas máquinas virtuales.
 
 #### Recursos físicos - Cluster del Laboratorio
 
-Conjunto de 3 PC's con los siguientes recursos cada una:
-
-- CPU's: 96 CORES
-- Memoria RAM: 128 GB
-- Almacenamiento: 2 TB
-- GPU's: NO, por el momento.
-
-Estos recursos serán agrupados con una plataforma de virtualización.
+Este conjunto consiste en tres PC con recursos significativos: 96 CORES de CPU, 128 GB de Memoria RAM, y 2 TB de almacenamiento, aunque no cuentan con GPU por el momento. Estos recursos se agruparán mediante una plataforma de virtualización.
 
 #### Virtualización - Proxmox
 
-Proxmox Virtual Environment, comúnmente conocido como Proxmox, es una plataforma de virtualización de código abierto que permite la administración y la implementación de máquinas virtuales (VM) y contenedores en un entorno integrado. Proxmox se utiliza para crear y gestionar entornos virtuales en servidores físicos y es especialmente útil en entornos de centro de datos y en la administración de servidores.
+Proxmox Virtual Environment, conocido como Proxmox, es una plataforma de virtualización de código abierto. Facilita la administración y despliegue de máquinas virtuales (VM) y contenedores en un entorno integrado. Proxmox utiliza KVM para VMs y LXC para contenedores, permitiendo ejecutar ambos en la misma plataforma. Su interfaz web, Proxmox Virtual Environment (PVE), simplifica la gestión de recursos físicos, creación de VMs, copias de seguridad, y más. Proxmox destaca por la gestión centralizada de recursos, diversas opciones de almacenamiento, administración de clústeres para alta disponibilidad, seguridad, y escalabilidad.
 
-Los siguientes son los conceptos clave y el principio de funcionamiento de Proxmox:
+![Proxmox](img/proxmox.png)
 
-1. **Virtualización basada en KVM y contenedores:** Proxmox utiliza dos tecnologías de virtualización principales: KVM (Kernel-based Virtual Machine) para máquinas virtuales y contenedores LXC (Linux Containers). Esto proporciona flexibilidad para ejecutar tanto VMs completas como contenedores ligeros en la misma plataforma.
-2. **Interfaz web de gestión:** Proxmox ofrece una interfaz web de administración fácil de usar llamada Proxmox Virtual Environment (PVE). A través de esta interfaz, los administradores pueden gestionar recursos físicos, crear VMs y contenedores, realizar copias de seguridad, monitorear el rendimiento y llevar a cabo muchas otras tareas relacionadas con la virtualización.
-3. **Gestión centralizada de recursos:** Proxmox permite aprovechar al máximo los recursos físicos del servidor al proporcionar una gestión centralizada de CPU, memoria, almacenamiento y redes. Los recursos se pueden asignar de manera dinámica y compartida entre VMs y contenedores según sea necesario.
-4. **Almacenamiento:** Proxmox admite una variedad de opciones de almacenamiento, incluidos discos locales, almacenamiento compartido en red (NFS, Ceph, etc.) y almacenamiento en la nube. Esto permite a los administradores configurar soluciones de almacenamiento adecuadas para sus necesidades.
-5. **Administración de copias de seguridad:** Proxmox incluye herramientas integradas para realizar copias de seguridad y restaurar máquinas virtuales y contenedores. Los administradores pueden programar copias de seguridad automáticas y almacenar copias de seguridad en ubicaciones seguras.
-6. **Administración de clústeres:** Proxmox permite la creación de clústeres de servidores para mejorar la alta disponibilidad y la redundancia. Esto significa que las VMs y los contenedores pueden migrar de un nodo a otro en caso de fallos, lo que garantiza la continuidad del servicio.
-7. **Seguridad y aislamiento:** Proxmox se esfuerza por garantizar el aislamiento y la seguridad entre VMs y contenedores. Las tecnologías de virtualización y contenedores se utilizan para asegurarse de que los sistemas en ejecución no interfieran entre sí.
-8. **Escalabilidad:** Los administradores pueden agregar servidores adicionales al clúster Proxmox según sea necesario para aumentar la capacidad de procesamiento y almacenamiento de la plataforma.
-
-En nuestro caso es la plataforma de virtualización utilizada debido a las múltiples prestaciones nombradas.
+Seleccionamos Proxmox para nuestra plataforma debido a sus múltiples prestaciones y funcionalidades que se alinean con nuestros requisitos.
 
 #### Aprovisionamiento de infraestructura y software
 
-En el contexto de sistemas de software y tecnología de la información, el término "aprovisionamiento" se refiere al proceso de configurar y suministrar recursos informáticos, como servidores, redes, almacenamiento y otros componentes de infraestructura, para satisfacer las necesidades de una aplicación o servicio específico. El aprovisionamiento implica la asignación de recursos de manera eficiente y escalable, de modo que los sistemas puedan funcionar de manera óptima y satisfacer la demanda de los usuarios.
+En sistemas y tecnología, el aprovisionamiento configura y suministra recursos, como servidores y redes, para satisfacer las necesidades de una aplicación. Este proceso, crucial para entornos de nube, se realiza mediante herramientas como Terraform. Terraform es una herramienta de infraestructura como código (IaC) que automatiza y estandariza la creación y configuración de recursos de infraestructura de manera consistente y repetible.
 
-El aprovisionamiento puede ser un proceso manual o automatizado, dependiendo de la complejidad de la infraestructura y de las herramientas disponibles. En entornos de nube, como Amazon Web Services (AWS), Microsoft Azure o Google Cloud Platform, el aprovisionamiento se realiza frecuentemente mediante servicios de aprovisionamiento automático que permiten escalar los recursos de manera dinámica según las necesidades de la aplicación. Esto es especialmente útil para garantizar que los sistemas sean flexibles y capaces de manejar cargas de trabajo variables.
+**Terraform**
 
-Este concepto nos es útil también para nuestra aplicación local, podremos desplegar máquinas virtuales en Proxmox y configurarlas.
+Terraform, desarrollado por HashiCorp, es esencial para la creación y configuración de infraestructura como código. Utiliza declaraciones en archivos de configuración para definir recursos y dependencias, adoptando un enfoque declarativo y proporcionando una gestión eficiente. Terraform es compatible con diversos proveedores de infraestructura, permitiendo su uso en entornos locales o en la nube.
 
-##### De Infraestructura - Terraform
-
-Terraform es una herramienta de código abierto desarrollada por HashiCorp que se utiliza para el aprovisionamiento y la gestión de **infraestructura como código (IaC, por sus siglas en inglés).** IaC es una práctica en la que la infraestructura se define y administra mediante código, lo que permite automatizar y estandarizar la creación y configuración de recursos de infraestructura, como servidores, redes, bases de datos y otros componentes, de manera consistente y repetible.
-
-El principio de funcionamiento de Terraform se basa en los siguientes conceptos clave:
-
-1. **Declaración de infraestructura como código (IaC):** En Terraform, los usuarios definen la infraestructura deseada en archivos de configuración escritos en un lenguaje específico llamado HashiCorp Configuration Language (HCL) o en formato JSON. En estos archivos, se describen los recursos necesarios, sus propiedades y sus dependencias.
-2. **Configuración declarativa:** Terraform adopta un enfoque declarativo, lo que significa que los usuarios especifican lo que quieren lograr, pero no necesariamente cómo hacerlo paso a paso. Terraform se encarga de determinar la secuencia de acciones necesarias para llevar la infraestructura actual al estado deseado.
-3. **Planificación y ejecución:** Después de definir la configuración, los usuarios ejecutan comandos de Terraform, como `terraform init`, `terraform plan` y `terraform apply`. El comando `plan` es especialmente útil, ya que muestra una vista previa de los cambios que Terraform realizará en la infraestructura actual para llevarla al estado deseado, sin aplicarlos de inmediato.
-4. **Grafo de recursos:** Terraform crea un grafo de recursos que representa las dependencias entre los recursos definidos en la configuración. Esto permite que Terraform determine el orden en el que se deben crear o modificar los recursos para garantizar la coherencia de la infraestructura.
-5. **Estado de infraestructura:** Terraform mantiene un archivo de estado que registra el estado actual de la infraestructura gestionada. Este archivo se utiliza para realizar un seguimiento de los recursos creados y para determinar los cambios necesarios durante las ejecuciones posteriores de Terraform.
-6. **Aplicación y gestión de cambios:** Una vez que los usuarios están satisfechos con la vista previa del plan de ejecución, pueden aplicar los cambios utilizando el comando `apply`. Terraform se encarga de llevar la infraestructura al estado deseado, creando, actualizando o eliminando recursos según sea necesario.
-
-Terraform es altamente extensible y es compatible con una amplia variedad de proveedores de infraestructura, incluidos proveedores de nube como AWS, Azure, Google Cloud, así como recursos locales, como servidores físicos y máquinas virtuales en centros de datos locales. Esto lo convierte en una herramienta poderosa para la gestión de infraestructura en entornos de nube, entornos locales o híbridos.
+![Terraform](img/terraform.png)
 
 Para nuestro caso, necesitamos proveer máquinas virtuales sobre Proxmox, gracias a Terraform pudimos hacer una configuración previa considerando las necesidades de recursos, pudiendo definir la cantidad de núcleos, memoria RAM y almacenamiento, además de configurar algunas funcionalidades escenciales para la identificación (como el nombre de las máquinas e ID), la administración (claves SSH) y la conectividad (IPs), permitiendo así, tener una base para luego será usada para el aprovisionamiento de software.
 
-##### De Software - Ansible
+**Ansible**
 
-Ansible es una herramienta de automatización y gestión de configuración de código abierto que se utiliza para aprovisionar y administrar software en sistemas y servidores. A diferencia de Terraform, que se enfoca en la infraestructura subyacente, Ansible se centra en la configuración y el mantenimiento de aplicaciones y servicios en sistemas ya aprovisionados. Ansible permite automatizar tareas como la instalación de software, la configuración de servidores, la actualización de aplicaciones y la gestión de configuraciones de manera eficiente y consistente.
+Ansible, también de código abierto, se centra en la automatización y gestión de configuraciones de software. A diferencia de Terraform, trabaja en sistemas ya aprovisionados y se destaca por ser "sin agente". Utiliza Playbooks y Roles para describir tareas y configuraciones en sistemas remotos a través de SSH o WinRM.
 
-El principio de funcionamiento de Ansible se basa en los siguientes conceptos clave:
+Seleccionamos Ansible para configurar máquinas virtuales, crear un Cluster de Kubernetes y aprovisionar archivos necesarios para Kubeflow. Su enfoque en la eficiencia y consistencia en la instalación de software resultó crucial. Se estructuraron roles y playbooks para una máxima automatización y reproductibilidad.
 
-1. **Agentless:** Ansible es una herramienta "sin agente", lo que significa que no es necesario instalar software adicional en los sistemas de destino para que Ansible funcione. En lugar de utilizar agentes permanentes, Ansible se comunica con los sistemas de destino a través de SSH (para sistemas Unix/Linux) o WinRM (para sistemas Windows). Esto facilita la implementación y la gestión de Ansible en una amplia variedad de entornos.
-2. **Playbooks y Roles:** Ansible utiliza Playbooks, que son archivos de texto YAML que describen las tareas que se deben realizar en los sistemas de destino. Los Playbooks son altamente legibles y permiten a los usuarios definir tareas específicas, como instalar software, configurar archivos de configuración y realizar otras acciones. Para promover la reutilización y la organización, las tareas se pueden agrupar en Roles, que son conjuntos de tareas relacionadas que se pueden aplicar a diferentes hosts.
-3. **Declarativo:** Ansible sigue un enfoque declarativo, lo que significa que los Playbooks describen el estado deseado del sistema en lugar de los pasos específicos para llegar a ese estado. Ansible se encarga de determinar cómo llevar los sistemas al estado deseado.
-4. **Módulos:** Ansible incluye una amplia colección de módulos que permiten realizar una variedad de tareas en los sistemas de destino. Estos módulos son responsables de ejecutar acciones específicas, como instalar paquetes, copiar archivos, reiniciar servicios y más. Los usuarios pueden utilizar estos módulos en sus Playbooks para lograr sus objetivos de configuración.
-5. **Inventario:** Ansible utiliza un archivo de inventario para definir los hosts (sistemas de destino) en los que se ejecutarán las tareas. Los inventarios pueden ser estáticos o dinámicos, lo que permite gestionar grupos de hosts de manera flexible y escalable.
-6. **Ejecución:** Para ejecutar un Playbook o una tarea de Ansible, los usuarios pueden utilizar el comando `ansible-playbook` o comandos similares. Ansible se encarga de conectarse a los sistemas de destino, aplicar las tareas definidas en el Playbook y garantizar que el sistema esté en el estado deseado.
+![Ansible](img/ansible.png)
 
 Ansible fue de vital utilidad para configurar nuestras máquinas virtuales, crear un Cluster de Kubernetes funcional con dichas máquinas y aprovisionar con los diferentes archivos que serán necesarios para la instalación de nuestra plataforma, Kubeflow. En el proceso se definió la estructura de archivos requerida para el funcionamiento de esta herramienta, donde lo más importante a destacar son las "variables de grupo" que nos permitieron hacer un "plantillado" por usuario, de manera de asegurar la reproducibilidad de nuestro experimentos. Por otro lado se definieron "roles" que constan de archivos que contienen instructivos o tareas. Cada rol se puede asignar a "tareas generales" distintas, por lo que es fácil separar el trabajo en secciones más pequeñas que garanticen el entendimiento y por el otro lado, nos permitan aprovisionar "por sección" o "paso a paso" si es que lo deseamos gracias al uso del "tagging" (etiquetado) de dichos roles.
 
@@ -163,795 +151,74 @@ Estos roles y sus tareas fueron ordenados y asignados a los diferentes hosts gra
 
 Es de mucha importancia aclarar que durante todo el desarrollo del aprovisionamiento se buscó la máxima automatización a la hora de la creación tanto del entorno de pruebas, como del aprovisionamiento en sí.
 
-##### Uso en conjunto - Terraform + Ansible
+**Uso en conjunto - Terraform + Ansible**
 
-Terraform y Ansible son dos herramientas complementarias que se utilizan comúnmente juntas para gestionar de manera integral tanto la infraestructura como la configuración de software en un entorno de TI. La combinación de ambas herramientas permite automatizar todo el ciclo de vida de un sistema, desde la creación y aprovisionamiento de la infraestructura hasta la configuración y administración de aplicaciones y servicios en dicha infraestructura. Aquí hay algunas formas típicas en las que se utilizan Terraform y Ansible juntos:
-
-1. **Provisionamiento de infraestructura con Terraform:** Terraform se utiliza para crear y aprovisionar la infraestructura subyacente, como servidores, redes, bases de datos y otros recursos en la nube o en centros de datos locales. Terraform puede configurar la topología de la infraestructura y asegurarse de que los recursos estén disponibles y funcionando según lo previsto.
-2. **Configuración de servidores y aplicaciones con Ansible:** Una vez que Terraform ha creado la infraestructura, Ansible se encarga de configurar y gestionar los servidores y aplicaciones en esa infraestructura. Ansible automatiza tareas como la instalación de software, la configuración de archivos de configuración, la aplicación de parches y la gestión de servicios en los servidores.
-3. **Orquestación completa de aplicaciones:** Terraform y Ansible se pueden utilizar en conjunto para orquestar la implementación de aplicaciones completas. Terraform puede aprovisionar servidores y recursos, y luego Ansible puede configurar y administrar la aplicación en esos servidores, garantizando que todo el entorno esté funcionando correctamente.
-4. **Actualizaciones y cambios en la infraestructura:** Cuando es necesario realizar cambios en la infraestructura, como agregar o quitar servidores, Terraform se encarga de modificar la infraestructura de manera controlada y segura. Luego, Ansible puede aplicar las configuraciones necesarias en los nuevos recursos o realizar ajustes en los recursos existentes para acomodar los cambios.
-5. **Automatización de despliegues y escalabilidad:** Terraform y Ansible permiten escalar la infraestructura y las aplicaciones de manera automatizada en función de la demanda. Por ejemplo, cuando se necesita escalar una aplicación web, Terraform puede agregar nuevos servidores, y Ansible puede configurarlos automáticamente para unirse al clúster de aplicaciones existente.
-6. **Gestión de la configuración continua:** Ansible se utiliza para garantizar que la configuración de software se mantenga coherente a lo largo del tiempo. Puede aplicar políticas de configuración y asegurarse de que los servidores y las aplicaciones cumplan con los estándares de seguridad y rendimiento.
-
-##### ¿Cómo se comunican Terraform y Ansible para poder realizar las configuraciones?
-
-Tanto Terraform como Ansible son herramientas de automatización que pueden comunicarse con otros sistemas y recursos utilizando diferentes protocolos y mecanismos de autenticación. A continuación, se describen los protocolos y métodos de autenticación comunes utilizados por cada una de estas herramientas:
-
-**Terraform:**
-
-1. **APIs de proveedores de nube:** Terraform se comunica con los proveedores de nube (como AWS, Azure, Google Cloud, etc.) a través de sus respectivas APIs. Estas APIs suelen utilizar protocolos basados en HTTP/HTTPS, como REST o gRPC, para la comunicación. Terraform utiliza las credenciales del proveedor de nube (por ejemplo, las claves de acceso de AWS) para autenticarse y realizar operaciones en la nube.
-
-2. **SSH:** En ocasiones, Terraform puede utilizar SSH para comunicarse con máquinas virtuales o servidores provisionados a través de SSH. En este caso, se utilizan pares de claves SSH (pública y privada) para la autenticación. La clave pública se coloca en el servidor de destino, y la clave privada se utiliza para autenticar la conexión desde Terraform.
-
-**Ansible:**
-
-1. **SSH:** Ansible utiliza SSH como el protocolo predeterminado para conectarse a los servidores de destino y ejecutar comandos o tareas en ellos. Al igual que con Terraform, Ansible utiliza pares de claves SSH (pública y privada) para la autenticación. La clave pública se debe agregar a los servidores de destino y la clave privada se utiliza para autenticar las conexiones desde la máquina que ejecuta Ansible.
-
-2. **WinRM:** Para sistemas Windows, Ansible puede utilizar WinRM (Windows Remote Management) como protocolo de comunicación en lugar de SSH. WinRM permite la administración remota de servidores Windows y utiliza autenticación basada en credenciales (nombre de usuario y contraseña) o certificados.
-
-En cuanto a la comunicación con Proxmox, tanto Terraform como Ansible pueden utilizar SSH para conectarse a los nodos de Proxmox y administrarlos, ya que Proxmox es compatible con SSH para la administración remota. En este caso, se requerirán las claves SSH adecuadas y las configuraciones de acceso para autenticarse en los nodos de Proxmox.
-
-#### Uso de Vagrant como herramienta de Testing local
-
-Durante el proceso de armado de los roles de Ansible y para un trabajo más ordenado e independiente por parte del que desarrolla el aprovisionamiento fue de mucha utilidad el uso de la herramienta de virtualización Vagrant, mediante la cual se desplegaron máquinas virtuales en el entorno local del desarrollador y con esto el mismo fue capaz de probar cada una de las configuraciones realizadas y, en caso de algún inconveniente, borrar y volver a empezar. Por otro lado, nos asegura la reproducibilidad tanto por los otros contribuidores del proyecto, como en el entorno de producción (cluster del laboratorio).
+La combinación de Terraform y Ansible es poderosa para gestionar integralmente infraestructura y software. Terraform se emplea para el aprovisionamiento inicial de recursos, mientras que Ansible configura y administra servidores y aplicaciones. Juntos, orquestan la implementación de aplicaciones, gestionan actualizaciones y cambios en la infraestructura, permiten la escalabilidad automática y garantizan la coherencia de la configuración continua. La integración de ambas herramientas abarca desde la creación de infraestructura hasta la administración completa del ciclo de vida del sistema, ofreciendo un enfoque completo y automatizado.
 
 #### Orquestación de contenedores - Kubernetes
 
-Kubernetes, a menudo abreviado como K8s, es una plataforma de código abierto diseñada para la automatización, la implementación, la escalabilidad y la administración de aplicaciones en contenedores. Kubernetes es ampliamente utilizado en el despliegue y la gestión de aplicaciones en entornos de nube y en centros de datos locales. Su principal objetivo es facilitar la orquestación de contenedores, lo que permite administrar aplicaciones de manera eficiente y escalable.
-
-Los siguientes son los conceptos clave y el principio de funcionamiento de Kubernetes:
-
-1. **Contenedores:** Kubernetes se basa en la tecnología de contenedores, que permite empaquetar aplicaciones y sus dependencias en entornos aislados y portátiles. Los contenedores son ligeros, rápidos de implementar y pueden ejecutarse de manera consistente en cualquier entorno compatible con contenedores.
-2. **Orquestación:** Kubernetes se utiliza para orquestar la implementación y la administración de contenedores en clústeres de servidores. Esto significa que Kubernetes automatiza tareas como la distribución de contenedores en servidores, la recuperación ante fallos, la escalabilidad de aplicaciones y la gestión de recursos.
-3. **Clúster de Kubernetes:** Un clúster de Kubernetes es un conjunto de nodos (servidores) que ejecutan el software de Kubernetes y que trabajan juntos para administrar aplicaciones en contenedores. Los clústeres pueden incluir nodos maestros (control plane) y nodos de trabajo (worker nodes).
-4. **Nodos maestros:** Los nodos maestros son responsables de la gestión y el control del clúster de Kubernetes. Se encargan de tomar decisiones sobre la programación de contenedores, la asignación de recursos, la gestión de la alta disponibilidad y la administración de la configuración del clúster.
-5. **Nodos de trabajo:** Los nodos de trabajo son los servidores donde se ejecutan los contenedores. Cada nodo de trabajo tiene un agente de Kubernetes llamado kubelet que se comunica con el nodo maestro y administra la ejecución de los contenedores en el nodo.
-6. **Despliegues y Pods:** Kubernetes utiliza abstracciones como Despliegues (Deployments) y Pods para definir y gestionar aplicaciones. Los Despliegues especifican cómo se deben ejecutar los Pods (que son la unidad más pequeña en Kubernetes) y controlan la escalabilidad, la actualización y el equilibrio de carga de las aplicaciones.
-7. **Servicios:** Kubernetes ofrece Servicios para exponer aplicaciones y servicios a través de una red. Los Servicios permiten la comunicación entre Pods y garantizan la disponibilidad incluso cuando los Pods se escalan o cambian de ubicación.
-8. **Escalabilidad y autorrecuperación:** Kubernetes permite escalar aplicaciones automáticamente según la demanda y recuperarse de fallos de forma automática. Esto garantiza que las aplicaciones sean altamente disponibles y capaces de manejar cargas de trabajo variables.
-9. **Configuración declarativa:** En Kubernetes, los usuarios definen el estado deseado de las aplicaciones y de la infraestructura a través de archivos de configuración YAML o JSON. Kubernetes se encarga de llevar el sistema al estado deseado y mantenerlo de esa manera.
-
-En estas prácticas se buscó crear un Cluster de Kubernetes en la versión requerida por la plataforma Kubeflow, esta plataforma nos permite lograr escalabilidad de nuestra plataforma según los recursos que se requieran, además, según la cantidad de nodos que tengamos, nuestra plataforma será capaz de ser redundante y permitir que, en el caso de que uno fallase, los pods se generen en otro nodo sin perder la usabilidad de nuestra plataforma. Para la intalación de esta se definieron tres elementos principales:
-
-- La Container Runtime Interface (CRI): Necesitas un container runtime ejecutándose en cada Nodo en tu clúster, de manera que kubelet pueda iniciar los Pods y sus contenedores, por eso CRI es una interfaz de plugin que permite que kubelet use una amplia variedad de container runtimes, sin necesidad de volver a compilar los componentes del clúster. En nuestro caso se eligión CRI-O por su implementación "ligera".
-
-- La Container Network Interface (CNI): Es un marco para configurar dinámicamente los recursos de red. Utiliza un grupo de bibliotecas y especificaciones. La especificación del plugin define una interfaz para configurar la red, aprovisionar direcciones IP y mantener la conectividad con múltiples hosts. Puede integrarse sin problemas con el kubelet para permitir el uso de una red overlay o underlay para configurar automáticamente la red entre pods.
-
-- La StorageClass (SC): Una StorageClass proporciona una forma para que los administradores describan las "clases" de almacenamiento que ofrecen, de esta forma se pueden proveer volúmenes de manera dinámica con ciertas características en particular. En nuestro caso, necesitamos de Rancher para aprovisionar volúmenes de manera Local, ya que Kubernetes tiene diferentes "proveedores" para la creación de estos volúmenes.
-
-### Ejemplo de funcionamiento: Entrenar un modelo
-
-Para instalar Kubeflow necesitamos:
-
-- **Aprovisionamiento de infraestructura:** Creación de los nodos con Terraform o Vagrant.
-- **Aprovisionamiento de Sofware:** Configuración de los nodos e instalación de Kubernetes (k8s)
-- **Instalación manual de Kubeflow:** Usando los manifests que proporcionan en su repositorio.
-
-#### Aprovisionamiento de infraestructura con Terraform o Vagrant
-
-Tanto como para Vagrant como para Terraform tendremos en cuenta un archivo de configuración principal, `k8s/ansible/group_vars/all.yml`. Dentro del archivo deberemos crear el perfil para nuestra prueba, donde modificaremos diferentes parámetros. En un principio, copiaremos debajo de las existentes y dentro de los usuarios un nuevo usuario con el nombre de nuestra preferencia, quedando con la siguiente forma:
-
-```yml
----
-settings:
-env: '<nombre-de-nuestro-perfil>'
-users:  
-    <nombre-de-nuestro-perfil>:
-        prod_test: false # Si es Vagrant, false, sino true, esto deshabilita o habilita los reinicios de las VPCs respectivamente para evitar errores.
-        
-        environment: "" # Variables de entorno que quisieramos agregar a Kubelet
-        
-        user_dir_path: /home/aagustin # Path al home del local-host
-        node_home_dir: /home/vagrant # Path al home del remote-host
-
-        shared_folders:
-            - host_path: ./shared_folder # Para Vagrant, indicamos un path respecto a la Vagrantfile del local-host
-            vm_path: /home/vagrant # Para Vagrant, indicamos un path donde querramos compartir con el local-host
-
-        cluster_name: Kubernetes Cluster # Para Vagrant, indica el nombre del grupo de VPC's que se va a crear (es visualizable abriendo VirtualBox)
-        
-        ssh:
-            user: "vagrant" # Usuario de SSH configurado en el remote-host
-            password: "vagrant" # Clave de SSH configurada en el remote-host
-            private_key_path: /home/aagustin/.ssh/vagrant_key # Path a la clave SSH privada guardada en el local-host
-            public_key_path: /home/aagustin/.ssh/vagrant_key.pub # Path a la clave SSH pública guardada en el local-host
-
-        nodes:
-            control:
-                cpu: 4 # Para Vagrant, cores asignados al master
-                memory: 4096 # Para Vagrant, memoria asignada al master
-            workers:
-                count: 2 # Configurar cantidad de Workers
-                cpu: 2 # Para Vagrant, cores asignados a los workers
-                memory: 4096 # Para Vagrant, memoria asignada a los workers
-        
-        network:
-            control_ip: 192.168.100.171 # Configuración de la IP del nodo master
-            dns_servers:
-                - 8.8.8.8 # DNS de Google, para acceso a Internet
-                - 1.1.1.1 # DNS de Cloudflare, para acceso a Internet
-            pod_cidr: 172.16.1.0/16 # No tocar, pool de IP para los pods
-            service_cidr: 172.17.1.0/18 # No tocar, pool de IP para los servicios
-        
+Kubernetes, comúnmente conocido como K8s, es una plataforma de código abierto diseñada para automatizar, implementar y gestionar aplicaciones en contenedores. Su función principal es orquestar contenedores, facilitando la administración eficiente y escalable de aplicaciones. Ampliamente utilizado en entornos de nube y locales, Kubernetes se basa en la tecnología de contenedores, proporcionando un entorno aislado y portátil para aplicaciones y sus dependencias.
 
-        software:
-            box: bento/ubuntu-22.04 # Para Vagrant, imagen a utlizar
-            calico: 3.25.0 # Versión de Calico para configurar la red de los Pods
-            kubernetes: 1.26.1-00 # Versión de Kubernetes para instalarlo y configurar CRI-O
-            os: xUbuntu_22.04 # Versión del SO para configurar CRI-O
-            kustomize: 5.0.3 # La versión de Kustomize que requiere Kubeflow 1.8
-            kubeflow: 1.8 # La versión del repo de manifests que queremos descargar
-
-```
-
-> **¡IMPORTANTE!** : Recordar seleccionar en la variable `env` nuestro usuario.
-
-##### Vagrant
-
-Habiendo creado nuestro perfil, deberemos tener en cuenta de modificar los siguientes parámetros para nuestra infraestructura:
-
-1. Deshabilitar los reinicios debido a problemas con carpetas compartidas:
-
-    ```yml
-    prod_test: false # Si es Vagrant, false, sino true, esto deshabilita o habilita los reinicios de las VPCs respectivamente para evitar errores.
-    ```
-
-2. Configuración de SSH:
-
-    ```yml
-    ssh:
-        user: "vagrant" # Usuario de SSH configurado en el remote-host
-        password: "vagrant" # Clave de SSH configurada en el remote-host
-        private_key_path: /home/aagustin/.ssh/vagrant_key # Path a la clave SSH privada guardada en el local-host
-        public_key_path: /home/aagustin/.ssh/vagrant_key.pub # Path a la clave SSH pública guardada en el local-host
-    ```
-
-    > **¡Importante!** Debimos haber creado nuestra clave SSH previamente.
-
-3. Configuración de la cantidad de recursos a asignar a los nodos y la cantidad de nodos:
-
-    ```yml
-    nodes:
-        control:
-            cpu: 4 # Para Vagrant, cores asignados al master
-            memory: 4096 # Para Vagrant, memoria asignada al master
-        workers:
-            count: 2 # Configurar cantidad de Workers
-            cpu: 2 # Para Vagrant, cores asignados a los workers
-            memory: 4096 # Para Vagrant, memoria asignada a los workers
-    ```
-
-4. Configuración de red:
-
-    ```yml
-    network:
-        control_ip: 192.168.100.171 # Configuración de la IP del nodo master
-    ```
-
-    > **¡Importante!** En el caso de Vagrant, no es necesario que sea una IP de la red de nuestra LAN, debido a que se creará una nueva red privada para los nodos.
-
-5. Configuración del sistema:
-
-    ```yml
-    software:
-        box: bento/ubuntu-22.04 # Para Vagrant, imagen a utlizar
-    ```
-
-Finalmente, podemos levantar nuestros nodos con la Vagrantfile:
-
-```sh
-# Posicionados en <repo-dir>/kubernetes/k8s/
-vagrant up
-```
-
-En el caso de necesitar destruir las máquinas virtuales:
-
-```sh
-# Posicionados en <repo-dir>/kubernetes/k8s/
-vagrant destroy
-```
-
-##### Terraform
-
-En nuestro caso nos encontramos aprovisionando infraestructura utilizando como base la plataforma de virtualización Proxmox, donde tendremos disponible ciertos recursos que destinaremos a la creación de los nodos (máquinas virtuales) mediante Terraform utilizando de provider justamente a Proxmox.
-
-Además de modificar el archivo de `k8s/ansible/group_vars/all.yml`, deberemos modificar nuestros archivos de `<project-dir>/terraform/`.
-
-Comenzaremos modificando los valores de los archivos de `<project-dir>/terraform/`:
-
-1. Modificamos el archivo `<project-dir>/terraform/main.tf`:
-
-    ```ruby
-    terraform {
-    required_providers {
-        proxmox = {
-        source  = "telmate/proxmox" # Seleccionamos el provider de proxmox
-        version = "2.9.11"
-        }
-    }
-    }
-
-    provider "proxmox" {
-
-    pm_debug = true
-    pm_api_url = "https://192.168.100.100:8006/api2/json" # 
-    pm_api_token_id = "terraformuser@pam!terraformuser_token" # Usuario Proxmox hardcodeado
-    pm_api_token_secret = "..." # Token de proxmox hardcodeado
-    pm_tls_insecure = true
-    pm_log_levels = {
-        _default    = "debug"
-        _capturelog = ""
-        }
-    }
-
-
-    resource "proxmox_vm_qemu" "vms-pps" {
-
-    count       = length(var.proxmox_nodes)
-    name        = "k8spps${count.index+1}" # Modificamos el nombre de nuestras vm's
-    desc        = "k8s pps" # Modificamos la descripción de nuestras vm's
-    vmid      = "70${count.index+1}" # Modificamos el ID de nuestras vm's
-    target_node = var.proxmox_nodes[count.index] # Creará los nodos según la lista en el archivo 'vars.tf'
-    clone       = var.template_name
-    agent       = 1
-    os_type     = "cloud-init"
-    cores       = 8 # Modificamos la cantidad de núcleos de nuestras vm's
-    sockets     = 1
-    cpu         = "host"
-    memory      = 8192  # Modificamos la cantidad de memoria de nuestras vm's
-    onboot      = true
-    scsihw      = "virtio-scsi-single"
-    bootdisk    = "scsi0"
-
-    disk {
-        size     = "20G" # Modificamos la cantidad de almacenamiento de nuestras vm's
-        type     = "scsi"
-        storage  = "local-lvm"
-        iothread = 1
-    }
-
-    network {
-        model  = "virtio"
-        bridge = "vmbr0"
-    }
-    
-    lifecycle {
-        ignore_changes = [
-        network,
-        ]
-    }
-
-    ipconfig0   = "ip=192.168.100.17${count.index+1}/24,gw=192.168.100.1" # Modificamos las IP's de nuestras vm's
-    nameserver  = "192.168.100.1" # Modificamos el GW de nuestras vm's
-
-    }
-    ```
-
-2. Modificamos el archivo `<project-dir>/terraform/vars.tf`:
-
-    ```ruby
-    variable "ssh_key" {
-    default = "ssh-rsa ..." # Copiamos nuestra clave privada SSH
-    }
-
-    variable "proxmox_nodes" {
-    type    = list(string)
-    default = ["controlador", "nodo1", "nodo2"] # Le damos un nombre a cada nodo y definimos la cantidad añadiendo o quitando elementos a esta lista
-    }
-
-    variable "template_name" {
-        default = "ubuntu-2204-template-labredes-pass-key-sudoer-nopasswd" # Elegimos la template a utilizar
-    }
-    ```
-
-3. El archivo `<project-dir>/terraform/create_template.sh` nos permite hacer modificaciones en las mismas máquinas virtuales durante su creación, es un conjunto de comandos que nos permitirá, por ejemplo, darle permisos de super-usuario al usuario o inyectarle las claves públicas SSH a los known-host. **Modificaremos este archivo en caso de que cambiemos de cluster o movamos de lugar las claves SSH, las nombremos de manera distinta o necesitemos cambiar el nombre de la carpeta del usuario.** Las líneas que deberemos modificar en este caso son las siguientes:
-
-    ```sh
-    sudo virt-customize -a jammy-server-cloudimg-amd64.img --run-command 'useradd -m -s /bin/bash labredes' # Para añadir el usuario "labredes"
-    sudo virt-customize -a jammy-server-cloudimg-amd64.img --run-command 'echo "labredes:labredes" | chpasswd' # Para añadirle la contraseña "labredes" al usuario "labredes"
-    sudo virt-customize -a jammy-server-cloudimg-amd64.img --run-command 'usermod -aG sudo,adm labredes' # Para darle permisos de administrador y super-usuario al usuario "labredes"
-    sudo virt-customize -a jammy-server-cloudimg-amd64.img --run-command 'mkdir -p /home/labredes/.ssh' # Para crear la carperta del usuario en home y la carpeta .ssh
-    sudo virt-customize -a jammy-server-cloudimg-amd64.img --ssh-inject labredes:file:/root/.ssh/id_key_labredes.pub # Para inyectar la clave pública
-    sudo virt-customize -a jammy-server-cloudimg-amd64.img --run-command 'chown -R labredes:labredes /home/labredes/.ssh' # Para cambiar la propiedad de la carpeta home al usuario "labredes"
-    sudo virt-customize -a jammy-server-cloudimg-amd64.img --run-command 'echo "labredes ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers' # Para permitir al usuario "labredes" ejecutar comandos sudo sin escribir 'sudo <command>'
-    ```
-
-Finalmente, aplicamos los siguientes comandos de Terraform:
-
-a. Para inicializar un directorio de trabajo de Terraform. Descargar y configurar los proveedores de infraestructura necesarios, así como cualquier módulo de Terraform que esté siendo utilizado. Es el primer comando que se debe ejecutar al trabajar con un nuevo proyecto de Terraform.
-
-```sh
-# Posicionados en <project-dir>/terraform/
-terraform init
-```
-
-b. Para crear un plan de ejecución detallado de los cambios que se aplicarán a la infraestructura. Examinar los archivos de configuración de Terraform y determinar qué recursos se crearán, modificarán o eliminarán. El plan también muestra los valores de los atributos de los recursos y cualquier cambio propuesto.
-
-```sh
-# Posicionados en <project-dir>/terraform/
-terraform plan
-```
-
-c. Para aplicar los cambios definidos en el archivo de configuración de Terraform y realizar las acciones necesarias para lograr el estado deseado de la infraestructura. Terraform leerá el plan generado por el comando terraform plan y solicitará confirmación antes de aplicar los cambios. Una vez confirmado, Terraform creará, modificará o eliminará los recursos según lo especificado.
-
-```sh
-# Posicionados en <project-dir>/terraform/
-terraform apply
-```
-
-Ahora, modificando los valores de `k8s/ansible/group_vars/all.yml`:
-
-1. Habilitar los reinicios de las VPCs:
-
-    ```yml
-    prod_test: true # Si es Vagrant, false, sino true, esto deshabilita o habilita los reinicios de las VPCs respectivamente para evitar errores.
-    ```
-
-2. Configuración de SSH:
-
-    ```yml
-    ssh:
-        user: "labredes" # Usuario de SSH configurado en el remote-host
-        password: "labredes" # Clave de SSH configurada en el remote-host
-        private_key_path: /home/aagustin/.ssh/cluster_key # Path a la clave SSH privada guardada en el local-host
-        public_key_path: /home/aagustin/.ssh/cluster_key.pub # Path a la clave SSH pública guardada en el local-host
-    ```
+La investigación para nuestra plataforma Kubeflow involucró la comparación entre dos opciones, Kubernetes (K8s) y k0s. Optamos por Kubernetes debido a su exhaustiva funcionalidad y nuestra comprensión profunda de sus diversos componentes. Estos componentes incluyen nodos maestros y de trabajo, despliegues, pods, servicios, y configuración declarativa. Al implementar un Cluster de Kubernetes específico para Kubeflow, obtenemos escalabilidad según las necesidades de recursos, redundancia para mantener la continuidad del servicio y la capacidad de gestionar automáticamente la asignación de contenedores.
 
-    > **¡Importante!** Debimos haber creado nuestra clave SSH previamente.
+Además, se destacan tres elementos esenciales en la instalación de Kubernetes para Kubeflow: la Container Runtime Interface (CRI) con la elección de CRI-O por su ligereza, la Container Network Interface (CNI) para la configuración dinámica de recursos de red, y la StorageClass (SC) para proporcionar volúmenes de almacenamiento de manera dinámica y personalizada mediante Rancher. Estos elementos garantizan una implementación robusta y eficiente del entorno Kubernetes necesario para Kubeflow.
 
-3. Aquí solo deberemos modificar la cantidad de nodos (sin borrar nada de lo otro):
+![Kubernetes Architecture](img/img/../kubernetes.png)
 
-    ```yml
-    nodes:
-        workers:
-            count: 2 # Configurar cantidad de Workers
-    ```
+#### Contexto de Testing Local vs Producción en el Cluster del Laboratorio
 
-4. Configuración de red:
+Para llevar a cabo prácticas y pruebas en un entorno local antes de la implementación en el cluster del laboratorio, se diseñó una estrategia específica. **Dado que no se contaba con acceso remoto al cluster**, se optó por construir una lógica de pruebas locales. En este contexto, se eligió Vagrant como la herramienta principal para emular la infraestructura del cluster. Vagrant facilitó la creación y gestión de máquinas virtuales en el entorno local del desarrollador, permitiendo probar de manera eficiente las configuraciones y roles de Ansible diseñados para el aprovisionamiento. Esta aproximación aseguró un proceso de desarrollo ordenado y reproducible.
 
-    ```yml
-    network:
-        control_ip: 192.168.100.171 # Configuración de la IP del nodo master
-    ```
+Vagrant, en este escenario, ofreció un entorno aislado donde el desarrollador pudo desplegar y validar las herramientas necesarias, especialmente Ansible, para la instalación automática y configuración de los componentes esenciales, como Kubernetes (k8s) y Kubeflow. Esta práctica no solo simplificó la detección y corrección de posibles problemas, sino que también garantizó la consistencia y la reproducibilidad del entorno de prueba. La capacidad de Vagrant para crear y destruir fácilmente las máquinas virtuales facilitó la iteración en el desarrollo de roles de Ansible y en las primeras pruebas de despliegue de k8s y Kubeflow. Con esta estrategia, se estableció una base sólida antes de la implementación final en el cluster del laboratorio, asegurando que las configuraciones y herramientas estuvieran preparadas para su despliegue en un entorno de producción más complejo.
 
-#### Aprovisionamiento de software con Ansible
+![Vagrant](img/vagrant.png)
 
-Aquí simplemente modificamos, tanto como si utilizamos Vagrant o Terraform, los siguientes valores de `k8s/ansible/group_vars/all.yml`:
+### Despliegue en Cluster: Puntos Claves de Ansible, Kubernetes (k8s) y Kubeflow con Información Adicional
 
-1. Seleccionamos las versiones de los diferentes elementos:
+Durante el proceso de despliegue en el cluster del laboratorio, se identificaron puntos clave en las herramientas utilizadas, especialmente en Ansible, Kubernetes (k8s) y Kubeflow.
 
-    ```yml
-   software:
-        calico: 3.25.0 # Versión de Calico para configurar la red de los Pods
-        kubernetes: 1.26.1-00 # Versión de Kubernetes para instalarlo y configurar CRI-O
-        os: xUbuntu_22.04 # Versión del SO para configurar CRI-O
-        kustomize: 5.0.3 # La versión de Kustomize que requiere Kubeflow 1.8
-        kubeflow: 1.8 # La versión del repo de manifests que queremos descargar
-    ```
+En el caso de Ansible, la configuración y ejecución de roles resultaron esenciales. La estructuración adecuada de roles y playbooks permitió una instalación ordenada y modular de componentes en el cluster. La capacidad de Ansible para trabajar con hosts definidos en inventarios facilitó la asignación de tareas a nodos específicos, optimizando así el proceso de despliegue. Además, la incorporación de etiquetas (tags) en roles posibilitó una ejecución selectiva, permitiendo enfoques paso a paso y la repetición eficiente de tareas específicas. Un elemento crucial fue la implementación del "plantillado" o "creación de perfiles", que resultó vital para asegurar diferentes configuraciones personalizadas para cada usuario o prueba, permitiendo seleccionar la infraestructura deseada.
 
-Además deberemos modificar el inventario en ambos casos, en nuestro caso, para ser pŕacticos separamos en dos inventarios correspondientes a las prubas locales (`ansible/inventory_local.yml`) y las pruebas de laboratorio (`ansible/inventory_lab.yml`). Modificaremos el que corresponda como sigue:
+En el ámbito de Kubernetes (k8s), la comprensión de la arquitectura y la interacción de los componentes fue crucial. La definición de pods, servicios y despliegues, junto con la correcta configuración de nodos maestros y de trabajo, aseguró un despliegue estable y eficiente. La implementación de prácticas de seguridad, como la autenticación y autorización de usuarios, también se integró para fortalecer la infraestructura del cluster. Durante este proceso, la capacidad de levantar el servicio de Dashboard en Kubernetes fue de vital importancia, proporcionando una visualización más sencilla de las operaciones durante las pruebas y la instalación de Kubeflow. Asimismo, la atención meticulosa a las versiones de Kubelet, Kubectl, Kubeadm, CNI y CRI, junto con el aprendizaje y aplicación de comandos Kubectl, resultaron fundamentales para resolver problemas y optimizar el rendimiento del cluster.
 
-```yml
----
+En la sección de Kubeflow, la instalación representó un reto significativo debido a su estricta adherencia a versiones tanto en requisitos como en métodos de instalación. Se logró ejecutar exitosamente un ejemplo de entrenamiento de un modelo de clasificación MNIST, mientras se exploraba la funcionalidad del Dashboard de Kubeflow en la creación de Notebooks Servers. Este proceso implicó una investigación exhaustiva para encontrar las versiones compatibles y adaptarse a las rigurosas especificaciones de Kubeflow. Estos desafíos subrayan la necesidad de una cuidadosa planificación y consideración de versiones en proyectos similares.
 
-all:
-  children:
-    kube_master:
-      hosts:
-        master-node-171:
-          ansible_host: "{{ CONTROL_IP }}"
-    kube_workers:
-      hosts:
-        worker-node-172:
-            ansible_host: "{{ IP_SECTIONS }}172"
-        worker-node-173:
-            ansible_host: "{{ IP_SECTIONS }}173"
-        ...
-        ...
-        worker-node-17N:
-            ansible_host: "{{ IP_SECTIONS }}17N"
-```
+### Pruebas realizadas
 
-> **¡Importante!** Como vemos, añadiremos tantos worker-node's como hayamos creado en la sección de infraestructura y deberemos asignar *manualmente* la IP de HOST correspondiente a cada uno.
+En el marco de las pruebas realizadas con Kubeflow, se llevó a cabo un ejemplo con TensorFlow para resaltar la eficacia de esta plataforma en entornos de ciencia de datos e inteligencia artificial. Aunque no se pudo realizar una prueba directa con Elyra en este contexto específico, se considera que Elyra podría ser una pieza clave para los científicos, facilitando significativamente su trabajo.
 
-Comprobamos conexión con los nodos con el módulo `ping`:
+![Ejemplo Tensorflow](img/kubeflow-example-8-b.png)
 
-```sh
-# Posicionados en <repo-dir>/kubernetes/k8s/
-ansible -i ansible/inventory_<local o lab>.yml -m ping all
-```
+Kubeflow demostró ser una herramienta valiosa al posibilitar la creación de perfiles y servidores de Notebooks, lo que permitió a los científicos realizar diversas pruebas de manera eficiente y organizada. Durante estas pruebas, se exploraron los conceptos de "pipelines" en Kubeflow, que son flujos de trabajo automatizados que integran diversas tareas en un solo proceso.
 
-> Deberíamos ver PING con respuesta PONG de cada uno de los nodos que hayamos creado.
+Por otro lado, para las pruebas con los pipelines se investigó sobre Elyra, un editor de pipelines en JupyterLab, podría desempeñar un papel crucial al proporcionar una interfaz gráfica para ensamblar pipelines a partir de cuadernos Jupyter, scripts en Python o R, y código preempaquetado, todo ello sin necesidad de escribir código manualmente. Aunque no se pudo poner a prueba directamente en este escenario específico, se percibe como una herramienta que puede facilitar significativamente el trabajo de los científicos al proporcionar flexibilidad y eficiencia en el diseño, ejecución y personalización de pipelines.
 
-Finalmente, para correr hacer el aprovisionamiento de Software ejecutamos el siguiente comando:
+![Elyra](img/elyra.png)
 
-```sh
-# Posicionados en <repo-dir>/kubernetes/k8s/
-ansible-playbook -vvv ansible/site.yml -i ansible/inventory_<local o lab>.yml
-```
+Elyra también ofrece la capacidad de ejecutar estos pipelines en entornos remotos, donde Kubeflow Pipelines o Apache Airflow está desplegado. Al ejecutar un pipeline, Elyra genera los artefactos necesarios para el entorno de ejecución objetivo y desencadena su ejecución. Esto podría ser una característica valiosa para los científicos que buscan una manera colaborativa y reproducible de llevar a cabo sus investigaciones.
 
-> **-vvv**: Indica el nivel de Verbose (logs) que veremos, podríamos no usar ese parámetro si no quisiéramos demasiados logs.
+En resumen, Kubeflow, junto con la potencial integración de Elyra, se vislumbra como una combinación poderosa para diseñar, ejecutar y personalizar pipelines de manera eficiente en entornos de ciencia de datos. Esto proporcionaría a los científicos las herramientas necesarias para realizar investigaciones de manera efectiva y colaborativa.
 
-> **¡Importante!** Debemos además seleccionar el inventario según corresponda.
+### Conceptos aprendidos de Kubeflow
 
-#### Instalación manual de Kubeflow
+Kubeflow, como plataforma de código abierto, se destaca por su capacidad para el despliegue, administración y orquestación de flujos de trabajo de aprendizaje automático (ML) en entornos Kubernetes. Diseñada para facilitar el desarrollo, entrenamiento e implementación de modelos de ML de manera eficiente y escalable, Kubeflow aprovecha las ventajas de Kubernetes para la orquestación y gestión de recursos.
 
-Para la instalación de Kubeflow tenemos dos métodos: Paquetizado para diferentes plataformas o mediante los manifest (inistalación manual). En nuestro caso, al hacer una instalación local y limpia (bare-metal) de Kubernetes, **vamos a utilizar la segunda, mediante sus manifests**, los cuales se encuentran en su [repositorio](https://github.com/kubeflow/manifests).
+Kubeflow se centra en la gestión y automatización de flujos de trabajo de ML, abarcando desde la recopilación y preparación de datos hasta el entrenamiento y la implementación de modelos en producción. Integrándose perfectamente con la naturaleza basada en contenedores de Kubernetes, Kubeflow empaqueta los flujos de trabajo de ML en contenedores, permitiendo su implementación en cualquier clúster de Kubernetes.
 
-Necesitaremos elegir la versión que nos convenga, en nuestro caso, utlizaremos la más reciente a la fecha que es la correspondiente a la branch `v1.8-branch` del correspondiente repositorio. Seleccionaremos dicha branch para observar los requerimientos.
+Con componentes modulares como Katib, KFServing y Pipelines, Kubeflow ofrece flexibilidad y modularidad a los proyectos de aprendizaje automático. La característica clave de Kubeflow Pipelines permite la definición y ejecución de flujos de trabajo de ML configurables y reproducibles, facilitando la automatización y escalabilidad.
 
-Leeremos el README para poder seguir el instructivo de instalación, pero para también poder ver los pre-requisitos que nos solicita Kubeflow para su funcionamiento.
+Además, Kubeflow simplifica la gestión de modelos de ML, proporcionando herramientas para el registro, versión y administración a lo largo del ciclo de vida del modelo. Las capacidades de monitoreo y seguimiento garantizan la evaluación continua del rendimiento de los modelos en producción.
 
-> **¡Importante!** Trabajaremos en el directorio `~/` del nodo master, ingresaremos mediante SSH al mismo:
->
-> ```sh
-> ssh -i ~/.ssh/key <user>@<IP-master>
-> ```
+En resumen, Kubeflow emerge como una solución integral que optimiza la gestión de flujos de trabajo de aprendizaje automático en entornos Kubernetes. Su enfoque en la automatización, escalabilidad y gestión eficiente de modelos mejora la eficiencia y la reproducibilidad en proyectos de aprendizaje automático.
 
-Si observamos, a la fecha y para dicha versión nos pide:
+![Kubeflow](img/kubeflow-example-1.png)
 
-![Pre-Requisitos](img/kf-prerequisites.png)
+### Tareas a futuro
 
-El primer requisito, de la versión de Kubernetes, está cubierto debido a que hemos instalado la misma, nos falta definir una Default StorageClass.
+En la continuación de este proyecto de prácticas, se vislumbran diversos caminos para mejorar aún más la eficiencia y la robustez de la implementación. Uno de los aspectos cruciales a abordar sería la selección de modelos a desplegar, permitiendo la construcción de pipelines más optimizados y especializados. Este enfoque facilitaría la adaptabilidad a diferentes escenarios y requerimientos, contribuyendo a una implementación más precisa y eficiente de modelos de aprendizaje automático.
 
-> **¿Qué es una StorageClass?** Las clases de almacenamiento de Kubernetes proporcionan una forma de aprovisionar dinámicamente almacenamiento persistente para aplicaciones que se ejecutan en un clúster de Kubernetes. Cada StorageClass contiene los campos provisioner, parameters y reclaimPolicy, que se utilizan cuando un PersistentVolume que pertenece a la clase debe aprovisionarse dinámicamente.
->
-> ![StorageClass](img/kubernetes-sc.png)
+La seguridad es otra área de vital importancia que merece una atención especial en los trabajos futuros. Fortalecer las medidas de seguridad en todos los niveles del sistema garantizaría la protección de datos sensibles y la integridad de los modelos, crucial en entornos donde la confidencialidad y la privacidad son prioridades. La implementación de protocolos de seguridad robustos sería esencial para mitigar posibles riesgos y asegurar un despliegue confiable de los flujos de trabajo de machine learning.
 
-El segundo requisito es tener Kustomize instalado, esto nos permitirá la aplicación de las configuraciones (`kubectl apply ...`) de Kubernetes de manera automatizada.
+Asimismo, se plantea la necesidad de abordar la cuestión de los backups y la recuperación de datos en futuras etapas del proyecto. Establecer procedimientos sólidos para realizar copias de seguridad de modelos, datos y configuraciones críticas permitiría una rápida recuperación en caso de fallos inesperados o pérdida de información. Esta estrategia no solo contribuiría a la continuidad operativa sino que también respaldaría la integridad de los proyectos de machine learning a largo plazo.
 
-Y por último, nos pide tener Kubectl, el cual está cubierto ya que se ha instalado durante el aprovisionamiento de Software.
-
-Habiendo hecho el aprovisionamiento con Ansible nos habremos asegurado de tener la Local StorageClass agregada y por defecto, de tener Kustomize instalado y de tener el repositorio correspondiente a los manifests de la versión deseada ya descargado, por lo que nos queda instalar manualmente Kubeflow en nuestro Cluster. Para ello tenemos dos caminos, la instalación en un solo comando o la intalación módulo a módulo. Elegiremos la segunda por una cuestión de asegurarnos la correcta instalación paso a paso de cada uno de los módulos.
-
-1. Accedemos a la carpeta de los manifests:
-
-    ```sh
-    # Posicionados en ~/
-    cd manifests
-    ```
-
-    > **¡Importante!** Se recomienda instalar comando a comando, tomando su tiempo en cada uno para checkear que se hayan levantado todos los pods, pudiendo visualizar todo esto desde el dashboard. Además, puede que algunos elementos de la instalación, como el Authservice no se inicien hasta que no hayamos levantado el siguiente, Dex en este caso. Por lo que se recomienda continuar si Eventos corresponden a errores de Webhooks. Ante la duda, podemos hacer la instalación de un solo comando que figura en el mismo repositorio.
-
-2. Instalamos el cert-manager:
-
-    ```sh
-    kustomize build common/cert-manager/cert-manager/base | kubectl apply -f -
-    kubectl wait --for=condition=ready pod -l 'app in (cert-manager,webhook)' --timeout=180s -n cert-manager
-    kustomize build common/cert-manager/kubeflow-issuer/base | kubectl apply -f -
-    ```
-
-    Checkeamos que todos los pods estén creados y corriendo:
-
-    ```sh
-    watch kubectl get pods -n cert-manager
-    ```
-
-3. Instalamos Istio:
-
-    ```sh
-    kustomize build common/istio-1-17/istio-crds/base | kubectl apply -f -
-    kustomize build common/istio-1-17/istio-namespace/base | kubectl apply -f -
-    kustomize build common/istio-1-17/istio-install/base | kubectl apply -f -
-    ```
-
-    Checkeamos que todos los pods estén creados y corriendo:
-
-    ```sh
-    watch kubectl get pods -n istio-system
-    ```
-
-4. Instalamos el AuthService:
-
-    ```sh
-    kustomize build common/oidc-client/oidc-authservice/base | kubectl apply -f -
-    ```
-
-    Checkeamos que todos los pods estén creados y corriendo:
-
-    ```sh
-    watch kubectl get pods -n auth
-    ```
-
-5. Instalamos Dex:
-
-    ```sh
-    kustomize build common/dex/overlays/istio | kubectl apply -f -
-    ```
-
-6. Instalamos K-Native Serving
-
-    ```sh
-    kustomize build common/knative/knative-serving/overlays/gateways | kubectl apply -f -
-    kustomize build common/istio-1-17/cluster-local-gateway/base | kubectl apply -f -
-    ```
-
-    Checkeamos que todos los pods estén creados y corriendo:
-
-    ```sh
-    watch kubectl get pods -n knative-eventing
-    ```
-
-    Y también:
-
-    ```sh
-    watch kubectl get pods -n knative-serving
-    ```
-
-7. Creamos el namespace de Kubeflow:
-
-    ```sh
-    kustomize build common/kubeflow-namespace/base | kubectl apply -f -
-    ```
-
-8. Instalamos los Kubeflow Roles:
-
-    ```sh
-    kustomize build common/kubeflow-roles/base | kubectl apply -f -
-    ```
-
-    Checkeamos que todos los pods estén creados y corriendo:
-
-    ```sh
-    watch kubectl get pods -n kubeflow
-    ```
-
-9. Creamos los recursos de Istio:
-
-    ```sh
-    kustomize build common/istio-1-17/kubeflow-istio-resources/base | kubectl apply -f -
-    ```
-
-    Checkeamos que todos los pods estén creados y corriendo:
-
-    ```sh
-    watch kubectl get pods -n istio-system
-    ```
-
-10. Creamos las Pipelines de Kubeflow
-
-    ```sh
-    kustomize build apps/pipeline/upstream/env/cert-manager/platform-agnostic-multi-user | kubectl apply -f -
-    ```
-
-    Checkeamos que todos los pods estén creados y corriendo:
-
-    ```sh
-    watch kubectl get pods -n kubeflow
-    ```
-
-11. Checkeamos la creación de los pods del ejemplo:
-
-    ```sh
-    watch kubectl get pods -n kubeflow-user-example-com
-    ```
-
-#### Crear servicio para exponer el Dashboard de Kubeflow a la IP del nodo
-
-##### Exponer el servicio (port-forward) - No recomendado
-
-```sh
-kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
-```
-
-##### Exponer el servicio (NodePort) - Recomendado
-
-1. Creamos el siguiente archivo para el servicio servicio `forwarding-svc.yaml`:
-
-    ```yaml
-    apiVersion: v1
-    kind: Service
-    metadata:
-    name: custom-pf-svc
-    namespace: istio-system
-    spec:
-    type: NodePort
-    ports:
-        - targetPort: 8080 # Where the other service is listening
-        port: 80  # Where this service are available inside the cluster
-        nodePort: 30002 # Where to expose this service
-    selector:
-        app: istio-ingressgateway  # Service to expose 
-    ```
-
-2. Aplicamos la configuración:
-
-    ```sh
-    kubectl apply -f forwarding-svc.yaml
-    ```
-
-3. Buscamos la IP (url) donde está expuesto:
-
-    ```sh
-    # Caso de que no funcione el comando, ingresamos a la IP del nodo y al puerto configurado.
-    kubectl get service -n istio-system custom-pf-svc --url
-    ```
-
-4. Ingresamos a la url que nos muestra.
-
-#### Correr ejemplo
-
-Una vez hayamos ingresado a Kubeflow con nuestra usuario y contraseña de ejemplo: `user@example.com` y `12341234`.
-
-> **¡Importante!** Como vamos a trabajar sobre HTTP y no sobre HTTPS deberemos modificar la variable de entorno de `APP_SECURE_COOKIES` y setearla en `false` en cada web app que necesitemos, en nuestro caso será para Notebooks. De todas maneras no es recomendado por riesgos de seguridad. Para nuestro ejemplo:
->
-> ```sh
-> kubectl edit deploy jupyter-web-app-deployment -n kubeflow
-> ```
->
-> Y este también:
->
-> ```sh
-> kubectl edit deploy volumes-web-app-deployment -n kubeflow
-> ```
-
-1. Seleccionamos nuestro namespace (en nuestro caso el ejemplo que viene desplegado con la instalación)
-
-    ![Kubeflow Example 1](img/kubeflow-example-1.png)
-
-2. Ingresar a Kubeflow en su sección "Notebooks"
-
-    ![Kubeflow Example 2](img/kubeflow-example-2.png)
-
-3. Crear un Nuevo Notebook Server haciendo clicl en "+ New Notebook"
-
-    ![Kubeflow Example 3](img/kubeflow-example-3.png)
-
-4. Elegimos un nombre para el Notebook Server, un entorno, el tipo de imágen, la cantidad de CPU's y RAM del mismo:
-
-    ![Kubeflow Example 4](img/kubeflow-example-4.png)
-
-5. En nuestro caso no utilizamos GPU y crearemos un nuevo volumen para el mismo:
-
-    ![Kubeflow Example 5](img/kubeflow-example-5.png)
-
-6. Hacemos click en "Lauch":
-
-    ![Kubeflow Example 6](img/kubeflow-example-6.png)
-
-7. Esperamos que esté Ready y hacemos Click en "Connect"
-
-    ![Kubeflow Example 7](img/kubeflow-example-7.png)
-
-8. Copiamos el siguiente código en el notebook:
-
-    [Basic classification: Classify images of clothing](https://www.tensorflow.org/tutorials/keras/classification)
-
-    ![Kubeflow Example 8-a](img/kubeflow-example-8-a.png)
-
-    ![Kubeflow Example 8-b](img/kubeflow-example-8-b.png)
-
-> **¡Importante!** Con *Ctrl + S* podemos guardar el notebook creado, a partir de acá nos manejamos como si tuvieramos Notebook en local. Tambien recordar instalar dependencias abriendo una consola desde le mismo Notebook Server (boton + arriba a la izquierda)
-
-#### Extra: Instalación local con Minikube
-
-Si deseamos correr en local con Minikube, podemos seguir los sigueintes pasos:
-
-##### Instalación del binario
-
-```sh
-curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-sudo install minikube-linux-amd64 /usr/local/bin/minikube
-```
-
-##### Configuración de alias para kubectl
-
-```sh
-alias kubectl="minikube kubectl --"
-```
-
-##### Despliegue de 1 nodo
-
-```sh
-minikube start --kubernetes-version='1.26.1' --memory='12288' --cpus='8' --disk-size='80GB' --vm=true
-minikube addons enable metrics-server
-```
-
-> **¡Importante!** La cantidad de CPUs es como mínimo de 8, sino no se levantarán todos los servicios. La RAM es como mínimo de 12HB y el almacenamiento debe ser de como mínimo de 60GB.
-
-##### Detener la ejecución del Cluster
-
-```sh
-minikube stop --all
-```
-
-##### Visualización
-
-Desde otra terminal o antes de empezar podemos correr el Dashboard con el siguiente comando:
-
-```sh
-minikube dashboard
-```
-
-##### Instalación de Kustomize
-
-1. Descarga de instalador
-
-    ```sh
-    wget https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh
-    ```
-
-2. Instalación de versión 5.0.3
-
-    ```sh
-    chmod +x install_kustomize.sh
-    ./install_kustomize.sh 5.0.3
-    chmod +x kustomize
-    mv kustomize /usr/local/bin
-    ```
-
-##### Descarga de los manifiestos
-
-```sh
-git clone https://github.com/kubeflow/manifests.git -b v1.8-branch
-cd manifests/
-```
-
-##### Instalación de un solo comando (aprox 40min)
-
-```sh
-while ! kustomize build example | kubectl apply -f -; do echo "Retrying to apply resources"; sleep 10; done
-```
-
-##### Exposición de servicio dentro del cluster (port-forward)
-
-```sh
-kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
-```
-
-##### Exponer fuera del cluster (NodePort)
-
-1. Creamos el siguiente archivo para el servicio servicio `forwarding-svc.yaml`:
-
-    ```yaml
-    apiVersion: v1
-    kind: Service
-    metadata:
-    name: custom-pf-svc
-    namespace: istio-system
-    spec:
-    type: NodePort
-    ports:
-        - targetPort: 8080 # Where the other service is listening
-        port: 80  # Where this service are available inside the cluster
-        nodePort: 30001 # Where to expose this service
-    selector:
-        app: istio-ingressgateway  # Service to expose 
-    ```
-
-2. Aplicamos la configuración:
-
-    ```sh
-    kubectl apply -f forwarding-svc.yaml
-    ```
-
-3. Buscamos la IP (url) donde está expuesto:
-
-    ```sh
-    minikube service -n istio-system custom-pf-svc --url
-    ```
-
-4. Ingresamos a la url que nos muestra.
-
-### Despliegue, administración y la orquestación de flujos de trabajo de ML - Kubeflow
-
-Kubeflow es una plataforma de código abierto diseñada específicamente para el despliegue, la administración y la orquestación de flujos de trabajo de aprendizaje automático (machine learning, ML) en Kubernetes. Esta plataforma se creó para facilitar el desarrollo, la capacitación y la implementación de modelos de aprendizaje automático de manera eficiente y escalable en entornos basados en contenedores, aprovechando las ventajas de Kubernetes para la orquestación y la gestión de recursos.
-
-Los siguientes son los conceptos clave y el principio de funcionamiento de Kubeflow:
-
-1. **Gestión de flujos de trabajo de ML:** Kubeflow se centra en la gestión y la automatización de flujos de trabajo de ML, que involucran múltiples etapas, desde la recopilación de datos y la preparación de datos hasta el entrenamiento de modelos y la implementación de modelos en producción.
-
-2. **Soporte para contenedores:** Kubeflow se integra perfectamente con la naturaleza basada en contenedores de Kubernetes. Los flujos de trabajo de ML se empaquetan en contenedores, lo que facilita la portabilidad y la implementación en cualquier clúster de Kubernetes.
-
-3. **Componentes modulares:** Kubeflow se compone de varios componentes y herramientas que se pueden utilizar de manera modular según las necesidades específicas de un proyecto de aprendizaje automático. Algunos de los componentes clave incluyen Katib (para la optimización de hiperparámetros), KFServing (para la implementación de modelos), Pipelines (para la creación y la gestión de flujos de trabajo) y más.
-
-4. **Orquestación de flujos de trabajo:** Kubeflow Pipelines es una de las características principales que permite a los usuarios definir y ejecutar flujos de trabajo de ML como secuencias de pasos interconectados. Cada paso puede ser una tarea de preparación de datos, entrenamiento de modelos, evaluación de modelos o implementación en producción. Los flujos de trabajo son configurables y reproducibles.
-
-5. **Automatización y escalabilidad:** Kubeflow simplifica la automatización de flujos de trabajo, lo que significa que los flujos de trabajo se pueden ejecutar de manera programática en respuesta a eventos o programarse para ejecutarse de manera regular. Además, Kubernetes facilita la escalabilidad de recursos para manejar grandes volúmenes de datos y entrenamientos de modelos intensivos en recursos.
-
-6. **Gestión de modelos:** Kubeflow ofrece herramientas para el registro, la versión y la administración de modelos de aprendizaje automático. Esto facilita la colaboración y la gestión de modelos a lo largo de su ciclo de vida.
-
-7. **Monitorización y seguimiento:** Kubeflow incluye capacidades de monitoreo y seguimiento que permiten a los usuarios evaluar el rendimiento de los modelos implementados en producción y realizar ajustes según sea necesario.
-
-En resumen, Kubeflow es una plataforma de código abierto que simplifica y optimiza la gestión de flujos de trabajo de aprendizaje automático en entornos de Kubernetes. Facilita la implementación, la escalabilidad, la automatización y la gestión de modelos de ML en entornos basados en contenedores, lo que mejora la eficiencia y la reproducibilidad en proyectos de aprendizaje automático.
+Finalmente, la administración de perfiles se posiciona como un aspecto clave para mejorar la colaboración y la organización dentro del entorno de desarrollo. La capacidad de gestionar perfiles de manera eficiente, asignar roles y permisos de manera adecuada, facilitaría la colaboración entre científicos de datos y desarrolladores, promoviendo un flujo de trabajo armonioso y colaborativo. Integrar herramientas que simplifiquen esta administración sería esencial para optimizar la cooperación en el proyecto y mejorar la productividad del equipo.
