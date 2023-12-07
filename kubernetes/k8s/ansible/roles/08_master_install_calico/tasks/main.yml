@@ -9,14 +9,19 @@
   debug: var=out
 
 
+- name: Create a directory to store configs
+  file:
+    path: "{{ SHARED_FOLDER_VM }}/configs"
+    state: directory
 
 - name: Download Calico YAML
   get_url:
     url: "https://raw.githubusercontent.com/projectcalico/calico/v{{ CALICO_VERSION }}/manifests/calico.yaml"
-    dest: "{{ HOME_DIR }}/calico.yaml"
+    dest: "{{ SHARED_FOLDER_VM }}/configs/calico.yaml"
 
+  
 - name: Apply Calico Network
-  command: kubectl apply -f "{{ HOME_DIR }}/calico.yaml"
+  command: kubectl apply -f "{{ SHARED_FOLDER_VM }}/configs/calico.yaml"
   become: no
 
 - name: Test

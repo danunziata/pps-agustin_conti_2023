@@ -8,10 +8,6 @@
   debug:
     var: join_command
 
-- name: Create a directory to store configs 
-  file:
-    path: "{{ SHARED_FOLDER_VM }}/configs"
-    state: directory
 
 - name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
   file:

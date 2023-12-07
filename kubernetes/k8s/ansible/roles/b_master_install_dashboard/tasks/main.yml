@@ -48,7 +48,7 @@
 
 
 - name: Extract  Bearer token
-  command: 'kubectl -n kubernetes-dashboard create token admin-user'  
+  command: 'kubectl -n kubernetes-dashboard create token admin-user --duration=24h'  
   register: bearer_token
   become: no
 
@@ -56,28 +56,58 @@
   debug:
     var: bearer_token
 
-- name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
+
+- name: Touch a file (bearer_token.out)
   file:
     path: "{{ SHARED_FOLDER_VM }}/configs/bearer_token.out"
     state: touch
     mode: "0644"
 
-- name: Copy join command using inline content
+- name: Copy bearer_token to bearer_token.out
   copy:
     content: "{{ bearer_token.stdout_lines | last | trim }}"
     dest: "{{ SHARED_FOLDER_VM }}/configs/bearer_token.out"
 
 
-- name: Fetch desde el host remoto
+- name: Fetch from remote host (bearer_token.out)
   fetch:
     src: "{{ SHARED_FOLDER_VM }}/configs/bearer_token.out"
     dest: "./configs/" # Local path
     flat: yes 
 
 
+- name: Extract  Long lived token
+  shell:
+    cmd: 'kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d'  
+  register: long_lived_token
+  become: no
+
+- name: Show long_lived__token
+  debug:
+    var: long_lived_token
+
+- name: Touch a file (long_lived_token.out)
+  file:
+    path: "{{ SHARED_FOLDER_VM }}/configs/long_lived_token.out"
+    state: touch
+    mode: "0644"
+
+- name: Copy long_lived_token to long_lived_token.out
+  copy:
+    content: "{{ long_lived_token.stdout_lines | last | trim }}"
+    dest: "{{ SHARED_FOLDER_VM }}/configs/long_lived_token.out"
+
+
+- name: Fetch from remote host (long_lived_token.out)
+  fetch:
+    src: "{{ SHARED_FOLDER_VM }}/configs/long_lived_token.out"
+    dest: "./configs/" # Local path
+    flat: yes 
+
+
 - name: Debug dashboard
   debug:
-    msg: "Now you can access to dashboard on https://{{ IP_SECTIONS }}{{ (IP_START | int + item | int) }}:30001, check the admin token at ansible/configs/bearer_token.out"
+    msg: "Now you can access to dashboard on https://{{ IP_SECTIONS }}{{ (IP_START | int + item | int) }}:30001, check the admin token at ansible/configs/bearer_token.out or ansible/configs/long_lived_token.out"
   with_sequence: start=1 end="{{ (NUM_WORKER_NODES | int) }}"
  
 

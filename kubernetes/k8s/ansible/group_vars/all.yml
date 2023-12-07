@@ -1,6 +1,6 @@
 ---
 settings:
-  env: 'agus'
+  env: 'test_kubeflow'
   users:
     agus:
       prod_test: false
@@ -32,7 +32,7 @@ settings:
           memory: 2048 
       
       network:
-        control_ip: 192.168.100.170
+        control_ip: 192.168.100.171
         dns_servers:
           - 8.8.8.8
           - 1.1.1.1
@@ -45,6 +45,8 @@ settings:
         calico: 3.25.0
         kubernetes: 1.26.1-00
         os: xUbuntu_22.04
+        kustomize: 5.0.3
+        kubeflow: 1.8
     
     test_lab:
       prod_test: true
@@ -63,20 +65,20 @@ settings:
       ssh:
         user: "labredes"
         password: "labredes"
-        private_key_path: /home/aagustin/.ssh/vagrant_key
-        public_key_path: /home/aagustin/.ssh/vagrant_key.pub
+        private_key_path: /home//agustin/.ssh/cluster_key
+        public_key_path: /home/dani/.ssh/cluster_key.pub
 
       nodes:
         control:
           cpu: 2
           memory: 4096
         workers:
-          count: 1
+          count: 2
           cpu: 2
           memory: 4096
       
       network:
-        control_ip: 192.168.100.171
+        control_ip: 192.168.100.181
         dns_servers:
           - 8.8.8.8
           - 1.1.1.1
@@ -89,8 +91,106 @@ settings:
         calico: 3.25.0
         kubernetes: 1.26.1-00
         os: xUbuntu_22.04
- 
+        kustomize: 5.0.3
+        kubeflow: 1.8
 
+
+ 
+    test_kubeflow:
+      prod_test: false
+      
+      environment: ""
+      
+      user_dir_path: /home/aagustin
+      node_home_dir: /home/vagrant
+
+      shared_folders:
+        - host_path: ./shared_folder
+          vm_path: /home/vagrant 
+
+      cluster_name: Kubernetes Cluster
+      
+      ssh:
+        user: "vagrant"
+        password: "vagrant"
+        private_key_path: /home/aagustin/.ssh/vagrant_key
+        public_key_path: /home/aagustin/.ssh/vagrant_key.pub
+
+      nodes:
+        control:
+          cpu: 2
+          memory: 4096 
+        workers:
+          count: 1 
+          cpu: 4 
+          memory: 8192 
+      
+      network:
+        control_ip: 192.168.100.181
+        dns_servers:
+          - 8.8.8.8
+          - 1.1.1.1
+        pod_cidr: 172.16.1.0/16
+        service_cidr: 172.17.1.0/18
+      
+
+      software:
+        box: bento/ubuntu-22.04
+        calico: 3.25.0
+        kubernetes: 1.26.1-00
+        os: xUbuntu_22.04
+        kustomize: 5.0.3
+        kubeflow: 1.8
+
+
+    test_kubeflow_2:
+      prod_test: false
+      
+      environment: ""
+      
+      user_dir_path: /home/aagustin
+      node_home_dir: /home/vagrant
+
+      shared_folders:
+        - host_path: ./shared_folder
+          vm_path: /home/vagrant 
+
+      cluster_name: Kubernetes Cluster
+      
+      ssh:
+        user: "vagrant"
+        password: "vagrant"
+        private_key_path: /home/aagustin/.ssh/vagrant_key
+        public_key_path: /home/aagustin/.ssh/vagrant_key.pub
+
+      nodes:
+        control:
+          cpu: 2
+          memory: 4096 
+        workers:
+          count: 1 
+          cpu: 4 
+          memory: 8192 
+      
+      network:
+        control_ip: 192.168.100.181
+        dns_servers:
+          - 8.8.8.8
+          - 1.1.1.1
+        pod_cidr: 172.16.1.0/16
+        service_cidr: 172.17.1.0/18
+      
+
+      software:
+        box: bento/ubuntu-20.04
+        calico: 3.25.0
+        kubernetes: 1.21.14-00
+        os: xUbuntu_20.04
+        kustomize: 5.0.3
+        kubeflow: 1.5
+
+
+ 
 # Ansible
 
 # Prod or local test (reboot issues)
@@ -118,6 +218,9 @@ KUBERNETES_VERSION: "{{ settings.users[settings.env].software.kubernetes }}"
 KUBERNETES_VERSION_SEC: "{{ settings.users[settings.env].software.kubernetes | regex_replace('([0-9]+\\.[0-9]+)\\..*', '\\1') }}"
 
 CALICO_VERSION: "{{ settings.users[settings.env].software.calico }}"
+KUSTOMIZE_VERSION: "{{ settings.users[settings.env].software.kustomize }}"
+KUBEFLOW_VERSION: "{{ settings.users[settings.env].software.kubeflow }}"
+
 POD_CIDR: "{{ settings.users[settings.env].network.pod_cidr }}"
 SERVICE_CIDR: "{{ settings.users[settings.env].network.service_cidr }}"
 CLUSTER_NAME: "{{ settings.users[settings.env].cluster_name }}"
