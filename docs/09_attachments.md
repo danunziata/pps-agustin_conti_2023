@@ -2119,30 +2119,5 @@ kubectl port-forward svc/istio-ingressgateway -n istio-system 8080:80
 
 ### Configuración de Red
 
-```mermaid
-graph TD
 
-subgraph VPC_Master
-  master[Master Node]
-  style master fill:#86c7ff,stroke:#333,stroke-width:2px;
-  IP_master((192.168.100.181<br>/24))
-  ID_master{{VPC ID: 801}}
-end
-
-subgraph VPC_Worker1
-  worker1[Worker Node 1]
-  style worker1 fill:#b3ffb3,stroke:#333,stroke-width:2px;
-  IP_worker1((192.168.100.182<br>/24))
-  ID_worker1{{VPC ID: 802}}
-end
-
-subgraph VPC_Worker2
-  worker2[Worker Node 2]
-  style worker2 fill:#b3ffb3,stroke:#333,stroke-width:2px;
-  IP_worker2((192.168.100.183<br>/24))
-  ID_worker2{{VPC ID: 803}}
-end
-
-master -->|Internal Network| worker1
-master -->|Internal Network| worker2
-```
+![Network Graph](img/network-graph.png)
