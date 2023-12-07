@@ -33,7 +33,7 @@
 - name: Cloud init setup - Remove update_etc_hosts
   replace:
     path: /etc/cloud/cloud.cfg
-    regexp: '^ - update_etc_hosts'
+    regexp: '^  - update_etc_hosts'
 
 - name: Cloud init setup - Set preserve_hostname true
   ansible.builtin.lineinfile:
