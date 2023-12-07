@@ -1,19 +1,9 @@
-# Script to update and install curl
-$script = <<SCRIPT
-sudo apt-get update
-sudo apt-get install -y curl
-echo "IP Addresses:" >>/etc/issue
-for iface in $(ip -br link | awk '!/lo/ { print $1}'); do
-  echo "$iface - \\4{$iface}" >>/etc/issue
-done
-SCRIPT
-
 # Naming
 BASE_NAME = "k0s"
 
 # Image
-BASE_IMAGE = "ubuntu/bionic64"
-BASE_IMAGE_VERSION = "20230607.0.0" 
+BASE_IMAGE =  "bento/ubuntu-22.04" #"generic/ubuntu2004"#"ubuntu/trusty64" #"ubuntu/bionic64"
+BASE_IMAGE_VERSION =  "202309.08.0"
 
 # How many VMs to create. We need at least:
 # -initial_controller = must contain a single node that creates the worker and server tokens needed by the other nodes.
@@ -31,21 +21,20 @@ VB_CPUS = 2
 VB_MEMORY = 1024
 
 # Private keys routes
-PUB_KEY_PATH = "/home/aagustin/.ssh/vagrant_key.pub"
-PRIV_KEY_PATH ="/home/aagustin/.ssh/vagrant_key"
+USER_DIR_PATH = "/home/aagustin"
+PUB_KEY_PATH = "/home/aagustin/.ssh/k0s_key.pub"
+PRIV_KEY_PATH ="/home/aagustin/.ssh/k0s_key"
    
 # IP configuration  
 BASE_PRIV_IP = "192.168.55"
-BASE_PUB_IP = "192.168.5"
+BASE_PUB_IP = "192.168.102"
 START_IP = 50
+
+GATEWAY_IP = "#{BASE_PUB_IP}.1"
+NAMESERVER_IP = "8.8.8.8"
 
 PRIV_NET_MASK = "255.255.255.0"
 PUB_NET_MASK = "255.255.255.0"
-
-# Forwarded ports
-START_HTTP_PORT = 31000
-START_SSH_PORT = 2200
-#START_KUBE_PORT = 6443
 
 # Bridged interface
 BRIDGED_IFACE = "wlo1"
@@ -61,35 +50,20 @@ Vagrant.configure("2") do |config|
   config.vm.box = BASE_IMAGE
   config.vm.box_version = BASE_IMAGE_VERSION
 
-  # Execute script
-  config.vm.provision "shell", inline: $script
-  
   # SSH (for all vm's)
-  config.ssh.insert_key = false
-  config.ssh.forward_agent = true  
-  
-  config.ssh.private_key_path = ["/home/aagustin/.vagrant.d/insecure_private_key",PRIV_KEY_PATH]     
-  
+  config.ssh.insert_key = false 
+  config.ssh.private_key_path = ["#{USER_DIR_PATH}/.vagrant.d/insecure_private_key",PRIV_KEY_PATH] 
+    
   config.vm.provision "file",
     source: PUB_KEY_PATH,
     destination: "/home/vagrant/.ssh/authorized_keys"
-
-  # Disable VB guest additions
-  config.vbguest.auto_update = false
-
-  # Delete route
-  config.vm.provision "shell", inline: <<-SHELL    
-    sudo ip route del 0/0
-    sudo ip route add 0.0.0.0/0 via "#{BASE_PUB_IP}.1"
-    echo "nameserver 8.8.8.8" > /etc/resolv.conf
-  SHELL
-
+  
   # Declaring nodes (iteratively)
   (1..VMS).each do |i|
     config.vm.define "#{BASE_NAME}-#{i}" do |node|
      
       # Define hostname
-      node.vm.hostname =  "#{BASE_NAME}-#{i}"
+      node.vm.hostname =  "#{BASE_NAME}-#{i}.example.com"
  
       # Resources (provider)
       node.vm.provider "virtualbox" do |vb|
@@ -99,9 +73,6 @@ Vagrant.configure("2") do |config|
         vb.cpus = "#{VB_CPUS}"
       end
 
-      # Configure synced folder
-      #config.vm.synced_folder "~/my-loc/vagrant/synced/folders/k0s-#{i}/", "/home/vagrant/"
-
       # Network configuration
       node.vm.network "public_network",
         bridge: BRIDGED_IFACE,
@@ -109,30 +80,24 @@ Vagrant.configure("2") do |config|
         netmask: PUB_NET_MASK
       
       node.vm.network "private_network",
+        #virtualbox__intnet: "vboxnet0rivnetk0s",
         ip: "#{BASE_PRIV_IP}.#{START_IP + i}",
-        netmask: PRIV_NET_MASK,
-        #virtualbox__intnet: true
-        name: "vboxnet1"
-      
-        #node.vm.network "forwarded_port",
-        #guest: 80,
-        #host: START_HTTP_PORT+i
-
-      # SSH
-      #node.ssh.host = "127.0.0.#{1+i}"
-      #node.ssh.forward_agent = true
-      #node.vm.network "forwarded_port",
-        #guest: 22,
-        #host: START_SSH_PORT+i,
-        #host_ip:"0.0.0.0",
-        #id: "ssh",
-        #auto_correct: true
-           
-      # Provisioning message
-      node.vm.provision "shell", inline: "echo Hello #{BASE_NAME}-#{i}"
-    end      
+        netmask: PRIV_NET_MASK
   
+      # Script provisioning
+      node.vm.provision "shell", inline: "echo Starting configuration of #{BASE_NAME}-#{i}"
+      
+      node.vm.provision "shell", inline: "sudo apt update"
+      
+      node.vm.provision "shell", path: "scripts/add_routes.sh", args: [GATEWAY_IP, NAMESERVER_IP]
+      node.vm.provision "shell", path: "scripts/install_curl.sh"
+      node.vm.provision "shell", path: "scripts/list_interfaces.sh"
+      
+      node.vm.provision "shell", path: "scripts/config_ssh_root.sh"
+      
+      node.vm.provision "shell", inline: "sudo apt update"
+      node.vm.provision "shell", inline: "echo All scripts have been executed. Hello #{BASE_NAME}-#{i}."
+    end        
   end
-
 end
 
