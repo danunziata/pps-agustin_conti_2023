@@ -1,0 +1,140 @@
+---
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+
+- name: Debug variables
+  debug:
+    msg: "- ansible_hostname: {{ansible_hostname}}  - inventory_hostname: {{inventory_hostname}}  - ansible_fqdn: {{ansible_fqdn}}  - ansible_ssh_host: {{ansible_ssh_host}}"
+
+
+- name: Show cloud.cfg - update_etc_hosts
+  shell:
+    cmd: "cat /etc/cloud/cloud.cfg | grep update_etc_hosts"
+  register: out
+  ignore_errors: yes
+  
+- name: Debug cloud.cfg - update_etc_hosts
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+
+- name: Show cloud.cfg - preserve_hostname
+  shell:
+    cmd: "cat /etc/cloud/cloud.cfg | grep preserve_hostname"
+  register: out
+  
+- name: Debug cloud.cfg - preserve_hostname
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+- name: Cloud init setup - Remove update_etc_hosts
+  replace:
+    path: /etc/cloud/cloud.cfg
+    regexp: '^  - update_etc_hosts'
+
+- name: Cloud init setup - Set preserve_hostname true
+  ansible.builtin.lineinfile:
+    path: /etc/cloud/cloud.cfg
+    regexp: '^preserve_hostname'
+    line: "preserve_hostname: true"
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Show cloud.cfg - update_etc_hosts
+  shell:
+    cmd: "cat /etc/cloud/cloud.cfg | grep update_etc_hosts"
+  register: out
+  ignore_errors: yes
+  
+- name: Debug cloud.cfg - update_etc_hosts
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+
+- name: Show cloud.cfg - preserve_hostname
+  shell:
+    cmd: "cat /etc/cloud/cloud.cfg | grep preserve_hostname"
+  register: out
+  
+- name: Debug cloud.cfg - preserve_hostname
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+
+
+- name: Show previous hostname
+  shell: hostname
+  register: out
+
+- name: Debug previous hostname
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+- name: Change the hostname to our standard
+  become_user: root
+  shell:
+    cmd: "hostnamectl set-hostname {{ inventory_hostname }}"
+
+- name: Show new hostname
+  shell: hostname
+  register: out
+
+- name: Debug new hostname
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+
+- name: Read /etc/hosts file
+  command: "cat /etc/hosts"
+  register: out
+
+- name: Debug /etc/hosts
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+
+- name: Remove /etc/hosts file (delete file)
+  ansible.builtin.file:
+    path: /etc/hosts
+    state: absent
+
+
+- name: Touch a file, using symbolic modes to set the permissions (equivalent to 0644)
+  file:
+    path: /etc/hosts 
+    state: touch
+    mode: "0644"
+
+- name: Add new localhost to /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "127.0.0.1 {{inventory_hostname}} {{ansible_hostname}} localhost"
+
+- name: Add other hosts to /etc/hosts (master node)
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ CONTROL_IP }} master-node-{{ (IP_START | int) }}"
+
+- name: Add entries to /etc/hosts (worker nodes)
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ IP_SECTIONS }}{{ (IP_START | int + item | int) }} worker-node-{{  (IP_START | int + item | int) }}"
+  with_sequence: start=1 end="{{ (NUM_WORKER_NODES | int) }}"
+
+
+- name: Reboot a slow machine that might have lots of updates to apply
+  ansible.builtin.reboot:
+    reboot_timeout: 180
+  when: PROD_TEST 
+
+- name: Read /etc/hosts file
+  command: "cat /etc/hosts"
+  register: out
+
+- name: Debug /etc/hosts
+  debug:
+    msg: "{{ out.stdout_lines }}"

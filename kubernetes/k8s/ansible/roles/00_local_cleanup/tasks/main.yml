@@ -1,0 +1,33 @@
+
+- name: Test
+  debug:
+    msg: 'Production test?:  "{{PROD_TEST}}"'
+
+- name: ls localhost
+  command: "ls -lA ../shared_folder"
+  register: ls_la
+
+- name: debug ls
+  debug: var=ls_la
+
+
+- name: Remove all files from shared folder - .kube/ 
+  file: 
+    path: "../shared_folder/.kube" 
+    state: absent 
+  when: not PROD_TEST
+
+
+- name: Remove all files from shared folder - configs/ 
+  file: 
+    path: "../shared_folder/configs" 
+    state: absent 
+  when: not PROD_TEST
+
+
+- name: ls localhost
+  command: "ls -lA ../shared_folder"
+  register: ls_la
+
+- name: debug ls
+  debug: var=ls_la

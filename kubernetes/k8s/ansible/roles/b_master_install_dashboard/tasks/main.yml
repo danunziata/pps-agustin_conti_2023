@@ -1,0 +1,113 @@
+---
+
+- name: Copy file from local to remote (dashboard.yaml)
+  copy:
+    src: "./configs/dashboard.yaml"  # Local path
+    dest: "{{ SHARED_FOLDER_VM }}/configs/dashboard.yaml"
+    owner: 1000
+    group: 1000
+
+- name: Apply dashboard.yaml
+  command: 'kubectl apply -f {{ SHARED_FOLDER_VM }}/configs/dashboard.yaml'
+  become: no
+
+- name: Copy file from local to remote (dashboard_service_account.yml)
+  copy:
+    src: "./configs/dashboard_service_account.yml"  # Local path
+    dest: "{{ SHARED_FOLDER_VM }}/configs/dashboard_service_account.yml"
+    owner: 1000
+    group: 1000
+
+- name: Apply dashboard_service_account.yml
+  command: 'kubectl apply -f {{ SHARED_FOLDER_VM }}/configs/dashboard_service_account.yml'
+  become: no
+
+
+- name: Copy from local to remote (dashboard_cluster_role_binding.yml)
+  copy:
+    src: "./configs/dashboard_cluster_role_binding.yml"  # Local path
+    dest: "{{ SHARED_FOLDER_VM }}/configs/dashboard_cluster_role_binding.yml"
+    owner: 1000
+    group: 1000
+
+- name: Apply  dashboard_cluster_role_binding.yml
+  command: 'kubectl apply -f {{ SHARED_FOLDER_VM }}/configs/dashboard_cluster_role_binding.yml'
+  become: no
+
+
+- name: Copy from local to remote (dashboard_long_lived_token.yml)
+  copy:
+    src: "./configs/dashboard_long_lived_token.yml"  # Local path
+    dest: "{{ SHARED_FOLDER_VM }}/configs/dashboard_long_lived_token.yml"
+    owner: 1000
+    group: 1000
+
+- name: Apply dashboard_long_lived_token.yml
+  command: 'kubectl apply -f {{ SHARED_FOLDER_VM }}/configs/dashboard_long_lived_token.yml'
+  become: no
+
+
+- name: Extract  Bearer token
+  command: 'kubectl -n kubernetes-dashboard create token admin-user --duration=24h'  
+  register: bearer_token
+  become: no
+
+- name: Show bearer_token
+  debug:
+    var: bearer_token
+
+
+- name: Touch a file (bearer_token.out)
+  file:
+    path: "{{ SHARED_FOLDER_VM }}/configs/bearer_token.out"
+    state: touch
+    mode: "0644"
+
+- name: Copy bearer_token to bearer_token.out
+  copy:
+    content: "{{ bearer_token.stdout_lines | last | trim }}"
+    dest: "{{ SHARED_FOLDER_VM }}/configs/bearer_token.out"
+
+
+- name: Fetch from remote host (bearer_token.out)
+  fetch:
+    src: "{{ SHARED_FOLDER_VM }}/configs/bearer_token.out"
+    dest: "./configs/" # Local path
+    flat: yes 
+
+
+- name: Extract  Long lived token
+  shell:
+    cmd: 'kubectl get secret admin-user -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d'  
+  register: long_lived_token
+  become: no
+
+- name: Show long_lived__token
+  debug:
+    var: long_lived_token
+
+- name: Touch a file (long_lived_token.out)
+  file:
+    path: "{{ SHARED_FOLDER_VM }}/configs/long_lived_token.out"
+    state: touch
+    mode: "0644"
+
+- name: Copy long_lived_token to long_lived_token.out
+  copy:
+    content: "{{ long_lived_token.stdout_lines | last | trim }}"
+    dest: "{{ SHARED_FOLDER_VM }}/configs/long_lived_token.out"
+
+
+- name: Fetch from remote host (long_lived_token.out)
+  fetch:
+    src: "{{ SHARED_FOLDER_VM }}/configs/long_lived_token.out"
+    dest: "./configs/" # Local path
+    flat: yes 
+
+
+- name: Debug dashboard
+  debug:
+    msg: "Now you can access to dashboard on https://{{ IP_SECTIONS }}{{ (IP_START | int + item | int) }}:30001, check the admin token at ansible/configs/bearer_token.out or ansible/configs/long_lived_token.out"
+  with_sequence: start=1 end="{{ (NUM_WORKER_NODES | int) }}"
+ 
+

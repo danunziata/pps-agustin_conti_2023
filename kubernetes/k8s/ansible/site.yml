@@ -1,0 +1,3 @@
+---
+# Master playbook
+- import_playbook: cluster_setup.yml

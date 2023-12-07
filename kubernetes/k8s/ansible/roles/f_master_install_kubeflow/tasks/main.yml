@@ -1,0 +1,14 @@
+---
+
+- name: Download manifests repo 
+  shell:
+    cmd: "git clone -b v{{ KUBEFLOW_VERSION }}-branch https://github.com/kubeflow/manifests.git {{ SHARED_FOLDER_VM }}/configs/manifests/"
+
+- name: Check current folder
+  command: ls -lA configs/
+  register: out
+
+- name: Debug current folder
+  debug:
+    msg: "{{ out.stdout_lines }}"
+

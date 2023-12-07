@@ -1,0 +1,49 @@
+---
+
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Add modules to load at bootup
+  copy:
+    content: |
+      overlay
+      br_netfilter
+    dest: /etc/modules-load.d/crio.conf
+
+- name: Load required kernel modules
+  command: modprobe {{ item }}
+  with_items:
+    - overlay
+    - br_netfilter
+
+- name: Read modules at bootup /etc/modules-load.d/crio.conf
+  command: "cat /etc/modules-load.d/crio.conf"
+  register: out
+
+- name: Debug modules at bootup /etc/modules-load.d/crio.conf
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+- name: Set up required sysctl params
+  copy:
+    content: |
+      net.bridge.bridge-nf-call-iptables = 1
+      net.ipv4.ip_forward = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+    dest: /etc/sysctl.d/99-kubernetes-cri.conf
+
+- name: Apply sysctl settings
+  command: sysctl --system
+
+
+- name: Read sysctl cri-o kubernetes configuration
+  command: "cat /etc/sysctl.d/99-kubernetes-cri.conf"
+  register: out
+
+- name: Debug sysctl cri-o kubernetes configuration
+  debug:
+    msg: "{{ out.stdout_lines }}"
+
+

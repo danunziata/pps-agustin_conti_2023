@@ -5,6 +5,22 @@
 /kubernetes/k0s/ansible/distros
 /kubernetes/k0s/ansible/inventory/artifacts
 
+/kubernetes/k8s/configs/
+/kubernetes/k8s/.vagrant/
+/kubernetes/k8s/shared_folder/*
+/kubernetes/k8s/ansible/configs/admin.conf
+/kubernetes/k8s/ansible/configs/join_command.out
+/kubernetes/k8s/ansible/configs/bearer_token.out
+/kubernetes/k8s/ansible/configs/long_lived_token.out
+
+kubernetes/k8s/shared_folder/*
+
+kubernetes/k8s/ansible/configs/*
+!kubernetes/k8s/ansible/configs/*.yml
+!kubernetes/k8s/ansible/configs/*.yaml
+!kubernetes/k8s/ansible/configs/local_sc_rancher/
+!kubernetes/k8s/ansible/configs/install_kustomize.sh
+
 
 # PRIVATE FILES
 *.json

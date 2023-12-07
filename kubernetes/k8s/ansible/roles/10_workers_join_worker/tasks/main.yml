@@ -1,0 +1,32 @@
+---
+
+- name: Read join command
+  debug:
+    msg: "{{ lookup('file','./configs/join_command.out') }}"
+  register: join_command_local
+
+- name: Show join command
+  debug:
+    var: join_command_local.msg
+
+- name: join worker to cluster
+  command: "{{ join_command_local.msg }}"
+
+- name: Create .kube directory in user home
+  file:
+    path: "{{ HOME_DIR  }}/.kube"
+    state: directory
+    owner: 1000
+    group: 1000
+
+- name: Configure .kube/config files in user home
+  copy:
+    src: "./configs/admin.conf"
+    dest: "{{ HOME_DIR }}/.kube/config"
+    owner: 1000
+    group: 1000
+
+
+- name: Set node role
+  command: "kubectl label node {{ ansible_hostname }} node-role.kubernetes.io/worker=worker"
+  become: no

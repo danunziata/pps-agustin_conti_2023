@@ -1,0 +1,20 @@
+
+
+- name: Downlaod Helm repo
+  shell:
+    cmd: 'curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null'
+  become: no
+
+- name: Add Helm repo
+  shell:
+    cmd: 'echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list'
+
+- name: Update packages
+  apt:
+    update_cache: yes
+
+- name: Install Helm
+  apt:
+    name: helm
+    state: present
+

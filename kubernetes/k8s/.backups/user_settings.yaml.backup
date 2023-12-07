@@ -1,0 +1,123 @@
+---:
+settings:
+  env: &selected_env 'agus'
+  users:
+    agus:
+      environment: ""
+      
+      user_dir_path: /home/aagustin
+      node_home_dir: /home/vagrant
+
+      shared_folders:
+        - host_path: ./shared_folder
+          vm_path: /home/vagrant 
+
+      cluster_name: Kubernetes Cluster
+      
+      ssh:
+        user: "vagrant"
+        password: "vagrant"
+        private_key_path: /home/aagustin/.ssh/vagrant_key
+        public_key_path: /home/aagustin/.ssh/vagrant_key.pub
+
+      nodes:
+        control:
+          cpu: 2
+          memory: 4096
+        workers:
+          count: 1
+          cpu: 2
+          memory: 4096
+      
+      network:
+        control_ip: 10.0.0.10
+        dns_servers:
+          - 8.8.8.8
+          - 1.1.1.1
+        pod_cidr: 172.16.1.0/16
+        service_cidr: 172.17.1.0/18
+      
+
+      software:
+        box: bento/ubuntu-22.04
+        calico: 3.25.0
+        kubernetes: 1.26.1-00
+        os: xUbuntu_22.04
+    
+    user_n:
+      environment: ""
+      
+      user_dir_path: /home/aagustin
+      node_home_dir: /home/vagrant
+
+      shared_folders:
+        - host_path: ./shared_folder
+          vm_path: /home/vagrant 
+
+      cluster_name: Kubernetes Cluster
+      
+      ssh:
+        user: "vagrant"
+        password: "vagrant"
+        private_key_path: /home/aagustin/.ssh/vagrant_key
+        public_key_path: /home/aagustin/.ssh/vagrant_key
+
+      nodes:
+        control:
+          cpu: 2
+          memory: 4096
+        workers:
+          count: 1
+          cpu: 2
+          memory: 4096
+      
+      network:
+        control_ip: 10.0.0.10
+        dns_servers:
+          - 8.8.8.8
+          - 1.1.1.1
+        pod_cidr: 172.16.1.0/16
+        service_cidr: 172.17.1.0/18
+      
+
+      software:
+        box: bento/ubuntu-22.04
+        calico: 3.25.0
+        kubernetes: 1.26.1-00
+        os: xUbuntu_22.04
+
+# Ansible
+
+## Seleccionar el entorno
+SELECTED_ENV: ${env}
+
+## Configuración SSH
+ansible_ssh_user: ${settings.users[SELECTED_ENV].ssh.user}
+ansible_ssh_private_key_file: "{{  settings.users[SELECTED_ENV].ssh.private_key_path }}"
+#ansible_ssh_pass: {{ settings.users[SELECTED_ENV].ssh.password }}
+
+ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+## Configuración de hosts
+CONTROL_IP: "{{ settings.users[SELECTED_ENV].network.control_ip }}"
+IP_SECTIONS: "{{ CONTROL_IP | regex_search('^([0-9.]+\\.)([^.]+)$') }}"
+IP_NW: "{{ IP_SECTIONS.captures[0] }}"
+NUM_WORKER_NODES: "{{ settings.users[SELECTED_ENV].nodes.workers.count }}"
+
+## Configuración de servidores DNS
+DNS_SERVERS: "{{ settings.users[SELECTED_ENV].network.dns_servers | join(' ') }}"
+
+## Configuración de Kubernetes
+KUBERNETES_VERSION: "{{ settings.users[SELECTED_ENV].software.kubernetes }}"
+CALICO_VERSION: "{{ settings.users[SELECTED_ENV].software.calico }}"
+POD_CIDR: "{{ settings.users[SELECTED_ENV].network.pod_cidr }}"
+SERVICE_CIDR: "{{ settings.users[SELECTED_ENV].network.service_cidr }}"
+CLUSTER_NAME: "{{ settings.users[SELECTED_ENV].cluster_name }}"
+
+## Configuración de variables del sistema
+OS: "{{ settings.users[SELECTED_ENV].software.os }}"
+ENVIRONMENT: "{{ settings.users[SELECTED_ENV].environment }}"
+HOME_DIR: "{{ settings.users[SELECTED_ENV].node_home_dir }}"
+USER_ID: 1000
+GROUP_ID: 1000
+ 

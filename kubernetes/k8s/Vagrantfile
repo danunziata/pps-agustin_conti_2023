@@ -1,0 +1,91 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+
+require "yaml"
+settings = YAML.load_file "ansible/group_vars/all.yml"
+settings = settings['settings']['users'][settings['settings']['env']]
+
+IP_SECTIONS = settings["network"]["control_ip"].match(/^([0-9.]+\.)([^.]+)$/)
+# First 3 octets including the trailing dot:
+IP_NW = IP_SECTIONS.captures[0]
+# Last octet excluding all dots:
+IP_START = Integer(IP_SECTIONS.captures[1])
+NUM_WORKER_NODES = settings["nodes"]["workers"]["count"]
+
+Vagrant.configure("2") do |config|
+
+  # Check architecture
+  if `uname -m`.strip == "aarch64"
+    config.vm.box = settings["software"]["box"] + "-arm64"
+  else
+    config.vm.box = settings["software"]["box"]
+  end
+  config.vm.box_check_update = true
+
+  # Configure SSH on all nodes
+  config.ssh.insert_key = false 
+  config.ssh.private_key_path = [settings['user_dir_path'] +"/.vagrant.d/insecure_private_key",settings['ssh']['private_key_path']] 
+    
+  config.vm.provision "file",
+    source: settings['ssh']['public_key_path'],
+    destination: "/home/vagrant/.ssh/authorized_keys"
+
+   config.vm.provision "shell", path: "config_root_ssh_user.sh"
+  
+  # Configure master node
+  config.vm.define "master-node-#{IP_START}" do |master|
+    
+    # Setting up IP
+    master.vm.hostname = "master-node-#{IP_START}"
+    master.vm.network "private_network", ip: settings["network"]["control_ip"]
+    
+    # Setting up shared folder
+    if settings["shared_folders"]
+      settings["shared_folders"].each do |shared_folder|
+        master.vm.synced_folder shared_folder["host_path"], shared_folder["vm_path"]
+      end
+    end
+
+    # Setting up resources
+    master.vm.provider "virtualbox" do |vb|
+        vb.name = "master-node-#{IP_START}"
+        vb.cpus = settings["nodes"]["control"]["cpu"]
+        vb.memory = settings["nodes"]["control"]["memory"]
+        
+        if settings["cluster_name"] and settings["cluster_name"] != ""
+          vb.customize ["modifyvm", :id, "--groups", ("/" + settings["cluster_name"])]
+        end
+    end
+  end
+
+  # Configure worker nodes
+  (1..NUM_WORKER_NODES).each do |i|
+
+    config.vm.define "worker-node-#{IP_START + i}" do |node|
+      
+      # Setting up IP
+      node.vm.hostname = "worker-node-#{IP_START + i}"
+      node.vm.network "private_network", ip: IP_NW + "#{IP_START + i}"
+      
+      # Setting up shared folder
+      #if settings["shared_folders"]
+      #  settings["shared_folders"].each do |shared_folder|
+      #    node.vm.synced_folder shared_folder["host_path"], shared_folder["vm_path"]
+      #  end
+      #end
+
+      # Setting up resources
+      node.vm.provider "virtualbox" do |vb|
+          vb.name = "worker-node-#{IP_START + i}"
+          vb.cpus = settings["nodes"]["workers"]["cpu"]
+          vb.memory = settings["nodes"]["workers"]["memory"]
+          
+          if settings["cluster_name"] and settings["cluster_name"] != ""
+            vb.customize ["modifyvm", :id, "--groups", ("/" + settings["cluster_name"])]
+          end
+      end
+
+    end
+  end
+end 
